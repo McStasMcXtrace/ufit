@@ -90,15 +90,5 @@ class Function(Model):
             self._real_fcn(x, *(p[pv] for pv in pvs))
 
 
-class Background(Model):
-    def __init__(self, name='', bkgd=None):
-        pb, = self._init_params(name, ['bkgd'], locals())
-        # background should be positive (XXX makes lmfit fail)
-        ##if self.params[0].pmin is None:
-        ##    self.params[0].pmin = 0
-
-        self.fcn = lambda p, x: p[pb]
-
-
 from ufit.models.peaks import *
 from ufit.models.corr import *
