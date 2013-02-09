@@ -14,7 +14,7 @@ class UFitError(Exception):
 
 
 class Data(object):
-    def __init__(self, x, y, dy, name, meta):
+    def __init__(self, x, y, dy, name, meta, xcol, ycol):
         self.name = name
         self.x = x
         self.y = y
@@ -25,6 +25,8 @@ class Data(object):
             self.dy = dy
         if not (len(x) == len(y) == len(self.dy)):
             raise UFitError('X, Y and DY must be of same length')
+        self.xcol = xcol
+        self.ycol = ycol
 
     def __repr__(self):
         return '<Data %s (%d points)>' % (self.name, len(self.x))
@@ -127,6 +129,8 @@ class Result(object):
         print '=' * 80
 
     def plot(self, **kw):
+        if 'title' not in kw:
+            kw['title'] = 'red. chisqr = %.4f' % self.chisqr
         self.model.plot(self.data, _pdict=self.paramvalues, **kw)
 
     def plot_components(self):

@@ -59,7 +59,7 @@ class Model(object):
             return data
         if isinstance(data, Run):
             return Data(data.x, data.y/data.n, sqrt(data.y)/data.n,
-                        data.name, data.meta)
+                        data.name, data.meta, data.xcol, data.ycol)
         raise UFitError('cannot handle data %r' % data)
 
     def __add__(self, other):
@@ -100,10 +100,8 @@ class Model(object):
         pl.plot(xx, yy, label='fit')
         if title:
             pl.title(title)
-        if xlabel:
-            pl.xlabel(xlabel)
-        if ylabel:
-            pl.ylabel(ylabel)
+        pl.xlabel(xlabel or data.xcol)
+        pl.ylabel(ylabel or data.ycol)
         pl.legend()
 
     def plot_components(self, data, _pdict=None):
@@ -211,15 +209,10 @@ class GlobalModel(Model):
 
         def new_fcn(p, x):
             res = []
-            #print '====================================='
-            #print 'FCN CALL: P IS', p
             for i, data in enumerate(datas):
-                dp = dict((pn, p[pn]) for pn in overall_params)
-                dp.update((opn, p[pn]) for (opn, pn) in diff_params[i])
-                #print 'P IS NOW', p
-                #print 'DP IS', dp
-                res.extend(model.fcn(dp, data.x))
-                #print 'P IS AFTER CALL', p
+                dpd = dict((pn, p[pn]) for pn in overall_params)
+                dpd.update((opn, p[pn]) for (opn, pn) in diff_params[i])
+                res.extend(model.fcn(dpd, data.x))
             return array(res)
         self.fcn = new_fcn
 
