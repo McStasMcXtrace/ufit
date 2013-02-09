@@ -8,8 +8,17 @@ from ufit.core import UFitError, Data, Param
 
 
 class Model(object):
-    """Base class for Model functions.  Arithmetic combinations of Model
-    instances again yield model instances (via CombinedModel).
+    """Base class for Model functions.
+
+    Important APIs:
+
+    * fit() - fit data with the model
+    * global_params() - add parameters that are referenced in parameter
+      expressions but not given by a parameter of one of the models yet
+    * get_components() - return a list of Model instances that represent
+      individual components of the complete model
+    * is_modifier() - return bool whether the specific model is a "modifier"
+      (i.e. not a component)
     """
     name = ''
     params = []
@@ -59,7 +68,6 @@ class Model(object):
             return NotImplemented
         return CombinedModel(self, other, operator.div, '/')
 
-
     def fit(self, data, **kw):
         data = self._as_data(data)
         return backends.backend.do_fit(data, self.fcn, self.params, kw)
@@ -79,6 +87,10 @@ class Model(object):
 
 
 class CombinedModel(Model):
+    """Models an arithmetic combination of two sub-models.
+
+    Parameters are combined from both; their names may not clash.
+    """
 
     def __init__(self, a, b, op, opstr=''):
         self.params = []
@@ -115,11 +127,14 @@ class CombinedModel(Model):
 
 
 class Function(Model):
+    """Model using a function provided by the user.
+
+    Parameters are extracted from the function's arguments and passed
+    positionally.
+    """
     def __init__(self, fcn, name='', **init):
         self._real_fcn = fcn
         pvs = self._init_params(name, inspect.getargspec(fcn)[0][1:], init)
 
         self.fcn = lambda p, x: \
             self._real_fcn(x, *(p[pv] for pv in pvs))
-
-
