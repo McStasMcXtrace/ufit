@@ -23,8 +23,8 @@ def do_fit(data, fcn, params, add_kw):
         out = minimize(lmfitfcn, lmfparams, args=(data,), **add_kw)
     except Exception, e:
         raise UFitError('Error while fitting: %s' % e)
-    if not out.success:
-        raise UFitError(out.message)
+    #if not out.success:
+    #    raise UFitError(out.message)
 
     for p in params:
         p.value = lmfparams[p.name].value

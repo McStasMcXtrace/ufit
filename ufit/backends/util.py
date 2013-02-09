@@ -11,4 +11,3 @@ def update_evalpars(pars, d):
                 pass
             else:
                 del rest[p]
-    del d['__builtins__']

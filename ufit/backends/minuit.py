@@ -33,7 +33,7 @@ def do_fit(data, fcn, params, add_kw):
     code = 'def minuitfcn(' + ', '.join(p.name for p in varypars) + '''):
         p = {''' + ', '.join("%r: %s" % (p.name, p.name) for p in varypars) + '''}
         update_evalpars(evalpars, p)
-        return sum((fcn(p, data.x) - data.y)**2 / data.dy**2)
+        return ((fcn(p, data.x) - data.y)**2 / data.dy**2).sum()
     '''
 
     fcn_environment = locals().copy()
@@ -41,14 +41,14 @@ def do_fit(data, fcn, params, add_kw):
     exec code in fcn_environment
 
     m = Minuit(fcn_environment['minuitfcn'])
-    m.up = 1
+    m.up = 1.0
     for kw in add_kw:
         setattr(m, kw, add_kw[kw])
     for p in varypars:
         m.values[p.name] = p.value
         if p.pmin is not None or p.pmax is not None:
-            m.limits[p.name] = (p.pmin is None and -1e12 or p.pmin,
-                                p.pmax is None and +1e12 or p.pmax)
+            m.limits[p.name] = (p.pmin is None and -1e8 or p.pmin,
+                                p.pmax is None and +1e8 or p.pmax)
     try:
         m.migrad()
         m.hesse()

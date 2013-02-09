@@ -14,18 +14,18 @@ else:
     backend = scipy
 
 try:
-    from ufit.backends import lmfit
-except ImportError:
-    lmfit = None
-else:
-    backend = lmfit
-
-try:
     from ufit.backends import minuit
 except ImportError:
     minuit = None
 else:
     backend = minuit
+
+try:
+    from ufit.backends import lmfit
+except ImportError:
+    lmfit = None
+else:
+    backend = lmfit
 
 def set_backend(which):
     global backend
