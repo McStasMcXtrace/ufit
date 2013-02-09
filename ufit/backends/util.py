@@ -1,5 +1,7 @@
 # ufit backend utilities
 
+from collections import defaultdict
+
 from ufit.core import UFitError
 
 # XXX replace by something more safe later
@@ -18,6 +20,7 @@ def prepare_params(params):
             varynames.append(p.name)
 
     pd = dict((p.name, p.value) for p in varying)
+    pd['__meta'] = defaultdict(float)
 
     # poor man's dependency tracking of parameter expressions
     dep_order = []
@@ -39,6 +42,8 @@ def prepare_params(params):
     return varying, varynames, dep_order
 
 
-def update_params(pars, pd):
+def update_params(pars, data, pd):
+    pd['__meta'] = data.meta
     for p, expr in pars:
         pd[p] = param_eval(expr, pd)
+    #del pd['__builtins__']

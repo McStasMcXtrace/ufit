@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from numpy import sqrt, inf
 from scipy.optimize import leastsq
-from ufit.core import UFitError, Result
+from ufit.core import UFitError
 from ufit.backends.util import prepare_params, update_params
 
 __all__ = ['do_fit', 'backend_name']
@@ -15,7 +15,7 @@ def do_fit(data, fcn, params, add_kw):
 
     def leastsqfcn(params, data):
         pd = dict(zip(varynames, params))
-        update_params(dependent, pd)
+        update_params(dependent, data, pd)
         return (fcn(pd, data.x) - data.y) / data.dy
 
     initpars = []
@@ -47,8 +47,8 @@ def do_fit(data, fcn, params, add_kw):
         else:
             p.error = 0
         p.correl = {}  # XXX
-    update_params(dependent, pd)
+    update_params(dependent, data, pd)
     for p in params:
         p.value = pd[p.name]
 
-    return Result(data, fcn, params, errmsg)
+    return errmsg

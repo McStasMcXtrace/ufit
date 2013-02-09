@@ -1,7 +1,7 @@
 # ufit backend using minuit2
 
 from __future__ import absolute_import
-from ufit.core import UFitError, Result
+from ufit.core import UFitError
 from ufit.backends.util import prepare_params, update_params
 
 try:
@@ -24,7 +24,7 @@ def do_fit(data, fcn, params, add_kw):
 
     code = 'def minuitfcn(' + ', '.join(varynames) + '''):
         pd = {''' + ', '.join("%r: %s" % (pn, pn) for pn in varynames) + '''}
-        update_params(dependent, pd)
+        update_params(dependent, data, pd)
         return ((fcn(pd, data.x) - data.y)**2 / data.dy**2).sum()
     '''
 
@@ -49,10 +49,10 @@ def do_fit(data, fcn, params, add_kw):
     #m.minos()  -> would calculate more exact and asymmetric errors
 
     pd = m.values.copy()
-    update_params(dependent, pd)
+    update_params(dependent, data, pd)
     for p in params:
         p.value = pd[p.name]
         p.error = m.errors.get(p.name, 0)
         p.correl = {}  # XXX
 
-    return Result(data, fcn, params, '')
+    return ''

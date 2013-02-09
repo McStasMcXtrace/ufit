@@ -2,9 +2,11 @@
 
 import inspect
 import operator
+from numpy import array, concatenate
 
 from ufit import backends
-from ufit.core import UFitError, Data, Param
+from ufit.core import UFitError, Param, Data, Result
+from ufit.data.run import Run
 
 
 class Model(object):
@@ -13,7 +15,7 @@ class Model(object):
     Important APIs:
 
     * fit() - fit data with the model
-    * global_params() - add parameters that are referenced in parameter
+    * add_params() - add parameters that are referenced in parameter
       expressions but not given by a parameter of one of the models yet
     * get_components() - return a list of Model instances that represent
       individual components of the complete model
@@ -41,11 +43,20 @@ class Model(object):
                 raise UFitError('Parameter %s needs an initializer' % pname)
         return pnames_real
 
+    def _combine_params(self, a, b):
+        self.params = []
+        seen = set()
+        for m in [a, b]:
+            for p in m.params:
+                if p.name in seen:
+                    raise UFitError('Parameter name clash: %s' % p.name)
+                self.params.append(p)
+
     def _as_data(self, data):
         if isinstance(data, Data):
             return data
-        elif isinstance(data, tuple):
-            return Data(*data)
+        if isinstance(data, Run):
+            return Data(data.X, data.Y, data.DY, data.name, data.meta)
         raise UFitError('cannot handle data %r' % data)
 
     def __add__(self, other):
@@ -70,9 +81,22 @@ class Model(object):
 
     def fit(self, data, **kw):
         data = self._as_data(data)
-        return backends.backend.do_fit(data, self.fcn, self.params, kw)
+        msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
+        for p in self.params:
+            p.value = p.finalize(p.value)
+        return Result(data, self.fcn, self.params, msg)
 
-    def global_params(self, **p):
+    def global_fit(self, datas, **kw):
+        datas = map(self._as_data, datas)
+        new_model = GlobalModel(self, datas)
+        cumulative_data = Data(concatenate([d.x for d in datas]),
+                               concatenate([d.y for d in datas]),
+                               concatenate([d.dy for d in datas]),
+                               'cumulative data', None)
+        res = new_model.fit(cumulative_data, **kw)
+        return new_model.generate_results(res)
+
+    def add_params(self, **p):
         for pname, initval in p.iteritems():
             self.params.append(Param(pname, initval))
 
@@ -102,12 +126,7 @@ class CombinedModel(Model):
             self.name = a.name + opstr + b.name
         else:
             self.name = a.name or b.name
-        seen = set()
-        for m in [a, b]:
-            for p in m.params:
-                if p.name in seen:
-                    raise UFitError('Parameter name clash: %s' % p.name)
-                self.params.append(p)
+        self._combine_params(a, b)
 
         self.fcn = lambda p, x: op(a.fcn(p, x), b.fcn(p, x))
 
@@ -138,3 +157,53 @@ class Function(Model):
 
         self.fcn = lambda p, x: \
             self._real_fcn(x, *(p[pv] for pv in pvs))
+
+
+class GlobalModel(Model):
+    """Model for a global fit with some parameters varied."""
+
+    def __init__(self, model, datas):
+        self._model = model
+        self._datas = datas
+        ndata = len(datas)
+
+        self.params = []
+        overall_params = self._overall_params = []
+        diff_params = self._diff_params = [[] for i in range(ndata)]
+        for p in model.params:
+            if p.overall:
+                self.params.append(p)
+                overall_params.append(p.name)
+            else:
+                for i in range(ndata):
+                    new_param = p.copy(p.name + '__' + str(i))
+                    self.params.append(new_param)
+                    diff_params[i].append((p.name, new_param.name))
+
+        def new_fcn(p, x):
+            res = []
+            #print '====================================='
+            #print 'FCN CALL: P IS', p
+            for i, data in enumerate(datas):
+                dp = dict((pn, p[pn]) for pn in overall_params)
+                dp.update((opn, p[pn]) for (opn, pn) in diff_params[i])
+                #print 'P IS NOW', p
+                #print 'DP IS', dp
+                res.extend(model.fcn(dp, data.x))
+                #print 'P IS AFTER CALL', p
+            return array(res)
+        self.fcn = new_fcn
+
+    def generate_results(self, overall_res):
+        reslist = []
+        for i, data in enumerate(self._datas):
+            suffix = '__%d' % i
+            paramlist = []
+            for p in self.params:
+                if p.overall:
+                    paramlist.append(p)
+                elif p.name.endswith(suffix):
+                    paramlist.append(p.copy(p.name[:-len(suffix)])) # XXX
+            reslist.append(Result(data, self._model.fcn, paramlist,
+                                  overall_res.message))
+        return reslist

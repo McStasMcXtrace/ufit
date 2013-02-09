@@ -1,11 +1,11 @@
-# ufit, data loading routines
+# ufit NICOS data reader
 
 import time
-import numpy
+from numpy import loadtxt
 
-from ufit.core import Data
+from ufit.data.run import Run
 
-def read_file(filename):
+def read_data(fnum, filename):
     entries = {}
     fp = open(filename, 'rb')
     dtline = fp.readline()
@@ -50,19 +50,5 @@ def read_file(filename):
     colnames = [name for name in colnames if name != ';']
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
-    coldata = numpy.loadtxt(fp, converters=cvdict,
-                            usecols=usecols, unpack=True)
-    # optional:
-    for (name, unit, data) in zip(colnames, colunits, coldata):
-        entries[name] = data
-    return entries
-
-dtempl = '%d'
-
-def set_datatemplate(s):
-    global dtempl
-    dtempl = s
-
-def read_data(n, xcol='E'):
-    d = read_file(dtempl % n)
-    return Data(d[xcol], d['ctr1'], numpy.sqrt(d['ctr1']), str(n), d)
+    coldata = loadtxt(fp, converters=cvdict, usecols=usecols)
+    return Run(str(fnum), colnames, coldata, meta=entries)

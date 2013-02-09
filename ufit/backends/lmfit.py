@@ -1,7 +1,7 @@
 # ufit backend using lmfit
 
 from __future__ import absolute_import
-from ufit.core import UFitError, Result
+from ufit.core import UFitError
 
 from lmfit import Parameters, minimize
 
@@ -16,8 +16,8 @@ def do_fit(data, fcn, params, add_kw):
         lmfparams.add(p.name, p.value, expr=p.expr, min=p.pmin, max=p.pmax)
 
     def lmfitfcn(lmfparams, data):
-        p = dict((p.name, lmfparams[p.name].value) for p in params)
-        return (fcn(p, data.x) - data.y) / data.dy
+        pd = dict((p.name, lmfparams[p.name].value) for p in params)
+        return (fcn(pd, data.x) - data.y) / data.dy
 
     try:
         out = minimize(lmfitfcn, lmfparams, args=(data,), **add_kw)
@@ -31,4 +31,4 @@ def do_fit(data, fcn, params, add_kw):
         p.error = lmfparams[p.name].stderr
         p.correl = lmfparams[p.name].correl
 
-    return Result(data, fcn, params, out.message)
+    return out.message

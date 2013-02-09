@@ -1,5 +1,6 @@
 # ufit core
 
+import copy
 from numpy import linspace, ones
 
 
@@ -13,11 +14,11 @@ class UFitError(Exception):
 
 
 class Data(object):
-    def __init__(self, x, y, dy, name, info=None):
+    def __init__(self, x, y, dy, name, meta):
         self.name = name
         self.x = x
         self.y = y
-        self.info = info
+        self.meta = meta
         if dy is None:
             self.dy = ones(len(x))
         else:
@@ -29,33 +30,71 @@ class Data(object):
         return '<Data %s (%d points)>' % (self.name, len(self.x))
 
 
+# parameter definitions
+
+class fixed(str):
+    pass
+
+class expr(str):
+    pass
+
+class overall(object):
+    def __init__(self, v):
+        self.v = v
+
+class datapar(object):
+    def __init__(self, v):
+        self.v = v
+
+class limited(tuple):
+    def __new__(self, min, max, v):
+        return (min, max, v)
+
+
 class Param(object):
-    def __init__(self, name, initializer):
+    def __init__(self, name, pdef):
         self.name = name
         self.expr = None
         self.value = 0
         self.pmin = None
         self.pmax = None
-        if isinstance(initializer, tuple) and len(initializer) == 3:
-            self.pmin, self.pmax, initializer = initializer
-        if isinstance(initializer, (int, long, float)):
-            self.value = float(initializer)
-        elif isinstance(initializer, str):
-            self.expr = initializer
+        self.overall = False
+        self.datapar = None
+        while not isinstance(pdef, (int, long, float, str)):
+            if isinstance(pdef, overall):
+                self.overall = True
+                pdef = pdef.v
+            elif isinstance(pdef, datapar):
+                self.datapar = pdef.v
+                pdef = '__meta[%r]' % pdef.v
+            elif isinstance(pdef, tuple) and len(pdef) == 3:
+                self.pmin, self.pmax, pdef = pdef
+            else:
+                raise UFitError('Parameter definition %s not understood' %
+                                pdef)
+        if isinstance(pdef, str):
+            self.expr = pdef
         else:
-            raise UFitError('Parameter %s should be either a number, a string '
-                            'or a 3-tuple (min, max, string or number)')
+            self.value = pdef
         # properties set on fit result
         self.error = 0
         self.correl = {}
         # transform parameter after successful fit
         self.finalize = lambda x: x
 
+    def copy(self, newname):
+        cp = copy.copy(self)
+        cp.name = newname
+        return cp
+
     def __str__(self):
-        s = '%-15s = %10.4g +/- %10.4g' % (
-            self.name, self.value, self.error)
-        if self.expr:
+        s = '%-15s = %10.4g +/- %10.4g' % (self.name, self.value, self.error)
+        if self.datapar:
+            s += ' (from data: %s)' % self.datapar
+        elif self.expr:
             s += ' (fixed: %s)' % self.expr
+        if self.overall:
+            s += ' (global)'
         return s
 
     def __repr__(self):
@@ -67,17 +106,15 @@ class Result(object):
         self.data = data
         self.params = params
         self.message = message
+        self.paramdict = dict((p.name, p) for p in params)
 
-        for p in params:
-            p.value = p.finalize(p.value)
-
-        self.paramdict = dict((p.name, p.value) for p in params)
-        sum_sqr = ((fcn(self.paramdict, data.x) - data.y)**2 / data.dy**2).sum()
+        self.paramvalues = dict((p.name, p.value) for p in params)
+        sum_sqr = ((fcn(self.paramvalues, data.x) - data.y)**2 / data.dy**2).sum()
         nfree = len(data.y) - sum(1 for p in params if not p.expr)
         self.chisqr = sum_sqr / nfree
 
         self.xx = linspace(data.x[0], data.x[-1], 1000)
-        self.yy = fcn(self.paramdict, self.xx)
+        self.yy = fcn(self.paramvalues, self.xx)
 
     def printout(self):
         print 'Fit results for %s' % self.data.name
@@ -106,6 +143,6 @@ class Result(object):
     def plot_components(self, model):
         import matplotlib.pyplot as pl
         for comp in model.get_components():
-            yy = comp.fcn(self.paramdict, self.xx)
+            yy = comp.fcn(self.paramvalues, self.xx)
             pl.plot(self.xx, yy, '--', label=comp.name)
         pl.legend()
