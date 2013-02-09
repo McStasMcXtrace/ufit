@@ -7,13 +7,13 @@ from ufit.backends.util import update_evalpars
 try:
     from minuit import Minuit
 except ImportError:
-    from minuit2 import Minuit2 as Minuit
+    ## minuit2 crashes with GIL problems here
+    #from minuit2 import Minuit2 as Minuit
+    raise
 
 __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'minuit'
-
-#raise ImportError
 
 def do_fit(data, fcn, params, add_kw):
 

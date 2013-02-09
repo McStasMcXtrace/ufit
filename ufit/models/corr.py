@@ -1,6 +1,6 @@
 # models for corrections
 
-from numpy import exp, sqrt, arcsin, tan, pi, piecewise, sign
+from numpy import exp, sqrt, arcsin, tan, pi
 
 from ufit.models import Model
 
@@ -9,7 +9,7 @@ class Background(Model):
     """Model for a constant background.
 
     Parameters:
-    * bkgd - the background
+    * bkgd - the background (forced to be nonnegative)
     """
     def __init__(self, name='', bkgd=0):
         pb, = self._init_params(name, ['bkgd'], locals())
