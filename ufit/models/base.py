@@ -3,11 +3,11 @@
 import inspect
 import operator
 from numpy import array, concatenate, sqrt, linspace
+import matplotlib.pyplot as pl
 
 from ufit import backends
 from ufit.core import UFitError, Param, Data, Result
 from ufit.data.run import Run
-
 from ufit.backends.util import prepare_params
 
 
@@ -87,17 +87,33 @@ class Model(object):
         msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
-        return Result(data, self.fcn, self.params, msg)
+        return Result(data, self, self.params, msg)
 
-    def plot(self, data):
+    def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None):
         data = self._as_data(data)
-        pdict = prepare_params(self.params, data)[3]
+        if _pdict is None:
+            _pdict = prepare_params(self.params, data)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
-        yy = self.fcn(pdict, xx)
-        import matplotlib.pyplot as pl
+        yy = self.fcn(_pdict, xx)
         pl.figure()
         pl.errorbar(data.x, data.y, data.dy, fmt='o', label=data.name)
         pl.plot(xx, yy, label='fit')
+        if title:
+            pl.title(title)
+        if xlabel:
+            pl.xlabel(xlabel)
+        if ylabel:
+            pl.ylabel(ylabel)
+        pl.legend()
+
+    def plot_components(self, data, _pdict=None):
+        if _pdict is None:
+            _pdict = prepare_params(self.params, data)[3]
+        xx = linspace(data.x[0], data.x[-1], 1000)
+        for comp in self.get_components():
+            yy = comp.fcn(_pdict, xx)
+            pl.plot(xx, yy, '--', label=comp.name)
+        pl.legend()
 
     def global_fit(self, datas, **kw):
         datas = map(self._as_data, datas)
@@ -217,6 +233,6 @@ class GlobalModel(Model):
                     paramlist.append(p)
                 elif p.name.endswith(suffix):
                     paramlist.append(p.copy(p.name[:-len(suffix)])) # XXX
-            reslist.append(Result(data, self._model.fcn, paramlist,
+            reslist.append(Result(data, self._model, paramlist,
                                   overall_res.message))
         return reslist
