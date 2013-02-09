@@ -2,8 +2,6 @@
 
 from numpy import loadtxt
 
-from ufit.data.run import Run
-
 
 def read_data(fnum, filename):
     try:
@@ -36,7 +34,7 @@ def read_data(fnum, filename):
         if len(arr) == 0:
             print 'No data in', filename
             return None
-        return Run(str(fnum), names, arr, x=xcol, meta=meta)
+        return names, arr, meta
     except Exception, e:
         print 'Error reading', filename, '-', e
         return None

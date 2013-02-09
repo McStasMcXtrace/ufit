@@ -2,11 +2,13 @@
 
 import inspect
 import operator
-from numpy import array, concatenate
+from numpy import array, concatenate, sqrt, linspace
 
 from ufit import backends
 from ufit.core import UFitError, Param, Data, Result
 from ufit.data.run import Run
+
+from ufit.backends.util import prepare_params
 
 
 class Model(object):
@@ -56,7 +58,8 @@ class Model(object):
         if isinstance(data, Data):
             return data
         if isinstance(data, Run):
-            return Data(data.X, data.Y, data.DY, data.name, data.meta)
+            return Data(data.x, data.y/data.n, sqrt(data.y)/data.n,
+                        data.name, data.meta)
         raise UFitError('cannot handle data %r' % data)
 
     def __add__(self, other):
@@ -85,6 +88,16 @@ class Model(object):
         for p in self.params:
             p.value = p.finalize(p.value)
         return Result(data, self.fcn, self.params, msg)
+
+    def plot(self, data):
+        data = self._as_data(data)
+        pdict = prepare_params(self.params, data)[3]
+        xx = linspace(data.x[0], data.x[-1], 1000)
+        yy = self.fcn(pdict, xx)
+        import matplotlib.pyplot as pl
+        pl.figure()
+        pl.errorbar(data.x, data.y, data.dy, fmt='o', label=data.name)
+        pl.plot(xx, yy, label='fit')
 
     def global_fit(self, datas, **kw):
         datas = map(self._as_data, datas)

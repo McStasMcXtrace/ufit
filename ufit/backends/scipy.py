@@ -11,7 +11,7 @@ __all__ = ['do_fit', 'backend_name']
 backend_name = 'scipy'
 
 def do_fit(data, fcn, params, add_kw):
-    varying, varynames, dependent = prepare_params(params)
+    varying, varynames, dependent, _ = prepare_params(params, data)
 
     def leastsqfcn(params, data):
         pd = dict(zip(varynames, params))

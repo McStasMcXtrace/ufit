@@ -80,5 +80,5 @@ class DHO(Model):
         self.params[1].finalize = abs
         self.params[2].finalize = abs
         self.params[3].finalize = abs
-        self.fcn = lambda p, x: x / (1. - exp(-11.6045*x / p[ptt])) * \
+        self.fcn = lambda p, x: x / (1. - exp(-11.6045*(x+0.00001) / p[ptt])) * \
             abs(p[pa]) * abs(p[pg]) / ((p[pp]**2 - x**2)**2 + (p[pg]*x)**2)

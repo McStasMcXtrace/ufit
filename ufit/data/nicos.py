@@ -3,7 +3,6 @@
 import time
 from numpy import loadtxt
 
-from ufit.data.run import Run
 
 def read_data(fnum, filename):
     entries = {}
@@ -51,4 +50,10 @@ def read_data(fnum, filename):
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols)
-    return Run(str(fnum), colnames, coldata, meta=entries)
+    if 'Ts' in colnames:
+        tindex = colnames.index('Ts')
+        entries['Ts'] = coldata[:,tindex].mean()
+    if 'B' in colnames:
+        tindex = colnames.index('B')
+        entries['B'] = coldata[:,tindex].mean()
+    return colnames, coldata, entries

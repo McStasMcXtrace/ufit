@@ -16,7 +16,7 @@ __all__ = ['do_fit', 'backend_name']
 backend_name = 'minuit'
 
 def do_fit(data, fcn, params, add_kw):
-    varying, varynames, dependent = prepare_params(params)
+    varying, varynames, dependent, _ = prepare_params(params, data)
 
     # sadly, pyminuit insists on a function with the exact number and
     # names of the parameters in the signature, so we have to create

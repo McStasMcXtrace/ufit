@@ -63,7 +63,7 @@ class Bose(Model):
     """
     def __init__(self, name='', tt=None):
         ptt, = self._init_params(name, ['tt'], locals())
-        self.fcn = lambda p, x: x / (1. - exp(-11.6045*x / p[ptt]))
+        self.fcn = lambda p, x: x / (1. - exp(-11.6045*(x + 0.00001) / p[ptt]))
 
     def is_modifier(self):
         return True
