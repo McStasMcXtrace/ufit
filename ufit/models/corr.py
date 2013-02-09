@@ -1,6 +1,6 @@
 # models for corrections
 
-from numpy import exp, sqrt, arcsin, tan, pi
+from numpy import exp, sqrt, arcsin, tan, pi, piecewise, sign
 
 from ufit.models import Model
 
@@ -13,11 +13,13 @@ class Background(Model):
     """
     def __init__(self, name='', bkgd=0):
         pb, = self._init_params(name, ['bkgd'], locals())
-        # background should be positive (XXX makes lmfit fail)
-        ##if self.params[0].pmin is None:
-        ##    self.params[0].pmin = 0
+        # background should be positive
+        self.params[0].finalize = abs
 
-        self.fcn = lambda p, x: p[pb]
+        self.fcn = lambda p, x: abs(p[pb])
+
+    def is_modifier(self):
+        return True
 
 
 class SlopingBackground(Model):
@@ -30,6 +32,9 @@ class SlopingBackground(Model):
     def __init__(self, name='', bkgd=0, slope=0):
         pb, ps = self._init_params(name, ['bkgd', 'slope'], locals())
         self.fcn = lambda p, x: p[pb] + x*p[ps]
+
+    def is_modifier(self):
+        return True
 
 
 class CKI_Corr(Model):
@@ -46,6 +51,9 @@ class CKI_Corr(Model):
             return kf**3/tan(arcsin(pi/kf/p[pdv]))
         self.fcn = fcn
 
+    def is_modifier(self):
+        return True
+
 
 class Bose(Model):
     """Model for correcting for Bose factor.
@@ -55,4 +63,7 @@ class Bose(Model):
     """
     def __init__(self, name='', tt=None):
         ptt, = self._init_params(name, ['tt'], locals())
-        self.fcn = lambda p, x: 1 / (1. - exp(-11.6045*x / p[ptt]))
+        self.fcn = lambda p, x: x / (1. - exp(-11.6045*x / p[ptt]))
+
+    def is_modifier(self):
+        return True

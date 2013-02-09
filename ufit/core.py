@@ -48,6 +48,8 @@ class Param(object):
         # properties set on fit result
         self.error = 0
         self.correl = {}
+        # transform parameter after successful fit
+        self.finalize = lambda x: x
 
     def __str__(self):
         s = '%-15s = %10.4g +/- %10.4g' % (
@@ -66,13 +68,16 @@ class Result(object):
         self.params = params
         self.message = message
 
-        p = dict((p.name, p.value) for p in params)
-        sum_sqr = ((fcn(p, data.x) - data.y)**2 / data.dy**2).sum()
+        for p in params:
+            p.value = p.finalize(p.value)
+
+        self.paramdict = dict((p.name, p.value) for p in params)
+        sum_sqr = ((fcn(self.paramdict, data.x) - data.y)**2 / data.dy**2).sum()
         nfree = len(data.y) - sum(1 for p in params if not p.expr)
         self.chisqr = sum_sqr / nfree
 
         self.xx = linspace(data.x[0], data.x[-1], 1000)
-        self.yy = fcn(p, self.xx)
+        self.yy = fcn(self.paramdict, self.xx)
 
     def printout(self):
         print 'Fit results for %s' % self.data.name
@@ -89,11 +94,18 @@ class Result(object):
         pl.figure()
         pl.errorbar(self.data.x, self.data.y, self.data.dy, fmt='o',
                     label=self.data.name)
-        pl.plot(self.xx, self.yy)
+        pl.plot(self.xx, self.yy, label='fit')
         if title:
             pl.title(title)
         if xlabel:
             pl.xlabel(xlabel)
         if ylabel:
             pl.ylabel(ylabel)
+        pl.legend()
+
+    def plot_components(self, model):
+        import matplotlib.pyplot as pl
+        for comp in model.get_components():
+            yy = comp.fcn(self.paramdict, self.xx)
+            pl.plot(self.xx, yy, '--', label=comp.name)
         pl.legend()
