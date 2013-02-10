@@ -28,7 +28,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QScrollArea" name="param_frame">
+    <widget class="QScrollArea" name="param_scroll">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>

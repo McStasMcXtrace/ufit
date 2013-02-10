@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # ufit interactive fitting gui
 
-from PyQt4.QtCore import pyqtSignature as qtsig,  SIGNAL
-from PyQt4.QtGui import QWidget, QApplication, QVBoxLayout, QFrame, \
-     QMainWindow, QListWidgetItem, QDialogButtonBox, QMessageBox
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
+from PyQt4.QtGui import QWidget, QApplication, QSplitter, QMainWindow, \
+     QListWidgetItem, QDialogButtonBox, QMessageBox
 
 from ufit import models, param
 from ufit.models import concrete_models
@@ -95,9 +95,7 @@ class ModelBuilder(QWidget):
 class ModelBuilderMain(QMainWindow):
     def __init__(self, data):
         QMainWindow.__init__(self)
-        mainframe = QFrame(self)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = QSplitter(Qt.Vertical, self)
         self.canvas = MPLCanvas(self)
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
@@ -106,8 +104,7 @@ class ModelBuilderMain(QMainWindow):
         self.mbuilder.initialize(data)
         self.connect(self.mbuilder, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.fitter)
-        mainframe.setLayout(layout)
-        self.setCentralWidget(mainframe)
+        self.setCentralWidget(layout)
         self.setWindowTitle(self.fitter.windowTitle())
 
 

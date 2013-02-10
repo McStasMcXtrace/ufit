@@ -124,7 +124,7 @@ class Model(object):
             pl.figure()
             _axes = pl.gca()
         _axes.errorbar(data.x, data.y, data.dy, fmt='o', ms=8, label=data.name)
-        _axes.plot(xx, yy, label='fit')
+        _axes.plot(xx, yy, lw=2, label='fit')
         if title:
             _axes.set_title(title)
         _axes.set_xlabel(xlabel or data.xcol)

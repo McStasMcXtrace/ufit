@@ -2,11 +2,11 @@
 # ufit interactive fitting gui
 
 from PyQt4.QtCore import SIGNAL, Qt
-from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QVBoxLayout, \
-     QGridLayout, QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, \
-     QScrollArea, QComboBox
+from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
+     QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter
 
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit, \
+     SmallComboBox
 
 
 class Fitter(QWidget):
@@ -57,11 +57,7 @@ class Fitter(QWidget):
 
     def create_param_controls(self):
         self.param_controls = {}
-        self.param_frame.close()
-        self.param_frame = QScrollArea(self)
-        self.param_frame.setFrameShape(QFrame.NoFrame)
-        self.param_frame.setFrameShadow(QFrame.Plain)
-        self.layout().insertWidget(1, self.param_frame)
+        self.param_frame = QFrame(self)
         layout = QGridLayout()
         for j, text in enumerate(('Param', 'Value', 'Error', 'Fix', 'Expr',
                                   'Min', 'Max')):
@@ -78,10 +74,10 @@ class Fitter(QWidget):
             e1 = SmallLineEdit('%.4g' % p.value, self)
             e2 = QLabel('', self)
             e3 = QCheckBox(self)
-            e4 = QComboBox(self)
+            e4 = SmallComboBox(self)
             e4.setEditable(True)
             e4.addItems(combo_items)
-            e4.setCurrentIndex(-1)
+            e4.lineEdit().setText(p.expr or '')
             e5 = SmallLineEdit(p.pmin is not None and '%.4g' % p.pmin or '', self)
             e6 = SmallLineEdit(p.pmax is not None and '%.4g' % p.pmax or '', self)
             ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6)
@@ -96,6 +92,7 @@ class Fitter(QWidget):
                          self.update_enables)
         layout.setRowStretch(i+1, 1)
         self.param_frame.setLayout(layout)
+        self.param_scroll.setWidget(self.param_frame)
         self.update_enables()
 
     def update_enables(self, *ignored):
@@ -244,9 +241,7 @@ class Fitter(QWidget):
 class FitterMain(QMainWindow):
     def __init__(self, model, data, fit=True):
         QMainWindow.__init__(self)
-        mainframe = QFrame(self)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = QSplitter(Qt.Vertical, self)
         self.canvas = MPLCanvas(self)
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
@@ -256,8 +251,7 @@ class FitterMain(QMainWindow):
         self.canvas.mpl_connect('button_press_event', self.fitter.on_canvas_pick)
         self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.fitter)
-        mainframe.setLayout(layout)
-        self.setCentralWidget(mainframe)
+        self.setCentralWidget(layout)
         self.setWindowTitle(self.fitter.windowTitle())
 
 
