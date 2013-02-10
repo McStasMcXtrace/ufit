@@ -8,6 +8,13 @@ from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
 
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 
+def is_float(x):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
+
 
 class Fitter(QWidget):
 
@@ -77,7 +84,12 @@ class Fitter(QWidget):
             e4 = QComboBox(self)
             e4.setEditable(True)
             e4.addItems(combo_items)
-            e4.lineEdit().setText(p.expr or '')
+            if p.expr and is_float(p.expr):
+                e1.setText(p.expr)
+                e3.setChecked(True)
+                e4.lineEdit().setText('')
+            else:
+                e4.lineEdit().setText(p.expr or '')
             e5 = SmallLineEdit(p.pmin is not None and '%.4g' % p.pmin or '', self)
             e6 = SmallLineEdit(p.pmax is not None and '%.4g' % p.pmax or '', self)
             ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6)
