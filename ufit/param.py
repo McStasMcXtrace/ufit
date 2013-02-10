@@ -55,9 +55,9 @@ class Param(object):
         # transform parameter after successful fit
         self.finalize = lambda x: x
 
-    def copy(self, newname):
+    def copy(self, newname=None):
         cp = copy.copy(self)
-        cp.name = newname
+        cp.name = newname or self.name
         return cp
 
     def __str__(self):

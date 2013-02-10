@@ -26,6 +26,7 @@ class Model(object):
     name = ''
     params = []
     fcn = None
+    _orig_params = None
 
     def _init_params(self, mname, pnames, init):
         self.params = []
@@ -81,12 +82,24 @@ class Model(object):
             return NotImplemented
         return CombinedModel(self, other, operator.div, '/')
 
+    @property
+    def original_params(self):
+        if self._orig_params is None:
+            return self.params
+        return self._orig_params
+
     def fit(self, data, **kw):
+        if self._orig_params is None:
+            self._orig_params = [p.copy() for p in self.params]
         data = self._as_data(data)
         success, msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg)
+
+    def reset(self):
+        if self._orig_params is not None:
+            self.params = [p.copy() for p in self._orig_params]
 
     def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None, _axes=None):
         data = self._as_data(data)
