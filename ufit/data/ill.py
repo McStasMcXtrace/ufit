@@ -29,6 +29,8 @@ def read_data(filename, fp):
             for part in parts:
                 k, s = part.split('=')
                 meta[k] = float(s)
+        elif line.startswith('INSTR:'):
+            meta['instrument'] = line[6:].strip().lower()
         line = fp.readline()
         if not line:
             break

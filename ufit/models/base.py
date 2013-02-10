@@ -124,13 +124,8 @@ class Model(object):
         if _axes is None:
             pl.figure()
             _axes = pl.gca()
-        _axes.errorbar(data.x, data.y, data.dy, fmt='o', ms=8, label=data.name)
+        data.plot(_axes=_axes, xlabel=xlabel, ylabel=ylabel, title=title)
         _axes.plot(xx, yy, lw=2, label='fit')
-        if title:
-            _axes.set_title(title)
-        _axes.set_xlabel(xlabel or data.xcol)
-        _axes.set_ylabel(ylabel or data.ycol)
-        _axes.legend()
 
     def plot_components(self, data, _pdict=None, _axes=None):
         if _pdict is None:

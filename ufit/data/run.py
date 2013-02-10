@@ -82,13 +82,16 @@ class Run(object):
                    [self.xcol, self.ycol, self.ncol],
                    newcols, self.meta, self.xcol, self.ycol, self.ncol)
 
-    def plot(self, _axes=None):
+    def plot(self, _axes=None, title=None, xlabel=None, ylabel=None):
         if _axes is None:
             pl.figure()
             _axes = pl.gca()
-        _axes.errorbar(self.x, self.y, self.dy, fmt='o', ms=8, label=self.name)
-        _axes.set_xlabel(self.xcol)
-        _axes.set_ylabel(self.ycol)
+        _axes.errorbar(self.x, self.y, self.dy, fmt='o', ms=8,
+                       label=self.meta.get('instrument') + ':' + self.name)
+        if title:
+            _axes.set_title(title)
+        _axes.set_xlabel(xlabel or self.xcol)
+        _axes.set_ylabel(ylabel or self.ycol)
         _axes.legend()
 
 

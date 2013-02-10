@@ -44,6 +44,8 @@ def read_data(filename, fp):
             if key.endswith(('_offset', '_precision')):
                 # we don't need these for fitting
                 continue
+            if key.endswith('_instrument'):
+                meta['instrument'] = val.lower()
             meta[key] = val
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
