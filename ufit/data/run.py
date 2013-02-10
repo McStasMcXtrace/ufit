@@ -34,6 +34,7 @@ class Run(object):
 
         self.y = self.y_raw/self.norm
         self.dy = sqrt(self.y_raw)/self.norm
+        self.dy[self.dy==0] = 0.1
 
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
