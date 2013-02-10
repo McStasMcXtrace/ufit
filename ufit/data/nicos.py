@@ -34,6 +34,9 @@ def read_data(fnum, filename):
             key = items[1]
             if key.endswith('_value'):
                 key = key[:-6]
+            if key.endswith(('_offset', '_precision')):
+                # we don't need these for fitting
+                continue
             entries[key] = val
     if 'filename' in entries:
         entries['__name__'] = entries['filename']

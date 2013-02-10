@@ -25,12 +25,11 @@ class limited(tuple):
 
 
 class Param(object):
-    def __init__(self, name, value=0, expr=None, datapar=None, pmin=None,
-                 pmax=None, overall=False, finalize=lambda x: x):
+    def __init__(self, name, value=0, expr=None, pmin=None, pmax=None,
+                 overall=False, finalize=lambda x: x):
         self.name = name
         self.value = value
         self.expr = expr
-        self.datapar = datapar
         self.pmin = pmin
         self.pmax = pmax
         self.overall = overall
@@ -48,7 +47,7 @@ class Param(object):
                 self.overall = True
                 pdef = pdef.v
             elif isinstance(pdef, datapar):
-                self.datapar = pdef.v
+                self.expr = 'data.' + pdef.v
                 pdef = 0
             elif isinstance(pdef, tuple) and len(pdef) == 3:
                 self.pmin, self.pmax, pdef = pdef
@@ -68,9 +67,7 @@ class Param(object):
 
     def __str__(self):
         s = '%-15s = %10.4g +/- %10.4g' % (self.name, self.value, self.error)
-        if self.datapar:
-            s += ' (from data: %s)' % self.datapar
-        elif self.expr:
+        if self.expr:
             s += ' (fixed: %s)' % self.expr
         if self.overall:
             s += ' (global)'

@@ -11,11 +11,8 @@ def prepare_params(params, data):
     varying = []
     varynames = []
     for p in params:
-        if p.expr or p.datapar:
-            if p.datapar:
-                dependent[p.name] = 'data.%s' % p.datapar
-            else:
-                dependent[p.name] = p.expr
+        if p.expr:
+            dependent[p.name] = p.expr
         else:
             varying.append(p)
             varynames.append(p.name)

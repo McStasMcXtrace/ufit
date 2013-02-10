@@ -4,7 +4,7 @@
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QVBoxLayout, \
      QGridLayout, QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, \
-     QScrollArea
+     QScrollArea, QComboBox
 
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 
@@ -47,6 +47,7 @@ class Fitter(QWidget):
             model.plot_components(data, _axes=self.canvas.axes)
 
     def create_param_controls(self):
+        self.param_controls = {}
         self.param_frame.close()
         self.param_frame = QScrollArea(self)
         self.param_frame.setFrameShape(QFrame.NoFrame)
@@ -54,22 +55,27 @@ class Fitter(QWidget):
         self.layout().insertWidget(1, self.param_frame)
         layout = QGridLayout()
         for j, text in enumerate(('Param', 'Value', 'Error', 'Fix', 'Expr',
-                                  'Data', 'Min', 'Max')):
+                                  'Min', 'Max')):
             ctl = QLabel(text, self)
             ctl.setFont(self.statusLabel.font())
             layout.addWidget(ctl, 0, j)
         i = 1
         self.original_params = []
+        combo_items = [par.name for par in self.model.params] + \
+            ['data.' + m for m in sorted(self.data.meta)
+             if isinstance(self.data.meta[m], (int, long, float))]
         for p in self.model.params:
             e0 = QLabel(p.name, self)
             e1 = SmallLineEdit('%.4g' % p.value, self)
             e2 = QLabel('', self)
             e3 = QCheckBox(self)
-            e4 = SmallLineEdit(p.expr or '', self)
-            e5 = SmallLineEdit(p.datapar or '', self)
-            e6 = SmallLineEdit(p.pmin is not None and '%.4g' % p.pmin or '', self)
-            e7 = SmallLineEdit(p.pmax is not None and '%.4g' % p.pmax or '', self)
-            ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6, e7)
+            e4 = QComboBox(self)
+            e4.setEditable(True)
+            e4.addItems(combo_items)
+            e4.setCurrentIndex(-1)
+            e5 = SmallLineEdit(p.pmin is not None and '%.4g' % p.pmin or '', self)
+            e6 = SmallLineEdit(p.pmax is not None and '%.4g' % p.pmax or '', self)
+            ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6)
             for j, ctl in enumerate(ctls):
                 layout.addWidget(ctl, i, j)
             i += 1
@@ -77,9 +83,7 @@ class Fitter(QWidget):
             #self.connect(e1, SIGNAL('textEdited(const QString&)'),
             #             self.do_plot)
             self.connect(e3, SIGNAL('clicked(bool)'), self.update_enables)
-            self.connect(e4, SIGNAL('textEdited(const QString&)'),
-                         self.update_enables)
-            self.connect(e5, SIGNAL('textEdited(const QString&)'),
+            self.connect(e4, SIGNAL('editTextChanged(const QString&)'),
                          self.update_enables)
         layout.setRowStretch(i+1, 1)
         self.param_frame.setLayout(layout)
@@ -87,25 +91,22 @@ class Fitter(QWidget):
 
     def update_enables(self, *ignored):
         for p, ctls in self.param_controls.iteritems():
-            # if there is an expr or datapar...
-            if ctls[4].text() or ctls[5].text():
+            # if there is an expr...
+            if ctls[4].currentText():
                 # disable value and minmax, check "fixed" and disable "fixed"
                 ctls[1].setEnabled(False)
                 ctls[3].setCheckState(Qt.PartiallyChecked)  # implicitly fixed
                 ctls[3].setEnabled(False)
+                ctls[5].setEnabled(False)
                 ctls[6].setEnabled(False)
-                ctls[7].setEnabled(False)
-                # disable "expr" as well when datapar is filled
-                ctls[4].setEnabled(not bool(ctls[5].text()))
             # else, if "fixed" is checked...
             elif ctls[3].checkState() == Qt.Checked:
-                # enable value, but disable expr and datapar plus minmax
+                # enable value, but disable expr and minmax
                 ctls[1].setEnabled(True)
                 ctls[4].setEnabled(False)
                 ctls[5].setEnabled(False)
                 ctls[6].setEnabled(False)
-                ctls[7].setEnabled(False)
-            # else: not fixed, no expr or datapar
+            # else: not fixed, no expr
             else:
                 # enable everything
                 ctls[1].setEnabled(True)
@@ -115,7 +116,6 @@ class Fitter(QWidget):
                 ctls[4].setEnabled(True)
                 ctls[5].setEnabled(True)
                 ctls[6].setEnabled(True)
-                ctls[7].setEnabled(True)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
@@ -132,13 +132,12 @@ class Fitter(QWidget):
 
     def update_from_controls(self):
         for p, ctls in self.param_controls.iteritems():
-            _, val, _, fx, expr, datap, pmin, pmax = ctls
+            _, val, _, fx, expr, pmin, pmax = ctls
             p.value = float(val.text()) if val.text() else 0
             if fx.checkState() == Qt.Checked:
                 p.expr = str(val.text())
             else:
-                p.expr = str(expr.text())
-            p.datapar = str(datap.text())
+                p.expr = str(expr.currentText())
             p.pmin = float(pmin.text()) if pmin.text() else None
             p.pmax = float(pmax.text()) if pmax.text() else None
         self.update_enables()
@@ -148,10 +147,9 @@ class Fitter(QWidget):
             ctls = self.param_controls[p]
             ctls[1].setText('%.4g' % p0.value)
             ctls[3].setChecked(False)
-            ctls[4].setText(p0.expr or '')
-            ctls[5].setText(p0.datapar or '')
-            ctls[6].setText(p0.pmin is not None and '%.4g' % p0.pmin or '')
-            ctls[7].setText(p0.pmax is not None and '%.4g' % p0.pmax or '')
+            ctls[4].lineEdit().setText(p0.expr or '')
+            ctls[5].setText(p0.pmin is not None and '%.4g' % p0.pmin or '')
+            ctls[6].setText(p0.pmax is not None and '%.4g' % p0.pmax or '')
         self.do_plot()
 
     def on_canvas_pick(self, event):
@@ -185,8 +183,12 @@ class Fitter(QWidget):
         xlims = self.canvas.axes.get_xlim()
         ylims = self.canvas.axes.get_ylim()
         self.canvas.axes.clear()
-        self.model.plot(self.data, _axes=self.canvas.axes)
-        self.model.plot_components(self.data, _axes=self.canvas.axes)
+        try:
+            self.model.plot(self.data, _axes=self.canvas.axes)
+            self.model.plot_components(self.data, _axes=self.canvas.axes)
+        except Exception, e:
+            self.statusLabel.setText('Error during plot: %s' % e)
+            return
         if xlims != (0, 1):
             self.canvas.axes.set_xlim(*xlims)
             self.canvas.axes.set_ylim(*ylims)
@@ -201,7 +203,11 @@ class Fitter(QWidget):
         self.statusLabel.setText('Working...')
         self.statusLabel.repaint()
         QApplication.processEvents()
-        res = self.model.fit(self.data)
+        try:
+            res = self.model.fit(self.data)
+        except Exception, e:
+            self.statusLabel.setText('Error during fit: %s' % e)
+            return
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
                                  + res.message +
                                  ' Reduced chi^2 = %.3g.' % res.chisqr)
