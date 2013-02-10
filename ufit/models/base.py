@@ -2,11 +2,10 @@
 
 import inspect
 import operator
-from numpy import array, concatenate, sqrt, linspace
+from numpy import array, concatenate, linspace
 import matplotlib.pyplot as pl
 
-from ufit import backends, UFitError, Param, Data, Result
-from ufit.data.run import Run
+from ufit import backends, UFitError, Param, Run, Result
 from ufit.backends.util import prepare_params
 
 
@@ -28,11 +27,17 @@ class Model(object):
     fcn = None
     _orig_params = None
 
-    def _init_params(self, mname, pnames, init):
+    def _init_params(self, name, pnames, init):
+        """Helper for model subclasses to quickly initialize Param objects.
+
+        If a model name is given by the user, the parameter names are prefixed
+        with "name_", so that multiple parameters with the same name can
+        coexist in the same model.
+        """
         self.params = []
-        self.name = mname
-        if mname:
-            pnames_real = ['%s_%s' % (mname, pname) for pname in pnames]
+        self.name = name
+        if name:
+            pnames_real = ['%s_%s' % (name, pname) for pname in pnames]
         else:
             pnames_real = pnames
         for (pname, porigname) in zip(pnames_real, pnames):
@@ -46,6 +51,11 @@ class Model(object):
         return pnames_real
 
     def _combine_params(self, a, b):
+        """Helper for model subclasses that combine two submodels.
+
+        self.params is initialized with a combination of params of both models,
+        while an error is raised if name clash.
+        """
         self.params = []
         seen = set()
         for m in [a, b]:
@@ -53,14 +63,6 @@ class Model(object):
                 if p.name in seen:
                     raise UFitError('Parameter name clash: %s' % p.name)
                 self.params.append(p)
-
-    def _as_data(self, data):
-        if isinstance(data, Data):
-            return data
-        if isinstance(data, Run):
-            return Data(data.x, data.y/data.n, sqrt(data.y)/data.n,
-                        data.name, data.meta, data.xcol, data.ycol)
-        raise UFitError('cannot handle data %r' % data)
 
     def __add__(self, other):
         if not isinstance(other, Model):
@@ -91,7 +93,6 @@ class Model(object):
     def fit(self, data, **kw):
         if self._orig_params is None:
             self._orig_params = [p.copy() for p in self.params]
-        data = self._as_data(data)
         success, msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
@@ -102,7 +103,6 @@ class Model(object):
             self.params = [p.copy() for p in self._orig_params]
 
     def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None, _axes=None):
-        data = self._as_data(data)
         if _pdict is None:
             _pdict = prepare_params(self.params, data)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
@@ -119,7 +119,6 @@ class Model(object):
         _axes.legend()
 
     def plot_components(self, data, _pdict=None, _axes=None):
-        data = self._as_data(data)
         if _pdict is None:
             _pdict = prepare_params(self.params, data)[3]
         if _axes is None:
@@ -131,12 +130,11 @@ class Model(object):
         _axes.legend()
 
     def global_fit(self, datas, **kw):
-        datas = map(self._as_data, datas)
         new_model = GlobalModel(self, datas)
-        cumulative_data = Data(concatenate([d.x for d in datas]),
-                               concatenate([d.y for d in datas]),
-                               concatenate([d.dy for d in datas]),
-                               'cumulative data', None)
+        cumulative_data = Run.from_arrays('cumulative data',
+                                          concatenate([d.x for d in datas]),
+                                          concatenate([d.y for d in datas]),
+                                          concatenate([d.dy for d in datas]))
         res = new_model.fit(cumulative_data, **kw)
         return new_model.generate_results(res)
 

@@ -5,6 +5,11 @@ import matplotlib.pyplot as pl
 
 from ufit import UFitError
 
+
+class attrdict(dict):
+    def __getattr__(self, key):
+        return self[key]
+
 class Run(object):
     def __init__(self, name, colnames, data, meta, xcol, ycol,
                  ncol=None, nscale=1):
@@ -12,19 +17,36 @@ class Run(object):
         self.colnames = colnames
         self.cols = dict((cn, data[:,i]) for (i, cn) in enumerate(colnames))
         self.data = data
+        self.meta = attrdict(meta)
+
         self.xcol = xcol
+        self.x = self[xcol]
+
         self.ycol = ycol
+        self.y_raw = self[ycol]
+        self.dy_raw = None
+
         self.ncol = ncol
         self.nscale = nscale
-        self.meta = meta
-        #for k in meta:
-        #    setattr(self, k, meta[k])
-        self.x = self[xcol]
-        self.y = self[ycol]
         if ncol is not None:
-            self.n = self[ncol] / nscale
+            self.norm = self[ncol] / nscale
         else:
-            self.n = ones(len(self.y))
+            self.norm = ones(len(self.y_raw))
+
+    @classmethod
+    def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
+        arr = array((x, y)).T
+        obj = cls(name, [xcol, ycol], arr, meta or {}, xcol, ycol)
+        obj.dy_raw = dy
+        return obj
+
+    @property
+    def y(self):
+        return self.y_raw/self.norm
+
+    @property
+    def dy(self):
+        return (sqrt(self.y_raw) if self.dy_raw is None else self.dy_raw)/self.norm
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))
@@ -67,7 +89,7 @@ class Run(object):
                    newcols, self.meta, self.xcol, self.ycol, self.ncol)
 
     def plot(self):
-        pl.errorbar(self.x, self.y/self.n, sqrt(self.y)/self.n, fmt='o', ms=8)
+        pl.errorbar(self.x, self.y, self.dy, fmt='o', ms=8)
 
 
 class RunList(dict):
