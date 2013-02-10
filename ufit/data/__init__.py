@@ -15,12 +15,16 @@ data_formats = {
 __all__ = ['Data', 'runs', 'set_datatemplate', 'set_dataformat', 'read_data']
 
 
+class attrdict(dict):
+    def __getattr__(self, key):
+        return self[key]
+
 class Data(object):
     def __init__(self, x, y, dy, name, meta, xcol, ycol):
         self.name = name
         self.x = x
         self.y = y
-        self.meta = meta
+        self.meta = attrdict(meta)
         if dy is None:
             self.dy = ones(len(x))
         else:

@@ -11,14 +11,17 @@ def prepare_params(params, data):
     varying = []
     varynames = []
     for p in params:
-        if p.expr:
-            dependent[p.name] = p.expr
+        if p.expr or p.datapar:
+            if p.datapar:
+                dependent[p.name] = 'data.%s' % p.datapar
+            else:
+                dependent[p.name] = p.expr
         else:
             varying.append(p)
             varynames.append(p.name)
 
     pd = dict((p.name, p.value) for p in varying)
-    pd['__meta'] = data.meta
+    pd['data'] = data.meta
 
     # poor man's dependency tracking of parameter expressions
     dep_order = []
@@ -41,7 +44,7 @@ def prepare_params(params, data):
 
 
 def update_params(parexprs, data, pd):
-    pd['__meta'] = data.meta
+    pd['data'] = data.meta
     for p, expr in parexprs:
         pd[p] = param_eval(expr, pd)
     #del pd['__builtins__']

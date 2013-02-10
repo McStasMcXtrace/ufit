@@ -39,7 +39,7 @@ class Param(object):
                 pdef = pdef.v
             elif isinstance(pdef, datapar):
                 self.datapar = pdef.v
-                pdef = '__meta[%r]' % pdef.v
+                pdef = 0
             elif isinstance(pdef, tuple) and len(pdef) == 3:
                 self.pmin, self.pmax, pdef = pdef
             else:
