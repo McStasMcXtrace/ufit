@@ -32,6 +32,7 @@ class FitMainWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        self.last_result = None
 
         central = QFrame(self)
         layout = QVBoxLayout()
@@ -77,7 +78,6 @@ class FitMainWindow(QMainWindow):
         self.setWindowTitle('Fitting: %s' % data.name)
         self.model = model
         self.data = data
-        model.plot(data, _axes=self.canvas.axes)
         self.param_controls = {}
         layout = QGridLayout()
         for j, text in enumerate(('Param', 'Value', 'Error', 'Fix', 'Expr',
@@ -89,13 +89,13 @@ class FitMainWindow(QMainWindow):
         self.original_params = []
         for p in model.params:
             e0 = QLabel(p.name, self)
-            e1 = SmallLineEdit(str(p.value), self)
+            e1 = SmallLineEdit('%.4g' % p.value, self)
             e2 = QLabel('', self)
             e3 = QCheckBox(self)
             e4 = SmallLineEdit(p.expr or '', self)
             e5 = SmallLineEdit(p.datapar or '', self)
-            e6 = SmallLineEdit(p.pmin is not None and str(p.pmin) or '', self)
-            e7 = SmallLineEdit(p.pmax is not None and str(p.pmax) or '', self)
+            e6 = SmallLineEdit(p.pmin is not None and '%.4g' % p.pmin or '', self)
+            e7 = SmallLineEdit(p.pmax is not None and '%.4g' % p.pmax or '', self)
             ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6, e7)
             for j, ctl in enumerate(ctls):
                 layout.addWidget(ctl, i, j)
@@ -110,6 +110,8 @@ class FitMainWindow(QMainWindow):
                          self.update_enables)
         self.update_enables()
         self.param_frame.setLayout(layout)
+        model.plot(data, _axes=self.canvas.axes)
+        model.plot_components(data, _axes=self.canvas.axes)
 
     def update_enables(self, *ignored):
         for p, ctls in self.param_controls.iteritems():
@@ -156,12 +158,12 @@ class FitMainWindow(QMainWindow):
     def restore_original(self):
         for p, p0 in zip(self.model.params, self.original_params):
             ctls = self.param_controls[p]
-            ctls[1].setText(str(p0.value))
+            ctls[1].setText('%.4g' % p0.value)
             ctls[3].setChecked(False)
             ctls[4].setText(p0.expr or '')
             ctls[5].setText(p0.datapar or '')
-            ctls[6].setText(p0.pmin is not None and str(p0.pmin) or '')
-            ctls[7].setText(p0.pmax is not None and str(p0.pmax) or '')
+            ctls[6].setText(p0.pmin is not None and '%.4g' % p0.pmin or '')
+            ctls[7].setText(p0.pmax is not None and '%.4g' % p0.pmax or '')
         self.do_plot()
 
     def do_plot(self, *ignored):
@@ -170,6 +172,7 @@ class FitMainWindow(QMainWindow):
         ylims = self.canvas.axes.get_ylim()
         self.canvas.axes.clear()
         self.model.plot(self.data, _axes=self.canvas.axes)
+        self.model.plot_components(self.data, _axes=self.canvas.axes)
         self.canvas.axes.set_xlim(*xlims)
         self.canvas.axes.set_ylim(*ylims)
         self.canvas.draw()
@@ -180,11 +183,12 @@ class FitMainWindow(QMainWindow):
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
                                  + res.message +
                                  ' Reduced chi^2 = %.3g.' % res.chisqr)
-        res.printout()
+        #res.printout()
         xlims = self.canvas.axes.get_xlim()
         ylims = self.canvas.axes.get_ylim()
         self.canvas.axes.clear()
         res.plot(_axes=self.canvas.axes)
+        res.plot_components(_axes=self.canvas.axes)
         self.canvas.axes.set_xlim(*xlims)
         self.canvas.axes.set_ylim(*ylims)
         self.canvas.draw()
@@ -193,6 +197,7 @@ class FitMainWindow(QMainWindow):
             self.param_controls[p][1].setText('%.4g' % p.value)
             self.param_controls[p][2].setText(u'± %.4g' % p.error)
 
+        self.last_result = res
 
 
 def start(model, data):
@@ -201,3 +206,4 @@ def start(model, data):
     win.initialize(model, data)
     win.show()
     app.exec_()
+    return win.last_result

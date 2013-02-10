@@ -106,6 +106,7 @@ class Model(object):
         _axes.legend()
 
     def plot_components(self, data, _pdict=None, _axes=None):
+        data = self._as_data(data)
         if _pdict is None:
             _pdict = prepare_params(self.params, data)[3]
         if _axes is None:
