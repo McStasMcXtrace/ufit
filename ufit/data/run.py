@@ -88,12 +88,14 @@ class Run(object):
             pl.figure()
             _axes = pl.gca()
         _axes.errorbar(self.x, self.y, self.dy, fmt='o', ms=8,
-                       label=self.meta.get('instrument') + ':' + self.name)
+                       label='%s:%s:%s' % (self.meta.get('instrument', ''),
+                                           self.meta.get('experiment', ''),
+                                           self.name))
         if title:
             _axes.set_title(title)
         _axes.set_xlabel(xlabel or self.xcol)
         _axes.set_ylabel(ylabel or self.ycol)
-        _axes.legend()
+        _axes.legend(prop={'size': 'small'})
 
 
 class RunList(dict):

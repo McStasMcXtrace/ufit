@@ -136,7 +136,7 @@ class Model(object):
         for comp in self.get_components():
             yy = comp.fcn(_pdict, xx)
             _axes.plot(xx, yy, '--', label=comp.name)
-        _axes.legend()
+        _axes.legend(prop={'size': 'small'})
 
     def global_fit(self, datas, **kw):
         new_model = GlobalModel(self, datas)

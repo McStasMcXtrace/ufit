@@ -28,13 +28,14 @@ def read_data(filename, fp):
         if line.startswith('# '):
             items = line.strip().split(None, 3)
             try:
-                val, unit = items[3].split(None, 1)
-                val = float(val)
+                oval = items[3]
+                val, unit = oval.split(None, 1)
+                val = float(oval)
             except (IndexError, ValueError):
                 try:
-                    val = float(items[3])
+                    val = float(oval)
                 except ValueError:
-                    val = items[3]
+                    val = oval
                 except IndexError:
                     continue
                 unit = None
@@ -46,6 +47,8 @@ def read_data(filename, fp):
                 continue
             if key.endswith('_instrument'):
                 meta['instrument'] = val.lower()
+            if key.endswith('_proposal'):
+                meta['experiment'] = oval.lower()
             meta[key] = val
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()

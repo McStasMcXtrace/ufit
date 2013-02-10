@@ -25,12 +25,14 @@ def read_data(filename, fp):
         elif line.startswith('COMND:'):
             meta['CMND'] = line[7:].rstrip()
         elif line.startswith('PARAM:'):
-            parts = line[6:].strip().rstrip(',').split(', ')
+            parts = line[6:].strip().rstrip(',').split(',')
             for part in parts:
                 k, s = part.split('=')
-                meta[k] = float(s)
+                meta[k.strip()] = float(s.strip())
         elif line.startswith('INSTR:'):
             meta['instrument'] = line[6:].strip().lower()
+        elif line.startswith('EXPNO:'):
+            meta['experiment'] = line[6:].strip().lower()
         line = fp.readline()
         if not line:
             break
@@ -39,7 +41,9 @@ def read_data(filename, fp):
     if names[0] == 'PNT':
         usecols = range(1, len(names))
         names = names[1:]
-    arr = loadtxt(fp, ndmin=2, usecols=usecols)
+    # Berlin implementation adds "Finished ..." in the last line,
+    # pretend that it is a comment
+    arr = loadtxt(fp, ndmin=2, usecols=usecols, comments='F')
     if len(arr) == 0:
         raise UFitError('No data in %s' % filename)
     return names, arr, meta
