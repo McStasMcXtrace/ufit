@@ -74,7 +74,7 @@ class FitMainWindow(QMainWindow):
         else:
             self.restore_original()
 
-    def initialize(self, model, data):
+    def initialize(self, model, data, fit=True):
         self.setWindowTitle('Fitting: %s' % data.name)
         self.model = model
         self.data = data
@@ -110,8 +110,11 @@ class FitMainWindow(QMainWindow):
                          self.update_enables)
         self.update_enables()
         self.param_frame.setLayout(layout)
-        model.plot(data, _axes=self.canvas.axes)
-        model.plot_components(data, _axes=self.canvas.axes)
+        if fit:
+            self.do_fit()
+        else:
+            model.plot(data, _axes=self.canvas.axes)
+            model.plot_components(data, _axes=self.canvas.axes)
 
     def update_enables(self, *ignored):
         for p, ctls in self.param_controls.iteritems():
@@ -173,8 +176,9 @@ class FitMainWindow(QMainWindow):
         self.canvas.axes.clear()
         self.model.plot(self.data, _axes=self.canvas.axes)
         self.model.plot_components(self.data, _axes=self.canvas.axes)
-        self.canvas.axes.set_xlim(*xlims)
-        self.canvas.axes.set_ylim(*ylims)
+        if xlims != (0, 1):
+            self.canvas.axes.set_xlim(*xlims)
+            self.canvas.axes.set_ylim(*ylims)
         self.canvas.draw()
 
     def do_fit(self):
@@ -189,8 +193,9 @@ class FitMainWindow(QMainWindow):
         self.canvas.axes.clear()
         res.plot(_axes=self.canvas.axes)
         res.plot_components(_axes=self.canvas.axes)
-        self.canvas.axes.set_xlim(*xlims)
-        self.canvas.axes.set_ylim(*ylims)
+        if xlims != (0, 1):
+            self.canvas.axes.set_xlim(*xlims)
+            self.canvas.axes.set_ylim(*ylims)
         self.canvas.draw()
 
         for p in res.params:
@@ -200,10 +205,10 @@ class FitMainWindow(QMainWindow):
         self.last_result = res
 
 
-def start(model, data):
+def start(model, data, fit=True):
     app = QApplication([])
     win = FitMainWindow()
-    win.initialize(model, data)
+    win.initialize(model, data, fit)
     win.show()
     app.exec_()
     return win.last_result
