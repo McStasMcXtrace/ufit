@@ -25,14 +25,24 @@ class limited(tuple):
 
 
 class Param(object):
-    def __init__(self, name, pdef):
+    def __init__(self, name, value=0, expr=None, datapar=None, pmin=None,
+                 pmax=None, overall=False, finalize=lambda x: x):
         self.name = name
-        self.expr = None
-        self.value = 0
-        self.pmin = None
-        self.pmax = None
-        self.overall = False
-        self.datapar = None
+        self.value = value
+        self.expr = expr
+        self.datapar = datapar
+        self.pmin = pmin
+        self.pmax = pmax
+        self.overall = overall
+        # transform parameter after successful fit
+        self.finalize = finalize
+        # properties set on fit result
+        self.error = 0
+        self.correl = {}
+
+    @classmethod
+    def from_init(cls, name, pdef):
+        self = cls(name)
         while not isinstance(pdef, (int, long, float, str)):
             if isinstance(pdef, overall):
                 self.overall = True
@@ -49,11 +59,7 @@ class Param(object):
             self.expr = pdef
         else:
             self.value = pdef
-        # properties set on fit result
-        self.error = 0
-        self.correl = {}
-        # transform parameter after successful fit
-        self.finalize = lambda x: x
+        return self
 
     def copy(self, newname=None):
         cp = copy.copy(self)

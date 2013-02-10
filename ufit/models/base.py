@@ -45,7 +45,7 @@ class Model(object):
                 initval = init[porigname]
                 if initval is None:
                     raise KeyError
-                self.params.append(Param(pname, initval))
+                self.params.append(Param.from_init(pname, initval))
             except KeyError:
                 raise UFitError('Parameter %s needs an initializer' % pname)
         return pnames_real
@@ -140,7 +140,7 @@ class Model(object):
 
     def add_params(self, **p):
         for pname, initval in p.iteritems():
-            self.params.append(Param(pname, initval))
+            self.params.append(Param.from_init(pname, initval))
 
     def get_components(self):
         """Return a list of invidual non-modifier components.
