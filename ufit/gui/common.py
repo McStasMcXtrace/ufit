@@ -48,9 +48,3 @@ class SmallLineEdit(QLineEdit):
     def sizeHint(self):
         sz = QLineEdit.sizeHint(self)
         return QSize(sz.width()/1.5, sz.height())
-
-
-class SmallComboBox(QComboBox):
-    def sizeHint(self):
-        sz = QComboBox.sizeHint(self)
-        return QSize(sz.width()/1.5, sz.height())

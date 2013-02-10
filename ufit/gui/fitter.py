@@ -3,10 +3,10 @@
 
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
-     QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter
+     QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
+     QComboBox
 
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit, \
-     SmallComboBox
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 
 
 class Fitter(QWidget):
@@ -74,7 +74,7 @@ class Fitter(QWidget):
             e1 = SmallLineEdit('%.4g' % p.value, self)
             e2 = QLabel('', self)
             e3 = QCheckBox(self)
-            e4 = SmallComboBox(self)
+            e4 = QComboBox(self)
             e4.setEditable(True)
             e4.addItems(combo_items)
             e4.lineEdit().setText(p.expr or '')

@@ -3,7 +3,7 @@
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QWidget, QApplication, QSplitter, QMainWindow, \
-     QListWidgetItem, QDialogButtonBox, QMessageBox
+     QListWidgetItem, QDialogButtonBox, QMessageBox, QInputDialog, QTextCursor
 
 from ufit import models, param
 from ufit.models import concrete_models
@@ -51,18 +51,19 @@ class ModelBuilder(QWidget):
         if not modelitem:
             return
         model = self.model_dict[str(modelitem.text())]
-        modelname = str(self.modelname.text())
+        modelname = QInputDialog.getText(self, 'ufit', 'Please enter a name '
+                                         'for the model part:')[0]
+        if not modelname:
+            return
         params = ', '.join('%s=0' % s for s in model.param_names)
         currentmodel = str(self.modeldef.toPlainText())
         prefix = ''
         if currentmodel:
             prefix = '\n+ '
-        if not modelname or modelname == '(name)':
-            self.modeldef.insertPlainText('%s%s(%s)' % (prefix,
-                                                        model.__name__, params))
-        else:
-            self.modeldef.insertPlainText('%s%s(%r, %s)' % (
-                prefix, model.__name__, modelname, params))
+        tc = self.modeldef.textCursor()
+        tc.movePosition(QTextCursor.End)
+        tc.insertText('%s%s(%r, %s)' % (prefix, model.__name__,
+                                        str(modelname), params))
 
     def initialize(self, data):
         self.data = data
