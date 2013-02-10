@@ -25,13 +25,10 @@ def read_data(filename, fp):
         elif line.startswith('COMND:'):
             meta['CMND'] = line[7:].rstrip()
         elif line.startswith('PARAM:'):
-            pass
-            #if 'TT=' in line:
-            #    parts = line[6:].strip().rstrip(',').split(', ')
-            #    for part in parts:
-            #        k, s = part.split('=')
-            #        if k == 'TT':
-            #            meta['TT'] = float(s)
+            parts = line[6:].strip().rstrip(',').split(', ')
+            for part in parts:
+                k, s = part.split('=')
+                meta[k] = float(s)
         line = fp.readline()
         if not line:
             break
