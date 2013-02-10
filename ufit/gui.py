@@ -191,6 +191,9 @@ class FitMainWindow(QMainWindow):
 
     def do_fit(self):
         self.update_from_controls()
+        self.statusLabel.setText('Working...')
+        self.statusLabel.repaint()
+        QApplication.processEvents()
         res = self.model.fit(self.data)
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
                                  + res.message +
