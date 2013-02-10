@@ -31,8 +31,7 @@ def do_fit(data, fcn, params, add_kw):
         return False, str(e)
 
     popt, pcov, infodict, errmsg, ier = res
-    if ier not in [1, 2, 3, 4]:
-        success = False
+    success = (ier in [1, 2, 3, 4])
 
     nfree = len(data.y) - len(varying)
     if nfree > 0 and pcov is not None:

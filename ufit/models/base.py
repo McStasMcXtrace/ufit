@@ -214,7 +214,7 @@ class GlobalModel(Model):
         diff_params = self._diff_params = [[] for i in range(ndata)]
         for p in model.params:
             if p.overall:
-                self.params.append(p)
+                self.params.append(p.copy())
                 overall_params.append(p.name)
             else:
                 for i in range(ndata):
