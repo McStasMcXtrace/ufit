@@ -42,4 +42,8 @@ def do_fit(data, fcn, params, add_kw):
             p.error = 0
             p.correl = {}
 
+    if out.message.startswith('%s. '):
+        out.message = out.message[4:]
+    if not out.message.endswith('.'):
+        out.message += '.'
     return out.success, out.message
