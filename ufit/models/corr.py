@@ -47,8 +47,9 @@ class CKI_Corr(Model):
     def __init__(self, name='', ki=None, dval='3.355'):
         pki, pdv = self._init_params(name, ['ki', 'dval'], locals())
         def fcn(p, x):
-            kf = sqrt(p[pki]**2 - x/2.072)
-            return kf**3/tan(arcsin(pi/kf/p[pdv]))
+            ki = p[pki]
+            kf = sqrt(ki**2 - x/2.072)
+            return kf**3/ki**3 * tan(arcsin(pi/ki/p[pdv]))/tan(arcsin(pi/kf/p[pdv]))
         self.fcn = fcn
 
     def is_modifier(self):
