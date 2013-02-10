@@ -82,8 +82,14 @@ class Run(object):
                    [self.xcol, self.ycol, self.ncol],
                    newcols, self.meta, self.xcol, self.ycol, self.ncol)
 
-    def plot(self):
-        pl.errorbar(self.x, self.y, self.dy, fmt='o', ms=8)
+    def plot(self, _axes=None):
+        if _axes is None:
+            pl.figure()
+            _axes = pl.gca()
+        _axes.errorbar(self.x, self.y, self.dy, fmt='o', ms=8, label=self.name)
+        _axes.set_xlabel(self.xcol)
+        _axes.set_ylabel(self.ycol)
+        _axes.legend()
 
 
 class RunList(dict):

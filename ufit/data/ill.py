@@ -30,7 +30,10 @@ def read_data(fnum, filename):
             if not line:
                 break
         names = fp.readline().split()
-        arr = loadtxt(fp, ndmin=2)
+        if names[0] == 'PNT':
+            names = names[1:]
+            usecols = range(1, len(names))
+        arr = loadtxt(fp, ndmin=2, usecols=usecols)
         if len(arr) == 0:
             print 'No data in', filename
             return None
