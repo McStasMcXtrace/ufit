@@ -30,8 +30,6 @@ class Result(object):
         print '=' * 80
 
     def plot(self, **kw):
-        if 'title' not in kw:
-            kw['title'] = 'red. chisqr = %.4f' % self.chisqr
         self.model.plot(self.data, _pdict=self.paramvalues, **kw)
 
     def plot_components(self, **kw):

@@ -57,7 +57,9 @@ class Run(object):
         if isinstance(key, slice):
             return Run(self.name, self.colnames, self.data[key], self.meta,
                        self.xcol, self.ycol, self.ncol)
-        return self.cols[key]
+        elif key in self.cols:
+            return self.cols[key]
+        raise KeyError('no such data column: %s' % key)
 
     def __or__(self, other):
         return Run(self.name + '|' + other.name,
@@ -91,8 +93,8 @@ class Run(object):
                        label='%s:%s:%s' % (self.meta.get('instrument', ''),
                                            self.meta.get('experiment', ''),
                                            self.name))
-        if title:
-            _axes.set_title(title)
+        _axes.set_title(title or '%s\n%s' % (self.meta.get('title', ''),
+                                             self.meta.get('info', '')))
         _axes.set_xlabel(xlabel or self.xcol)
         _axes.set_ylabel(ylabel or self.ycol)
         _axes.legend(prop={'size': 'small'})

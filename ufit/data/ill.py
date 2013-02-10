@@ -23,7 +23,9 @@ def read_data(filename, fp):
                 if float(s.strip()) != 0 or xcol is None:
                     xcol = k[1:]
         elif line.startswith('COMND:'):
-            meta['CMND'] = line[7:].rstrip()
+            meta['info'] = ' '.join(line[7:].rstrip().lower().split())
+        elif line.startswith('TITLE:'):
+            meta['title'] = line[6:].strip()
         elif line.startswith('PARAM:'):
             parts = line[6:].strip().rstrip(',').split(',')
             for part in parts:

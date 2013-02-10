@@ -28,27 +28,29 @@ def read_data(filename, fp):
         if line.startswith('# '):
             items = line.strip().split(None, 3)
             try:
-                oval = items[3]
-                val, unit = oval.split(None, 1)
+                oval, unit = items[3].split(None, 1)
                 val = float(oval)
             except (IndexError, ValueError):
                 try:
+                    oval = items[3]
                     val = float(oval)
                 except ValueError:
-                    val = oval
+                    val = items[3]
                 except IndexError:
                     continue
                 unit = None
             key = items[1]
-            if key.endswith('_value'):
-                key = key[:-6]
             if key.endswith(('_offset', '_precision')):
                 # we don't need these for fitting
                 continue
+            if key.endswith('_value'):
+                key = key[:-6]
             if key.endswith('_instrument'):
-                meta['instrument'] = val.lower()
-            if key.endswith('_proposal'):
+                meta['instrument'] = oval.lower()
+            elif key.endswith('_proposal'):
                 meta['experiment'] = oval.lower()
+            elif key.endswith('_samplename'):
+                meta['title'] = oval
             meta[key] = val
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
