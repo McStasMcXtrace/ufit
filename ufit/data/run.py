@@ -24,7 +24,6 @@ class Run(object):
 
         self.ycol = ycol
         self.y_raw = self[ycol]
-        self.dy_raw = None
 
         self.ncol = ncol
         self.nscale = nscale
@@ -33,20 +32,15 @@ class Run(object):
         else:
             self.norm = ones(len(self.y_raw))
 
+        self.y = self.y_raw/self.norm
+        self.dy = sqrt(self.y_raw)/self.norm
+
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
         arr = array((x, y)).T
         obj = cls(name, [xcol, ycol], arr, meta or {}, xcol, ycol)
-        obj.dy_raw = dy
+        obj.dy = dy
         return obj
-
-    @property
-    def y(self):
-        return self.y_raw/self.norm
-
-    @property
-    def dy(self):
-        return (sqrt(self.y_raw) if self.dy_raw is None else self.dy_raw)/self.norm
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))
@@ -77,7 +71,7 @@ class Run(object):
         for run in allruns:
             if run.xcol != self.xcol or run.ycol != self.ycol:
                 raise UFitError('cannot merge datasets with different x/ycols')
-            for (x, y, n) in zip(run.x, run.y, run.n):
+            for (x, y, n) in zip(run.x, run.y_raw, run.norm):
                 xr = round(x, places)
                 if xr in points:
                     points[xr] = (points[xr][0] + y, points[xr][1] + n)
