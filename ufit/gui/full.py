@@ -56,5 +56,10 @@ class UFitMain(QMainWindow):
 def main(args):
     app = QApplication([])
     win = UFitMain()
+
+    if args:
+        datafile = args[0]
+        win.dloader.set_template(datafile)
+
     win.show()
     app.exec_()

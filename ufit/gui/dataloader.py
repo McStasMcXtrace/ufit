@@ -56,6 +56,9 @@ class DataLoader(QWidget):
                                              'All files (*)'))
         if not fn:
             return
+        self.set_template(fn)
+
+    def set_template(self, fn):
         bn = path.basename(fn)
         dn = path.dirname(fn)
         m = list(numor_re.finditer(bn))

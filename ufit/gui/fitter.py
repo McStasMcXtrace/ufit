@@ -31,15 +31,24 @@ class Fitter(QWidget):
         self.buttonBox.addButton('Replot', QDialogButtonBox.ActionRole)
         self.buttonBox.addButton('Fit', QDialogButtonBox.ApplyRole)
 
-    def initialize(self, model, data, fit=True):
+    def initialize(self, model, data, fit=True, keep_old=True):
         self.setWindowTitle('Fitting: data %s' % data.name)
         self._picking = False
         self.last_result = None
-        self.model = model
+
+        old_model = self.model
         self.modelLabel.setText(model.get_description())
         self.data = data
+        self.model = model
+
         self.param_controls = {}
         self.create_param_controls()
+
+        # try to transfer values of old parameters to new
+        if keep_old and old_model is not None:
+            oldp_dict = dict((p.name, p) for p in old_model.params)
+            self.restore_from_params(oldp_dict)
+
         if fit:
             self.do_fit()
         else:
@@ -60,7 +69,7 @@ class Fitter(QWidget):
             ctl.setFont(self.statusLabel.font())
             layout.addWidget(ctl, 0, j)
         i = 1
-        self.original_params = []
+        self.original_params = {}
         combo_items = [par.name for par in self.model.params] + \
             ['data.' + m for m in sorted(self.data.meta)
              if isinstance(self.data.meta[m], (int, long, float))]
@@ -79,7 +88,7 @@ class Fitter(QWidget):
             for j, ctl in enumerate(ctls):
                 layout.addWidget(ctl, i, j)
             i += 1
-            self.original_params.append(p.copy())
+            self.original_params[p.name] = p.copy()
             #self.connect(e1, SIGNAL('textEdited(const QString&)'),
             #             self.do_plot)
             self.connect(e3, SIGNAL('clicked(bool)'), self.update_enables)
@@ -128,7 +137,7 @@ class Fitter(QWidget):
         elif role == QDialogButtonBox.HelpRole:
             self.do_pick()
         else:
-            self.restore_original()
+            self.restore_from_params(self.original_params)
 
     def update_from_controls(self):
         for p, ctls in self.param_controls.iteritems():
@@ -142,8 +151,11 @@ class Fitter(QWidget):
             p.pmax = float(pmax.text()) if pmax.text() else None
         self.update_enables()
 
-    def restore_original(self):
-        for p, p0 in zip(self.model.params, self.original_params):
+    def restore_from_params(self, other_params):
+        for p in self.model.params:
+            if p.name not in other_params:
+                continue
+            p0 = other_params[p.name]
             ctls = self.param_controls[p]
             ctls[1].setText('%.4g' % p0.value)
             ctls[3].setChecked(False)
