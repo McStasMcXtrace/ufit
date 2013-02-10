@@ -46,8 +46,10 @@ class SlopingBackground(Model):
 
     def convert_pick(self, b1, b2):
         slope = (b2[1] - b1[1]) / (b2[0] - b1[0])
-        return {self.params[0].name: slope,
-                self.params[1].name: b1[1] - slope*b1[0]}
+        return {
+            self.params[0].name: b1[1] - slope*b1[0],
+            self.params[1].name: slope,
+        }
 
 
 class CKI_Corr(Model):
