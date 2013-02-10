@@ -194,8 +194,8 @@ class Fitter(QWidget):
             return
         self._pick_points = ['left limit', 'right limit']
         self._pick_values = []
-        self.picking = True
-        self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
+        self.picking = 'Limits'
+        self.statusLabel.setText('Limits: click on %s' % self._pick_points[0])
         def callback():
             self.limitmin.setText('%.3g' % self._pick_values[0][0])
             self.limitmax.setText('%.3g' % self._pick_values[1][0])
