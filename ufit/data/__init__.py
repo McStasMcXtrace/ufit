@@ -50,11 +50,17 @@ class Loader(object):
             xguess = colnames[deviations.argmax()]
         else:
             xguess = colnames[0]
-        for colname in colnames:
+        maxcts = 0
+        maxmon = 0
+        for i, colname in enumerate(colnames):
             if colname.lower().startswith(('ctr', 'cnts')):
-                yguess = colname
+                if coldata[:,i].sum() > maxcts:
+                    yguess = colname
+                    maxcts = coldata[:,i].sum()
             if colname.startswith('mon') or colname.startswith('M'):
-                mguess = colname
+                if coldata[:,i].sum() > maxmon:
+                    mguess = colname
+                    maxmon = coldata[:,i].sum()
         return colnames, xguess, yguess, mguess
 
 
