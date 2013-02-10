@@ -13,8 +13,10 @@ class Gauss(Model):
     * ampl - Amplitude at center
     * fwhm - Full width at half maximum
     """
+    param_names = ['pos', 'ampl', 'fwhm']
+
     def __init__(self, name='', pos=None, ampl=None, fwhm=None):
-        pp, pa, pf = self._init_params(name, ['pos', 'ampl', 'fwhm'], locals())
+        pp, pa, pf = self._init_params(name, self.param_names, locals())
         # amplitude and fwhm should be positive
         self.params[1].finalize = abs
         self.params[2].finalize = abs
@@ -40,8 +42,10 @@ class Lorentz(Model):
     * ampl - Amplitude at center
     * fwhm - Full width at half maximum
     """
+    param_names = ['pos', 'ampl', 'fwhm']
+
     def __init__(self, name='', pos=None, ampl=None, fwhm=None):
-        pp, pa, pf = self._init_params(name, ['pos', 'ampl', 'fwhm'], locals())
+        pp, pa, pf = self._init_params(name, self.param_names, locals())
         # amplitude and fwhm should be positive
         self.params[1].finalize = abs
         self.params[2].finalize = abs
@@ -69,9 +73,10 @@ class PseudoVoigt(Model):
     * fwhm - Full width at half maximum
     * eta - Lorentzicity
     """
+    param_names = ['pos', 'ampl', 'fwhm', 'eta']
+
     def __init__(self, name='', pos=None, ampl=None, fwhm=None, eta=0.5):
-        pp, pa, pf, pe = self._init_params(name, ['pos', 'ampl', 'fwhm', 'eta'],
-                                           locals())
+        pp, pa, pf, pe = self._init_params(name, self.param_names, locals())
         # amplitude and fwhm should be positive
         self.params[1].finalize = abs
         self.params[2].finalize = abs
@@ -105,12 +110,12 @@ class DHO(Model):
     * gamma - Damping
     * tt - Temperature in K
     """
-    modelname = 'DHO'
+    param_names = ['center', 'pos', 'ampl', 'gamma', 'tt']
 
     def __init__(self, name='',
                  center=0, pos=None, ampl=None, gamma=None, tt=None):
-        pc, pp, pa, pg, ptt = self._init_params(
-            name, ['center', 'pos', 'ampl', 'gamma', 'tt'], locals())
+        pc, pp, pa, pg, ptt = self._init_params(name, self.param_names,
+                                                locals())
         # pos, amplitude and gamma should be positive
         self.params[1].finalize = abs
         self.params[2].finalize = abs

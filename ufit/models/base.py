@@ -23,13 +23,18 @@ class Model(object):
       (i.e. not a component)
     """
 
+    # class properties
+
+    # if nonempty, the names of points to pick in the GUI
+    pick_points = []
+    # names of parameters
+    param_names = []
+
+    # set by initializers
     name = ''
     params = []
     fcn = None
     _orig_params = None
-
-    # if nonempty, the names of points to pick in the GUI
-    pick_points = []
 
     def __repr__(self):
         return '<%s %r>' % (self.__class__.__name__, self.name)
@@ -69,6 +74,7 @@ class Model(object):
             for p in m.params:
                 if p.name in seen:
                     raise UFitError('Parameter name clash: %s' % p.name)
+                seen.add(p.name)
                 self.params.append(p)
 
     def __add__(self, other):
@@ -117,7 +123,7 @@ class Model(object):
         if _axes is None:
             pl.figure()
             _axes = pl.gca()
-        _axes.errorbar(data.x, data.y, data.dy, fmt='o', label=data.name)
+        _axes.errorbar(data.x, data.y, data.dy, fmt='o', ms=8, label=data.name)
         _axes.plot(xx, yy, label='fit')
         if title:
             _axes.set_title(title)
