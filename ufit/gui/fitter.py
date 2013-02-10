@@ -59,8 +59,10 @@ class Fitter(QWidget):
         if fit:
             self.do_fit()
         else:
+            self.canvas.axes.clear()
             model.plot(data, _axes=self.canvas.axes)
             model.plot_components(data, _axes=self.canvas.axes)
+            self.canvas.draw()
 
     def create_param_controls(self):
         self.param_controls = {}
