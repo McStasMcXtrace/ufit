@@ -2,7 +2,8 @@
 
 from __future__ import absolute_import
 
-from ufit.backends.util import prepare_params, update_params
+from ufit.backends.util import prepare_data, prepare_params, update_params, \
+     get_chisqr
 
 try:
     from minuit import Minuit
@@ -15,8 +16,10 @@ __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'minuit'
 
-def do_fit(data, fcn, params, add_kw):
-    varying, varynames, dependent, _ = prepare_params(params, data)
+def do_fit(data, fcn, params, limits, add_kw):
+    x, y, dy = prepare_data(data, limits)
+    meta = data.meta
+    varying, varynames, dependent, _ = prepare_params(params, meta)
 
     # sadly, parameter names are restricted to 10 characters with pyminuit
     minuitnames = ['p%d' % j for j in range(len(varynames))]
@@ -28,8 +31,8 @@ def do_fit(data, fcn, params, add_kw):
 
     code = 'def minuitfcn(' + ', '.join(minuitnames) + '''):
         pd = {''' + ', '.join("%r: %s" % v for v in minuit_map.items()) + '''}
-        update_params(dependent, data, pd)
-        return ((fcn(pd, data.x) - data.y)**2 / data.dy**2).sum()
+        update_params(dependent, meta, pd)
+        return ((fcn(pd, x) - y)**2 / dy**2).sum()
     '''
 
     fcn_environment = {'data': data, 'fcn': fcn, 'dependent': dependent}
@@ -49,11 +52,11 @@ def do_fit(data, fcn, params, add_kw):
         m.migrad()
         m.hesse()
     except Exception, e:
-        return False, str(e)
+        return False, str(e), 0
     #m.minos()  -> would calculate more exact and asymmetric errors
 
     pd = dict((pn, m.values[minuit_map[pn]]) for pn in varynames)
-    update_params(dependent, data, pd)
+    update_params(dependent, meta, pd)
     for p in params:
         p.value = pd[p.name]
         if p.name in minuit_map:
@@ -63,4 +66,4 @@ def do_fit(data, fcn, params, add_kw):
             p.error = 0
             p.correl = {}
 
-    return True, ''
+    return True, '', get_chisqr(fcn, x, y, dy, params)

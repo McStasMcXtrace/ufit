@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ufit interactive fitting gui
 
-from PyQt4.QtCore import SIGNAL, Qt
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
      QComboBox
@@ -14,7 +14,7 @@ class Fitter(QWidget):
     def __init__(self, parent, canvas, standalone=False):
         QWidget.__init__(self, parent)
         self.canvas = canvas
-        self._picking = False
+        self.picking = None
         self.last_result = None
         self.model = None
         self.data = None
@@ -33,7 +33,7 @@ class Fitter(QWidget):
 
     def initialize(self, model, data, fit=True, keep_old=True):
         self.setWindowTitle('Fitting: data %s' % data.name)
-        self._picking = False
+        self.picking = None
         self.last_result = None
 
         old_model = self.model
@@ -162,30 +162,44 @@ class Fitter(QWidget):
         self.do_plot()
 
     def on_canvas_pick(self, event):
-        if not self._picking:
+        if not self.picking:
             return
-        self.do_pick(event.xdata, event.ydata)
+        self._pick_values.append((event.xdata, event.ydata))
+        if len(self._pick_values) == len(self._pick_points):
+            self.picking = False
+            self.statusLabel.setText('')
+            self._pick_finished()
+        else:
+            self.statusLabel.setText('%s: click on %s' %
+                (self.picking, self._pick_points[len(self._pick_values)]))
 
     def do_pick(self, *args):
-        if not args:
-            if not self._picking:
-                self._pick_points = self.model.get_pick_points()
-                self._pick_values = []
-                self._picking = True
-                self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
-        else:
-            self._pick_values.append((args[0], args[1]))
-            if len(self._pick_values) == len(self._pick_points):
-                self._picking = False
-                self.statusLabel.setText('')
-                self.model.apply_pick(self._pick_values)
-                for p in self.model.params:
-                    ctls = self.param_controls[p]
-                    ctls[1].setText('%.4g' % p.value)
-                self.do_plot()
-            else:
-                self.statusLabel.setText('Guess: click on %s' %
-                                         self._pick_points[len(self._pick_values)])
+        if self.picking:
+            return
+        self._pick_points = self.model.get_pick_points()
+        self._pick_values = []
+        self.picking = 'Guess'
+        self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
+        def callback():
+            self.model.apply_pick(self._pick_values)
+            for p in self.model.params:
+                ctls = self.param_controls[p]
+                ctls[1].setText('%.4g' % p.value)
+            self.do_plot()
+        self._pick_finished = callback
+
+    @qtsig('')
+    def on_picklimits_clicked(self):
+        if self.picking:
+            return
+        self._pick_points = ['left limit', 'right limit']
+        self._pick_values = []
+        self.picking = True
+        self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
+        def callback():
+            self.limitmin.setText('%.3g' % self._pick_values[0][0])
+            self.limitmax.setText('%.3g' % self._pick_values[1][0])
+        self._pick_finished = callback
 
     def do_plot(self, *ignored):
         self.update_from_controls()
@@ -204,16 +218,24 @@ class Fitter(QWidget):
         self.canvas.draw()
 
     def do_fit(self):
-        if self._picking:
+        if self.picking:
             QMessageBox.information(self, 'Fitting',
-                                    'Please finish the initial guess first.')
+                                    'Please finish the picking operation first.')
             return
+        try:
+            fitmin = float(self.limitmin.text())
+        except Exception:
+            fitmin = None
+        try:
+            fitmax = float(self.limitmax.text())
+        except Exception:
+            fitmax = None
         self.update_from_controls()
         self.statusLabel.setText('Working...')
         self.statusLabel.repaint()
         QApplication.processEvents()
         try:
-            res = self.model.fit(self.data)
+            res = self.model.fit(self.data, xmin=fitmin, xmax=fitmax)
         except Exception, e:
             self.statusLabel.setText('Error during fit: %s' % e)
             return

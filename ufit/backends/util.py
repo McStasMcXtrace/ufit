@@ -2,10 +2,21 @@
 
 from ufit import UFitError
 
+def prepare_data(data, limits):
+    if limits == (None, None):
+        return data.x, data.y, data.dy
+    if limits[0] is None:
+        indices = data.x <= limits[1]
+    elif limits[1] is None:
+        indices = data.x >= limits[0]
+    else:
+        indices = (data.x >= limits[0]) & (data.x <= limits[1])
+    return data.x[indices], data.y[indices], data.dy[indices]
+
 # XXX replace by something more safe later
 param_eval = eval
 
-def prepare_params(params, data):
+def prepare_params(params, meta):
     # find parameters that need to vary
     dependent = {}
     varying = []
@@ -18,7 +29,7 @@ def prepare_params(params, data):
             varynames.append(p.name)
 
     pd = dict((p.name, p.value) for p in varying)
-    pd['data'] = data.meta
+    pd['data'] = meta
 
     # poor man's dependency tracking of parameter expressions
     dep_order = []
@@ -41,8 +52,14 @@ def prepare_params(params, data):
     return varying, varynames, dep_order, pd
 
 
-def update_params(parexprs, data, pd):
-    pd['data'] = data.meta
+def update_params(parexprs, meta, pd):
+    pd['data'] = meta
     for p, expr in parexprs:
         pd[p] = param_eval(expr, pd)
     #pd.pop('__builtins__', None)
+
+def get_chisqr(fcn, x, y, dy, params):
+    paramdict = dict((p.name, p.value) for p in params)
+    sum_sqr = ((fcn(paramdict, x) - y)**2 / dy**2).sum()
+    nfree = len(y) - sum(1 for p in params if not p.expr)
+    return sum_sqr / nfree

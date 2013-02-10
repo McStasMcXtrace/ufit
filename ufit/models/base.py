@@ -2,7 +2,7 @@
 
 import inspect
 import operator
-from numpy import array, concatenate, linspace
+from numpy import concatenate, linspace
 import matplotlib.pyplot as pl
 
 from ufit import backends, UFitError, Param, Run, Result
@@ -103,13 +103,14 @@ class Model(object):
             return self.params
         return self._orig_params
 
-    def fit(self, data, **kw):
+    def fit(self, data, xmin=None, xmax=None, **kw):
         if self._orig_params is None:
             self._orig_params = [p.copy() for p in self.params]
-        success, msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
+        success, msg, chi2 = backends.backend.do_fit(data, self.fcn, self.params,
+                                                     (xmin, xmax), kw)
         for p in self.params:
             p.value = p.finalize(p.value)
-        return Result(success, data, self, self.params, msg)
+        return Result(success, data, self, self.params, msg, chi2)
 
     def reset(self):
         if self._orig_params is not None:
@@ -117,7 +118,7 @@ class Model(object):
 
     def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None, _axes=None):
         if _pdict is None:
-            _pdict = prepare_params(self.params, data)[3]
+            _pdict = prepare_params(self.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
         yy = self.fcn(_pdict, xx)
         if _axes is None:
@@ -133,7 +134,7 @@ class Model(object):
 
     def plot_components(self, data, _pdict=None, _axes=None):
         if _pdict is None:
-            _pdict = prepare_params(self.params, data)[3]
+            _pdict = prepare_params(self.params, data.meta)[3]
         if _axes is None:
             _axes = pl.gca()
         xx = linspace(data.x[0], data.x[-1], 1000)

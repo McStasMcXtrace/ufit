@@ -3,19 +3,22 @@
 from __future__ import absolute_import
 from numpy import sqrt, inf
 from scipy.optimize import leastsq
-from ufit.backends.util import prepare_params, update_params
+from ufit.backends.util import prepare_data, prepare_params, update_params, \
+     get_chisqr
 
 __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'scipy'
 
-def do_fit(data, fcn, params, add_kw):
-    varying, varynames, dependent, _ = prepare_params(params, data)
+def do_fit(data, fcn, params, limits, add_kw):
+    x, y, dy = prepare_data(data, limits)
+    meta = data.meta
+    varying, varynames, dependent, _ = prepare_params(params, meta)
 
     def leastsqfcn(params, data):
         pd = dict(zip(varynames, params))
-        update_params(dependent, data, pd)
-        return (fcn(pd, data.x) - data.y) / data.dy
+        update_params(dependent, meta, pd)
+        return (fcn(pd, x) - y) / dy
 
     initpars = []
     warned = False
@@ -28,12 +31,12 @@ def do_fit(data, fcn, params, add_kw):
     try:
         res = leastsq(leastsqfcn, initpars, args=(data,), full_output=1, **add_kw)
     except Exception, e:
-        return False, str(e)
+        return False, str(e), 0
 
     popt, pcov, infodict, errmsg, ier = res
     success = (ier in [1, 2, 3, 4])
 
-    nfree = len(data.y) - len(varying)
+    nfree = len(y) - len(varying)
     if nfree > 0 and pcov is not None:
         s_sq = (leastsqfcn(popt, data)**2).sum() / nfree
         pcov = pcov * s_sq
@@ -48,8 +51,8 @@ def do_fit(data, fcn, params, add_kw):
         else:
             p.error = 0
         p.correl = {}  # XXX
-    update_params(dependent, data, pd)
+    update_params(dependent, meta, pd)
     for p in params:
         p.value = pd[p.name]
 
-    return success, errmsg
+    return success, errmsg, get_chisqr(fcn, x, y, dy, params)

@@ -1,7 +1,8 @@
 # ufit backend using lmfit
 
 from __future__ import absolute_import
-from ufit.backends.util import prepare_params, update_params
+from ufit.backends.util import prepare_data, prepare_params, update_params, \
+     get_chisqr
 
 from lmfit import Parameters, minimize
 
@@ -9,13 +10,15 @@ __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'lmfit'
 
-def do_fit(data, fcn, params, add_kw):
+def do_fit(data, fcn, params, limits, add_kw):
 
     # lmfit can handle expression-based parameters itself, but that is
     # a) buggy (cannot pass custom items into namespace without subclass)
     # and b) it is better to use the same mechanism in all backends
 
-    varying, varynames, dependent, _ = prepare_params(params, data)
+    x, y, dy = prepare_data(data, limits)
+    meta = data.meta
+    varying, varynames, dependent, _ = prepare_params(params, meta)
 
     lmfparams = Parameters()
     for p in varying:
@@ -23,16 +26,16 @@ def do_fit(data, fcn, params, add_kw):
 
     def lmfitfcn(lmfparams, data):
         pd = dict((pn, lmfparams[pn].value) for pn in varynames)
-        update_params(dependent, data, pd)
-        return (fcn(pd, data.x) - data.y) / data.dy
+        update_params(dependent, meta, pd)
+        return (fcn(pd, x) - y) / dy
 
     try:
         out = minimize(lmfitfcn, lmfparams, args=(data,), **add_kw)
     except Exception, e:
-        return False, str(e)
+        return False, str(e), 0
 
     pd = dict((pn, lmfparams[pn].value) for pn in varynames)
-    update_params(dependent, data, pd)
+    update_params(dependent, meta, pd)
     for p in params:
         p.value = pd[p.name]
         if p.name in lmfparams:
@@ -46,4 +49,4 @@ def do_fit(data, fcn, params, add_kw):
         out.message = out.message[4:]
     if not out.message.endswith('.'):
         out.message += '.'
-    return out.success, out.message
+    return out.success, out.message, out.redchi
