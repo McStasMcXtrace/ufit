@@ -82,14 +82,14 @@ class FitMainWindow(QMainWindow):
         layout = QGridLayout()
         for j, text in enumerate(('Param', 'Value', 'Error', 'Fix', 'Expr',
                                   'Data', 'Min', 'Max')):
-            layout.addWidget(QLabel(text, self), 0, j)
+            ctl = QLabel(text, self)
+            ctl.setFont(self.statusLabel.font())
+            layout.addWidget(ctl, 0, j)
         i = 1
         self.original_params = []
         for p in model.params:
             e0 = QLabel(p.name, self)
             e1 = SmallLineEdit(str(p.value), self)
-            #self.connect(e1, SIGNAL('textEdited(const QString&)'),
-            #             self.do_plot)
             e2 = QLabel('', self)
             e3 = QCheckBox(self)
             e4 = SmallLineEdit(p.expr or '', self)
@@ -101,13 +101,51 @@ class FitMainWindow(QMainWindow):
                 layout.addWidget(ctl, i, j)
             i += 1
             self.original_params.append(p.copy(p.name))
+            #self.connect(e1, SIGNAL('textEdited(const QString&)'),
+            #             self.do_plot)
+            self.connect(e3, SIGNAL('clicked(bool)'), self.update_enables)
+            self.connect(e4, SIGNAL('textEdited(const QString&)'),
+                         self.update_enables)
+            self.connect(e5, SIGNAL('textEdited(const QString&)'),
+                         self.update_enables)
+        self.update_enables()
         self.param_frame.setLayout(layout)
+
+    def update_enables(self, *ignored):
+        for p, ctls in self.param_controls.iteritems():
+            # if there is an expr or datapar...
+            if ctls[4].text() or ctls[5].text():
+                # disable value and minmax, check "fixed" and disable "fixed"
+                ctls[1].setEnabled(False)
+                ctls[3].setCheckState(Qt.PartiallyChecked)  # implicitly fixed
+                ctls[3].setEnabled(False)
+                ctls[6].setEnabled(False)
+                ctls[7].setEnabled(False)
+            # else, if "fixed" is checked...
+            elif ctls[3].checkState() == Qt.Checked:
+                # enable value, but disable expr and datapar plus minmax
+                ctls[1].setEnabled(True)
+                ctls[4].setEnabled(False)
+                ctls[5].setEnabled(False)
+                ctls[6].setEnabled(False)
+                ctls[7].setEnabled(False)
+            # else: not fixed, no expr or datapar
+            else:
+                # enable everything
+                ctls[1].setEnabled(True)
+                ctls[3].setEnabled(True)
+                ctls[3].setCheckState(Qt.Unchecked)
+                ctls[3].setTristate(False)
+                ctls[4].setEnabled(True)
+                ctls[5].setEnabled(True)
+                ctls[6].setEnabled(True)
+                ctls[7].setEnabled(True)
 
     def update_from_controls(self):
         for p, ctls in self.param_controls.iteritems():
             _, val, _, fx, expr, datap, pmin, pmax = ctls
             p.value = float(val.text()) if val.text() else 0
-            if fx.isChecked():
+            if fx.checkState() == Qt.Checked:
                 p.expr = str(val.text())
             else:
                 p.expr = str(expr.text())
