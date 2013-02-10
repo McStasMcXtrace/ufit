@@ -4,11 +4,11 @@
 import re
 from os import path
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
-     QMainWindow, QVBoxLayout, QFrame, QApplication
+     QMainWindow, QSplitter, QApplication
 
-from ufit.data import data_formats, guess_cols, read_data
+from ufit.data import data_formats, Loader
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
 numor_re = re.compile(r'\d+')
@@ -19,13 +19,14 @@ class DataLoader(QWidget):
         QWidget.__init__(self, parent)
         self.canvas = canvas
         self.last_data = None
+        self.loader = Loader()
         self.createUI(standalone)
 
     def createUI(self, standalone):
         loadUi(self, 'dataloader.ui')
+        self.dataformat.addItem('auto')
         for fmt in data_formats:
             self.dataformat.addItem(fmt)
-        self.dataformat.setCurrentIndex(self.dataformat.findText('nicos'))
 
         self.buttonBox.addButton(QDialogButtonBox.Open)
         self.buttonBox.addButton('Preview', QDialogButtonBox.NoRole)
@@ -39,11 +40,8 @@ class DataLoader(QWidget):
         else:  # "open"
             self.open_data(final=True)
 
-    def get_reader(self):
-        return data_formats[str(self.dataformat.currentText())]
-
     def on_dataformat_currentIndexChanged(self, i):
-        self.datatemplate.setText('')
+        self.loader.format = str(self.dataformat.currentText())
 
     @qtsig('')
     def on_settemplate_clicked(self):
@@ -69,9 +67,9 @@ class DataLoader(QWidget):
         dtempl = path.join(dn, bn[:b] + '%%0%dd' % (e-b) + bn[e:])
         numor = int(m[-1].group())
         self.datatemplate.setText(dtempl)
+        self.loader.template = dtempl
         try:
-            cols, xguess, yguess, mguess = \
-                guess_cols('', reader=self.get_reader(), dtempl=fn+'%s')
+            cols, xguess, yguess, mguess = self.loader.guess_cols(numor)
         except Exception, e:
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
@@ -93,8 +91,6 @@ class DataLoader(QWidget):
         self.open_data()
 
     def open_data(self, final=False):
-        reader = self.get_reader()
-        dtempl = str(self.datatemplate.text())
         prec = self.precision.value()
         xcol = str(self.xcol.currentText())
         ycol = str(self.ycol.currentText())
@@ -111,8 +107,8 @@ class DataLoader(QWidget):
                                     'Numor list must be n1,n2,n3 etc.')
             return
         try:
-            datas = [read_data(numor, xcol, ycol, mcol, mscale,
-                               reader=reader, dtempl=dtempl) for numor in numors]
+            datas = [self.loader.load(numor, xcol, ycol, mcol, mscale)
+                     for numor in numors]
         except Exception, e:
             QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
             return
@@ -136,9 +132,7 @@ class DataLoader(QWidget):
 class DataLoaderMain(QMainWindow):
     def __init__(self, data):
         QMainWindow.__init__(self)
-        mainframe = QFrame(self)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout = QSplitter(Qt.Vertical, self)
         self.canvas = MPLCanvas(self)
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
@@ -147,8 +141,7 @@ class DataLoaderMain(QMainWindow):
         self.dloader.initialize()
         self.connect(self.dloader, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.fitter)
-        mainframe.setLayout(layout)
-        self.setCentralWidget(mainframe)
+        self.setCentralWidget(layout)
         self.setWindowTitle(self.fitter.windowTitle())
 
 

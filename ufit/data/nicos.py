@@ -3,18 +3,25 @@
 import time
 from numpy import loadtxt
 
+from ufit import UFitError
 
-def read_data(fnum, filename):
-    entries = {}
-    fp = open(filename, 'rb')
+
+def check_data(fp):
+    dtline = fp.readline()
+    fp.seek(0, 0)
+    return dtline.startswith('### NICOS data file')
+
+
+def read_data(filename, fp):
+    meta = {}
     dtline = fp.readline()
     if not dtline.startswith('### NICOS data file'):
-        raise ValueError('%r does not appear to be a NICOS data file' %
-                         filename)
+        raise UFitError('%r does not appear to be a NICOS data file' %
+                        filename)
     ctime = time.mktime(time.strptime(
         dtline[len('### NICOS data file, created at '):].strip(),
         '%Y-%m-%d %H:%M:%S'))
-    entries['created'] = ctime
+    meta['created'] = ctime
     for line in iter(fp.readline, ''):
         if line.startswith('### Scan data'):
             break
@@ -37,9 +44,7 @@ def read_data(fnum, filename):
             if key.endswith(('_offset', '_precision')):
                 # we don't need these for fitting
                 continue
-            entries[key] = val
-    if 'filename' in entries:
-        entries['__name__'] = entries['filename']
+            meta[key] = val
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
     def convert_value(s):
@@ -55,8 +60,8 @@ def read_data(fnum, filename):
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols)
     if 'Ts' in colnames:
         tindex = colnames.index('Ts')
-        entries['Ts'] = coldata[:,tindex].mean()
+        meta['Ts'] = coldata[:,tindex].mean()
     if 'B' in colnames:
         tindex = colnames.index('B')
-        entries['B'] = coldata[:,tindex].mean()
-    return colnames, coldata, entries
+        meta['B'] = coldata[:,tindex].mean()
+    return colnames, coldata, meta
