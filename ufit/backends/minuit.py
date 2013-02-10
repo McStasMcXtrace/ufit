@@ -1,7 +1,7 @@
 # ufit backend using minuit2
 
 from __future__ import absolute_import
-from ufit.core import UFitError
+
 from ufit.backends.util import prepare_params, update_params
 
 try:
@@ -45,7 +45,7 @@ def do_fit(data, fcn, params, add_kw):
         m.migrad()
         m.hesse()
     except Exception, e:
-        raise UFitError('Error while fitting: %s' % e)
+        return False, str(e)
     #m.minos()  -> would calculate more exact and asymmetric errors
 
     pd = m.values.copy()
@@ -55,4 +55,4 @@ def do_fit(data, fcn, params, add_kw):
         p.error = m.errors.get(p.name, 0)
         p.correl = {}  # XXX
 
-    return ''
+    return True, ''

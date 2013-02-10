@@ -1,6 +1,6 @@
 # ufit backends
 
-from ufit.core import debug, UFitError
+from ufit import debug, UFitError
 
 __all__ = ['set_backend', 'backend']
 

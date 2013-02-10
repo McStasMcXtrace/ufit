@@ -1,6 +1,6 @@
 # ufit backend utilities
 
-from ufit.core import UFitError
+from ufit import UFitError
 
 # XXX replace by something more safe later
 param_eval = eval

@@ -5,8 +5,7 @@ import operator
 from numpy import array, concatenate, sqrt, linspace
 import matplotlib.pyplot as pl
 
-from ufit import backends
-from ufit.core import UFitError, Param, Data, Result
+from ufit import backends, UFitError, Param, Data, Result
 from ufit.data.run import Run
 from ufit.backends.util import prepare_params
 
@@ -84,10 +83,10 @@ class Model(object):
 
     def fit(self, data, **kw):
         data = self._as_data(data)
-        msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
+        success, msg = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
-        return Result(data, self, self.params, msg)
+        return Result(success, data, self, self.params, msg)
 
     def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None):
         data = self._as_data(data)
@@ -226,6 +225,6 @@ class GlobalModel(Model):
                     paramlist.append(p)
                 elif p.name.endswith(suffix):
                     paramlist.append(p.copy(p.name[:-len(suffix)])) # XXX
-            reslist.append(Result(data, self._model, paramlist,
-                                  overall_res.message))
+            reslist.append(Result(overall_res.success, data, self._model,
+                                  paramlist, overall_res.message))
         return reslist

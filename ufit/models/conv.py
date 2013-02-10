@@ -2,7 +2,6 @@
 
 from numpy import convolve
 
-from ufit.core import UFitError
 from ufit.models.base import Model
 
 

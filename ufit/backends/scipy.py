@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from numpy import sqrt, inf
 from scipy.optimize import leastsq
-from ufit.core import UFitError
 from ufit.backends.util import prepare_params, update_params
 
 __all__ = ['do_fit', 'backend_name']
@@ -26,11 +25,14 @@ def do_fit(data, fcn, params, add_kw):
             print 'Sorry, scipy backend cannot handle parameter bounds.'
             warned = True
 
-    res = leastsq(leastsqfcn, initpars, args=(data,), full_output=1, **add_kw)
-    popt, pcov, infodict, errmsg, ier = res
+    try:
+        res = leastsq(leastsqfcn, initpars, args=(data,), full_output=1, **add_kw)
+    except Exception, e:
+        return False, str(e)
 
+    popt, pcov, infodict, errmsg, ier = res
     if ier not in [1, 2, 3, 4]:
-        raise UFitError('Optimal parameters not found: ' + errmsg)
+        success = False
 
     nfree = len(data.y) - len(varying)
     if nfree > 0 and pcov is not None:
@@ -51,4 +53,4 @@ def do_fit(data, fcn, params, add_kw):
     for p in params:
         p.value = pd[p.name]
 
-    return errmsg
+    return success, errmsg

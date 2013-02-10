@@ -1,7 +1,6 @@
 # ufit backend using lmfit
 
 from __future__ import absolute_import
-from ufit.core import UFitError
 from ufit.backends.util import prepare_params, update_params
 
 from lmfit import Parameters, minimize
@@ -30,9 +29,7 @@ def do_fit(data, fcn, params, add_kw):
     try:
         out = minimize(lmfitfcn, lmfparams, args=(data,), **add_kw)
     except Exception, e:
-        raise UFitError('Error while fitting: %s' % e)
-    #if not out.success:
-    #    raise UFitError(out.message)
+        return False, str(e)
 
     pd = dict((pn, lmfparams[pn].value) for pn in varynames)
     update_params(dependent, data, pd)
@@ -45,4 +42,4 @@ def do_fit(data, fcn, params, add_kw):
             p.error = 0
             p.correl = {}
 
-    return out.message
+    return out.success, out.message

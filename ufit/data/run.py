@@ -1,31 +1,30 @@
-# ufit data run classes
+# ufit data "run" classes
 
 from numpy import array, concatenate, ones, sqrt
+import matplotlib.pyplot as pl
 
-from ufit.core import UFitError
+from ufit import UFitError
 
 class Run(object):
-    def __init__(self, name, colnames, data, meta, x=None, y=None,
-                 n=None, nscale=1):
+    def __init__(self, name, colnames, data, meta, xcol, ycol,
+                 ncol=None, nscale=1):
         self.name = name
         self.colnames = colnames
         self.cols = dict((cn, data[:,i]) for (i, cn) in enumerate(colnames))
         self.data = data
-        self.xcol = x
-        self.ycol = y
-        self.ncol = n
+        self.xcol = xcol
+        self.ycol = ycol
+        self.ncol = ncol
         self.nscale = nscale
         self.meta = meta
-        for k in meta:
-            setattr(self, k, meta[k])
-        if x is not None:
-            self.x = self[x]
-        if y is not None:
-            self.y = self[y]
-            if n is not None:
-                self.n = self[n] / nscale
-            else:
-                self.n = ones(len(self.y))
+        #for k in meta:
+        #    setattr(self, k, meta[k])
+        self.x = self[xcol]
+        self.y = self[ycol]
+        if ncol is not None:
+            self.n = self[ncol] / nscale
+        else:
+            self.n = ones(len(self.y))
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))
@@ -33,6 +32,8 @@ class Run(object):
     def __getattr__(self, key):
         if key in self.cols:
             return self.cols[key]
+        elif key in self.meta:
+            return self.meta[key]
         raise AttributeError('no such data column: %s' % key)
 
     def __getitem__(self, key):
@@ -66,8 +67,8 @@ class Run(object):
                    newcols, self.meta, self.xcol, self.ycol, self.ncol)
 
     def plot(self):
-        import matplotlib.pyplot as pl
         pl.errorbar(self.x, self.y/self.n, sqrt(self.y)/self.n, fmt='o', ms=8)
+
 
 class RunList(dict):
 
