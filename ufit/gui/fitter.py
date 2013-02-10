@@ -3,72 +3,55 @@
 
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QVBoxLayout, \
-     QGridLayout, QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox
+     QGridLayout, QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, \
+     QScrollArea
 
-from ufit.gui.common import MPLCanvas, MPLToolbar, SmallLineEdit
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 
 
 class Fitter(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent, canvas, standalone=False):
         QWidget.__init__(self, parent)
-        self.last_result = None
-
+        self.canvas = canvas
         self._picking = False
+        self.last_result = None
+        self.model = None
+        self.data = None
+        self.param_controls = {}
 
-        layout = QVBoxLayout()
+        self.createUI(standalone)
 
-        self.canvas = MPLCanvas(self)
-        self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
+    def createUI(self, standalone):
+        loadUi(self, 'fitter.ui')
 
-        self.toolbar = MPLToolbar(self.canvas, self)
-        layout.addWidget(self.toolbar)
-        layout.addWidget(self.canvas)
-
-        self.modelLabel = QLabel('Model:', self)
-        fnt = self.modelLabel.font()
-        fnt.setBold(True)
-        self.modelLabel.setFont(fnt)
-        layout.addWidget(self.modelLabel)
-
-        self.param_frame = QFrame(self)
-        layout.addWidget(self.param_frame)
-
-        self.statusLabel = QLabel(self)
-        self.statusLabel.setFont(self.modelLabel.font())
-        layout.addWidget(self.statusLabel)
-
-        self.buttonBox = QDialogButtonBox(self,)
-        self.buttonBox.addButton(QDialogButtonBox.RestoreDefaults)
-        self.buttonBox.addButton(QDialogButtonBox.Close)
+        if standalone:
+            self.buttonBox.addButton(QDialogButtonBox.Close)
         self.buttonBox.addButton('Initial guess', QDialogButtonBox.HelpRole)
         self.buttonBox.addButton('Replot', QDialogButtonBox.ActionRole)
         self.buttonBox.addButton('Fit', QDialogButtonBox.ApplyRole)
-        layout.addWidget(self.buttonBox)
-        self.connect(self.buttonBox, SIGNAL('clicked(QAbstractButton*)'),
-                     self.on_buttonBox_clicked)
-
-        self.setLayout(layout)
-
-    def on_buttonBox_clicked(self, button):
-        role = self.buttonBox.buttonRole(button)
-        if role == QDialogButtonBox.RejectRole:
-            self.emit(SIGNAL('closeRequest'))
-        elif role == QDialogButtonBox.ApplyRole:
-            self.do_fit()
-        elif role == QDialogButtonBox.ActionRole:
-            self.do_plot()
-        elif role == QDialogButtonBox.HelpRole:
-            self.do_pick()
-        else:
-            self.restore_original()
 
     def initialize(self, model, data, fit=True):
         self.setWindowTitle('Fitting: data %s' % data.name)
+        self._picking = False
+        self.last_result = None
         self.model = model
         self.modelLabel.setText(model.get_description())
         self.data = data
         self.param_controls = {}
+        self.create_param_controls()
+        if fit:
+            self.do_fit()
+        else:
+            model.plot(data, _axes=self.canvas.axes)
+            model.plot_components(data, _axes=self.canvas.axes)
+
+    def create_param_controls(self):
+        self.param_frame.close()
+        self.param_frame = QScrollArea(self)
+        self.param_frame.setFrameShape(QFrame.NoFrame)
+        self.param_frame.setFrameShadow(QFrame.Plain)
+        self.layout().insertWidget(1, self.param_frame)
         layout = QGridLayout()
         for j, text in enumerate(('Param', 'Value', 'Error', 'Fix', 'Expr',
                                   'Data', 'Min', 'Max')):
@@ -77,7 +60,7 @@ class Fitter(QWidget):
             layout.addWidget(ctl, 0, j)
         i = 1
         self.original_params = []
-        for p in model.params:
+        for p in self.model.params:
             e0 = QLabel(p.name, self)
             e1 = SmallLineEdit('%.4g' % p.value, self)
             e2 = QLabel('', self)
@@ -90,7 +73,7 @@ class Fitter(QWidget):
             for j, ctl in enumerate(ctls):
                 layout.addWidget(ctl, i, j)
             i += 1
-            self.original_params.append(p.copy(p.name))
+            self.original_params.append(p.copy())
             #self.connect(e1, SIGNAL('textEdited(const QString&)'),
             #             self.do_plot)
             self.connect(e3, SIGNAL('clicked(bool)'), self.update_enables)
@@ -98,13 +81,9 @@ class Fitter(QWidget):
                          self.update_enables)
             self.connect(e5, SIGNAL('textEdited(const QString&)'),
                          self.update_enables)
-        self.update_enables()
+        layout.setRowStretch(i+1, 1)
         self.param_frame.setLayout(layout)
-        if fit:
-            self.do_fit()
-        else:
-            model.plot(data, _axes=self.canvas.axes)
-            model.plot_components(data, _axes=self.canvas.axes)
+        self.update_enables()
 
     def update_enables(self, *ignored):
         for p, ctls in self.param_controls.iteritems():
@@ -138,6 +117,19 @@ class Fitter(QWidget):
                 ctls[6].setEnabled(True)
                 ctls[7].setEnabled(True)
 
+    def on_buttonBox_clicked(self, button):
+        role = self.buttonBox.buttonRole(button)
+        if role == QDialogButtonBox.RejectRole:
+            self.emit(SIGNAL('closeRequest'))
+        elif role == QDialogButtonBox.ApplyRole:
+            self.do_fit()
+        elif role == QDialogButtonBox.ActionRole:
+            self.do_plot()
+        elif role == QDialogButtonBox.HelpRole:
+            self.do_pick()
+        else:
+            self.restore_original()
+
     def update_from_controls(self):
         for p, ctls in self.param_controls.iteritems():
             _, val, _, fx, expr, datap, pmin, pmax = ctls
@@ -149,6 +141,7 @@ class Fitter(QWidget):
             p.datapar = str(datap.text())
             p.pmin = float(pmin.text()) if pmin.text() else None
             p.pmax = float(pmax.text()) if pmax.text() else None
+        self.update_enables()
 
     def restore_original(self):
         for p, p0 in zip(self.model.params, self.original_params):
@@ -169,9 +162,9 @@ class Fitter(QWidget):
     def do_pick(self, *args):
         if not args:
             if not self._picking:
-                self._picking = True
                 self._pick_points = self.model.get_pick_points()
                 self._pick_values = []
+                self._picking = True
                 self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
         else:
             self._pick_values.append((args[0], args[1]))
@@ -233,11 +226,21 @@ class Fitter(QWidget):
 class FitterMain(QMainWindow):
     def __init__(self, model, data, fit=True):
         QMainWindow.__init__(self)
-        self.fitter = Fitter(self)
+        mainframe = QFrame(self)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.canvas = MPLCanvas(self)
+        self.toolbar = MPLToolbar(self.canvas, self)
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+        self.fitter = Fitter(self, self.canvas, standalone=True)
         self.fitter.initialize(model, data, fit)
-        self.setCentralWidget(self.fitter)
-        self.setWindowTitle(self.fitter.windowTitle())
+        self.canvas.mpl_connect('button_press_event', self.fitter.on_canvas_pick)
         self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
+        layout.addWidget(self.fitter)
+        mainframe.setLayout(layout)
+        self.setCentralWidget(mainframe)
+        self.setWindowTitle(self.fitter.windowTitle())
 
 
 def start(model, data, fit=True):
