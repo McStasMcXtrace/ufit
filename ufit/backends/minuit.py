@@ -35,7 +35,8 @@ def do_fit(data, fcn, params, limits, add_kw):
         return ((fcn(pd, x) - y)**2 / dy**2).sum()
     '''
 
-    fcn_environment = {'data': data, 'fcn': fcn, 'dependent': dependent}
+    fcn_environment = {'meta': meta, 'x': x, 'y': y, 'dy': dy,
+                       'fcn': fcn, 'dependent': dependent}
     fcn_environment['update_params'] = update_params   # it's a global
     exec code in fcn_environment
 

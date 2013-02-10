@@ -6,7 +6,7 @@ from numpy import concatenate, linspace
 import matplotlib.pyplot as pl
 
 from ufit import backends, UFitError, Param, Run, Result
-from ufit.backends.util import prepare_params
+from ufit.backends.util import prepare_params, get_chisqr
 
 
 class Model(object):
@@ -324,6 +324,7 @@ class GlobalModel(Model):
                     paramlist.append(p)
                 elif p.name.endswith(suffix):
                     paramlist.append(p.copy(p.name[:-len(suffix)])) # XXX
+            chi2 = get_chisqr(self._model.fcn, data.x, data.y, data.dy, paramlist)
             reslist.append(Result(overall_res.success, data, self._model,
-                                  paramlist, overall_res.message))
+                                  paramlist, overall_res.message, chi2))
         return reslist

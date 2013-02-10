@@ -78,4 +78,4 @@ def set_dataformat(s):
     global_loader.format = s
 
 def read_data(*args):
-    return global_loader.read_data(*args)
+    return global_loader.load(*args)
