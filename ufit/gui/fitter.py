@@ -168,7 +168,12 @@ class Fitter(QWidget):
             ctls = self.param_controls[p]
             ctls[1].setText('%.4g' % p0.value)
             ctls[3].setChecked(False)
-            ctls[4].lineEdit().setText(p0.expr or '')
+            if p0.expr and is_float(p0.expr):
+                ctls[1].setText(p0.expr)
+                ctls[3].setChecked(True)
+                ctls[4].lineEdit().setText('')
+            else:
+                ctls[4].lineEdit().setText(p0.expr or '')
             ctls[5].setText(p0.pmin is not None and '%.4g' % p0.pmin or '')
             ctls[6].setText(p0.pmax is not None and '%.4g' % p0.pmax or '')
         self.do_plot()
