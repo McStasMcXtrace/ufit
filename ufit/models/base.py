@@ -88,29 +88,33 @@ class Model(object):
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg)
 
-    def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None):
+    def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None, _axes=None):
         data = self._as_data(data)
         if _pdict is None:
             _pdict = prepare_params(self.params, data)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
         yy = self.fcn(_pdict, xx)
-        pl.figure()
-        pl.errorbar(data.x, data.y, data.dy, fmt='o', label=data.name)
-        pl.plot(xx, yy, label='fit')
+        if _axes is None:
+            pl.figure()
+            _axes = pl.gca()
+        _axes.errorbar(data.x, data.y, data.dy, fmt='o', label=data.name)
+        _axes.plot(xx, yy, label='fit')
         if title:
-            pl.title(title)
-        pl.xlabel(xlabel or data.xcol)
-        pl.ylabel(ylabel or data.ycol)
-        pl.legend()
+            _axes.set_title(title)
+        _axes.set_xlabel(xlabel or data.xcol)
+        _axes.set_ylabel(ylabel or data.ycol)
+        _axes.legend()
 
-    def plot_components(self, data, _pdict=None):
+    def plot_components(self, data, _pdict=None, _axes=None):
         if _pdict is None:
             _pdict = prepare_params(self.params, data)[3]
+        if _axes is None:
+            _axes = pl.gca()
         xx = linspace(data.x[0], data.x[-1], 1000)
         for comp in self.get_components():
             yy = comp.fcn(_pdict, xx)
-            pl.plot(xx, yy, '--', label=comp.name)
-        pl.legend()
+            _axes.plot(xx, yy, '--', label=comp.name)
+        _axes.legend()
 
     def global_fit(self, datas, **kw):
         datas = map(self._as_data, datas)
