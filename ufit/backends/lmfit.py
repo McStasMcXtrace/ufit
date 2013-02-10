@@ -45,8 +45,10 @@ def do_fit(data, fcn, params, limits, add_kw):
             p.error = 0
             p.correl = {}
 
-    if out.message.startswith('%s. '):
-        out.message = out.message[4:]
-    if not out.message.endswith('.'):
-        out.message += '.'
-    return out.success, out.message, out.redchi
+    # sadly, out.message is a bit buggy
+    message = ''
+    if not out.success:
+        message = out.lmdif_message
+    if not out.errorbars:
+        message += ' Could not estimate error bars.'
+    return out.success, message, out.redchi
