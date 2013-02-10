@@ -6,7 +6,7 @@ from ufit.models import Model
 
 
 class Gauss(Model):
-    """Model for a Gauss peak.
+    """Gaussian peak
 
     Parameters:
     * pos - Peak center position
@@ -22,9 +22,18 @@ class Gauss(Model):
         self.fcn = lambda p, x: \
             abs(p[pa]) * exp(-(x - p[pp])**2/p[pf]**2 * 4*log(2))
 
+    pick_points = ['peak', 'width']
+
+    def convert_pick(self, p, w):
+        return {
+            self.params[0].name: p[0],  # position
+            self.params[1].name: p[1],  # peak amplitude
+            self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM
+        }
+
 
 class Lorentz(Model):
-    """Model for a Lorentzian peak.
+    """Lorentzian peak
 
     Parameters:
     * pos - Peak center position
@@ -39,9 +48,20 @@ class Lorentz(Model):
 
         self.fcn = lambda p, x: abs(p[pa]) / (1 + 4*(x - p[pp])**2/p[pf]**2)
 
+    pick_points = ['peak', 'width']
 
-class PVoigt(Model):
-    """Model for a pseudo-Voigt peak.
+    def convert_pick(self, p, w):
+        return {
+            self.params[0].name: p[0],  # position
+            self.params[1].name: p[1],  # peak amplitude
+            self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM
+        }
+
+
+class PseudoVoigt(Model):
+    """Pseudo-Voigt peak
+
+    A pseudo-convolution of a Gaussian and a Lorentzian.
 
     Parameters:
     * pos - Peak center position
@@ -50,7 +70,8 @@ class PVoigt(Model):
     * eta - Lorentzicity
     """
     def __init__(self, name='', pos=None, ampl=None, fwhm=None, eta=0.5):
-        pp, pa, pf, pe = self._init_params(name, ['pos', 'ampl', 'fwhm', 'eta'], locals())
+        pp, pa, pf, pe = self._init_params(name, ['pos', 'ampl', 'fwhm', 'eta'],
+                                           locals())
         # amplitude and fwhm should be positive
         self.params[1].finalize = abs
         self.params[2].finalize = abs
@@ -61,17 +82,31 @@ class PVoigt(Model):
             ((p[pe] % 1.0) / (1 + 4*(x - p[pp])**2/p[pf]**2) +
              (1-(p[pe] % 1.0)) * exp(-(x - p[pp])**2/p[pf]**2 * 4*log(2)))
 
+    pick_points = ['peak', 'width']
+
+    def convert_pick(self, p, w):
+        return {
+            self.params[0].name: p[0],  # position
+            self.params[1].name: p[1],  # peak amplitude
+            self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM
+        }
+
 
 class DHO(Model):
-    """Model for a Damped Harmonic Oscillator (two Lorentzians).
+    """Damped Harmonic Oscillator
+
+    Two Lorentzians centered around zero with a common width and amplitude,
+    respecting the Bose factor.
 
     Parameters:
-    * center - Energy center
+    * center - Energy zero
     * pos - omega_0
     * ampl - Amplitude
     * gamma - Damping
     * tt - Temperature in K
     """
+    modelname = 'DHO'
+
     def __init__(self, name='',
                  center=0, pos=None, ampl=None, gamma=None, tt=None):
         pc, pp, pa, pg, ptt = self._init_params(
@@ -83,3 +118,13 @@ class DHO(Model):
         self.fcn = lambda p, x: x / (1. - exp(-11.6045*(x+0.00001) / p[ptt])) * \
             abs(p[pa]) * abs(p[pg]) / \
             ((p[pp]**2 - (x - p[pc])**2)**2 + (p[pg]*(x - p[pc]))**2)
+
+    pick_points = ['left peak', 'width of left peak', 'right peak']
+
+    def convert_pick(self, p1, w, p2):
+        return {
+            self.params[0].name: 0.5*(p1[0] + p2[0]),  # center
+            self.params[1].name: 0.5*abs(p1[0] - p2[0]),  # position
+            self.params[2].name: p1[1] * 0.01,  # peak amplitude
+            self.params[3].name: 2*abs(w[0] - p1[0]),  # gamma
+        }

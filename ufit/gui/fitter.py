@@ -1,45 +1,27 @@
 # -*- coding: utf-8 -*-
 # ufit interactive fitting gui
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import SIGNAL, Qt
+from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QVBoxLayout, \
+     QGridLayout, QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox
 
-from matplotlib.backends.backend_qt4agg import \
-     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
-
-from matplotlib.figure import Figure
+from ufit.gui.common import MPLCanvas, MPLToolbar, SmallLineEdit
 
 
+class Fitter(QWidget):
 
-class Canvas(FigureCanvas):
-    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent=None, width=7, height=6, dpi=72):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.updateGeometry()
-
-
-class SmallLineEdit(QLineEdit):
-    def sizeHint(self):
-        sz = QLineEdit.sizeHint(self)
-        return QSize(sz.width()/1.5, sz.height())
-
-
-class FitMainWindow(QMainWindow):
-
-    def __init__(self):
-        QMainWindow.__init__(self)
+    def __init__(self, parent):
+        QWidget.__init__(self, parent)
         self.last_result = None
 
-        central = QFrame(self)
+        self._picking = False
+
         layout = QVBoxLayout()
 
-        self.canvas = Canvas(self)
+        self.canvas = MPLCanvas(self)
+        self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
 
-        self.toolbar = NavigationToolbar2QT(self.canvas, self)
+        self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
 
@@ -59,23 +41,25 @@ class FitMainWindow(QMainWindow):
         self.buttonBox = QDialogButtonBox(self,)
         self.buttonBox.addButton(QDialogButtonBox.RestoreDefaults)
         self.buttonBox.addButton(QDialogButtonBox.Close)
+        self.buttonBox.addButton('Initial guess', QDialogButtonBox.HelpRole)
         self.buttonBox.addButton('Replot', QDialogButtonBox.ActionRole)
         self.buttonBox.addButton('Fit', QDialogButtonBox.ApplyRole)
         layout.addWidget(self.buttonBox)
         self.connect(self.buttonBox, SIGNAL('clicked(QAbstractButton*)'),
                      self.on_buttonBox_clicked)
 
-        central.setLayout(layout)
-        self.setCentralWidget(central)
+        self.setLayout(layout)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
         if role == QDialogButtonBox.RejectRole:
-            self.close()
+            self.emit(SIGNAL('closeRequest'))
         elif role == QDialogButtonBox.ApplyRole:
             self.do_fit()
         elif role == QDialogButtonBox.ActionRole:
             self.do_plot()
+        elif role == QDialogButtonBox.HelpRole:
+            self.do_pick()
         else:
             self.restore_original()
 
@@ -177,6 +161,32 @@ class FitMainWindow(QMainWindow):
             ctls[7].setText(p0.pmax is not None and '%.4g' % p0.pmax or '')
         self.do_plot()
 
+    def on_canvas_pick(self, event):
+        if not self._picking:
+            return
+        self.do_pick(event.xdata, event.ydata)
+
+    def do_pick(self, *args):
+        if not args:
+            if not self._picking:
+                self._picking = True
+                self._pick_points = self.model.get_pick_points()
+                self._pick_values = []
+                self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
+        else:
+            self._pick_values.append((args[0], args[1]))
+            if len(self._pick_values) == len(self._pick_points):
+                self._picking = False
+                self.statusLabel.setText('')
+                self.model.apply_pick(self._pick_values)
+                for p in self.model.params:
+                    ctls = self.param_controls[p]
+                    ctls[1].setText('%.4g' % p.value)
+                self.do_plot()
+            else:
+                self.statusLabel.setText('Guess: click on %s' %
+                                         self._pick_points[len(self._pick_values)])
+
     def do_plot(self, *ignored):
         self.update_from_controls()
         xlims = self.canvas.axes.get_xlim()
@@ -190,6 +200,10 @@ class FitMainWindow(QMainWindow):
         self.canvas.draw()
 
     def do_fit(self):
+        if self._picking:
+            QMessageBox.information(self, 'Fitting',
+                                    'Please finish the initial guess first.')
+            return
         self.update_from_controls()
         self.statusLabel.setText('Working...')
         self.statusLabel.repaint()
@@ -216,10 +230,19 @@ class FitMainWindow(QMainWindow):
         self.last_result = res
 
 
+class FitterMain(QMainWindow):
+    def __init__(self, model, data, fit=True):
+        QMainWindow.__init__(self)
+        self.fitter = Fitter(self)
+        self.fitter.initialize(model, data, fit)
+        self.setCentralWidget(self.fitter)
+        self.setWindowTitle(self.fitter.windowTitle())
+        self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
+
+
 def start(model, data, fit=True):
     app = QApplication([])
-    win = FitMainWindow()
-    win.initialize(model, data, fit)
+    win = FitterMain(model, data, fit)
     win.show()
     app.exec_()
-    return win.last_result
+    return win.fitter.last_result

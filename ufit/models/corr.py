@@ -6,7 +6,7 @@ from ufit.models import Model
 
 
 class Background(Model):
-    """Model for a constant background.
+    """Constant background
 
     Parameters:
     * bkgd - the background (forced to be nonnegative)
@@ -21,9 +21,14 @@ class Background(Model):
     def is_modifier(self):
         return True
 
+    pick_points = ['background']
+
+    def convert_pick(self, b):
+        return {self.params[0].name: b[1]}
+
 
 class SlopingBackground(Model):
-    """Model for a sloping background.
+    """Linearly sloping background
 
     Parameters:
     * bkgd - constant factor
@@ -36,9 +41,17 @@ class SlopingBackground(Model):
     def is_modifier(self):
         return True
 
+    pick_points = ['left background',
+                   'right background']
+
+    def convert_pick(self, b1, b2):
+        slope = (b2[1] - b1[1]) / (b2[0] - b1[0])
+        return {self.params[0].name: slope,
+                self.params[1].name: b1[1] - slope*b1[0]}
+
 
 class CKI_Corr(Model):
-    """Model for correcting constant-ki scans.
+    """Correction for constant-k_i energy scans
 
     Parameters:
     * ki - the ki value in Ang-1
@@ -57,7 +70,7 @@ class CKI_Corr(Model):
 
 
 class Bose(Model):
-    """Model for correcting for Bose factor.
+    """Bose factor
 
     Parameters:
     * tt - the temperature in K

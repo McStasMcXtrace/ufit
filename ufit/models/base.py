@@ -22,10 +22,17 @@ class Model(object):
     * is_modifier() - return bool whether the specific model is a "modifier"
       (i.e. not a component)
     """
+
     name = ''
     params = []
     fcn = None
     _orig_params = None
+
+    # if nonempty, the names of points to pick in the GUI
+    pick_points = []
+
+    def __repr__(self):
+        return '<%s %r>' % (self.__class__.__name__, self.name)
 
     def _init_params(self, name, pnames, init):
         """Helper for model subclasses to quickly initialize Param objects.
@@ -149,16 +156,33 @@ class Model(object):
         """
         return [self]
 
+    def is_modifier(self):
+        """Return true if the model is a "modifier", i.e. not a component that
+        should be plotted as a separate component.
+        """
+        return False
+
     def get_description(self):
+        """Get a human-readable description of the model."""
         if self.name:
             return '%s[%s]' % (self.__class__.__name__, self.name)
         return self.__class__.__name__
 
-    def is_modifier(self):
-        return False
+    def get_pick_points(self):
+        """Get a list of point names that should be picked for initial guess."""
+        if self.name:
+            return ['%s: %s' % (self.name, pn) for pn in self.pick_points]
+        return self.pick_points
 
-    def __repr__(self):
-        return '<%s %r>' % (self.__class__.__name__, self.name)
+    def convert_pick(self, *args):
+        """Convert pick point coordinates (x,y) to parameter initial guesses."""
+        return {}
+
+    def apply_pick(self, points):
+        initial_values = self.convert_pick(*points)
+        for p in self.params:
+            if p.name in initial_values:
+                p.value = initial_values[p.name]
 
 
 class CombinedModel(Model):
@@ -223,6 +247,17 @@ class CombinedModel(Model):
         else:
             s += self._b.get_description()
         return s
+
+    def get_pick_points(self):
+        """Get a list of point names that should be picked for initial guess."""
+        return self._a.get_pick_points() + self._b.get_pick_points()
+
+    def convert_pick(self, *args):
+        """Convert pick point coordinates (x,y) to parameter initial guesses."""
+        npp = len(self._a.get_pick_points())
+        d = self._a.convert_pick(*args[:npp])
+        d.update(self._b.convert_pick(*args[npp:]))
+        return d
 
 
 class Function(Model):
