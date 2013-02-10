@@ -36,19 +36,24 @@ class FitMainWindow(QMainWindow):
 
         central = QFrame(self)
         layout = QVBoxLayout()
+
         self.canvas = Canvas(self)
 
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
 
+        self.modelLabel = QLabel('Model:', self)
+        fnt = self.modelLabel.font()
+        fnt.setBold(True)
+        self.modelLabel.setFont(fnt)
+        layout.addWidget(self.modelLabel)
+
         self.param_frame = QFrame(self)
         layout.addWidget(self.param_frame)
 
         self.statusLabel = QLabel(self)
-        fnt = self.statusLabel.font()
-        fnt.setBold(True)
-        self.statusLabel.setFont(fnt)
+        self.statusLabel.setFont(self.modelLabel.font())
         layout.addWidget(self.statusLabel)
 
         self.buttonBox = QDialogButtonBox(self,)
@@ -75,8 +80,9 @@ class FitMainWindow(QMainWindow):
             self.restore_original()
 
     def initialize(self, model, data, fit=True):
-        self.setWindowTitle('Fitting: %s' % data.name)
+        self.setWindowTitle('Fitting: data %s' % data.name)
         self.model = model
+        self.modelLabel.setText(model.get_description())
         self.data = data
         self.param_controls = {}
         layout = QGridLayout()
@@ -126,6 +132,8 @@ class FitMainWindow(QMainWindow):
                 ctls[3].setEnabled(False)
                 ctls[6].setEnabled(False)
                 ctls[7].setEnabled(False)
+                # disable "expr" as well when datapar is filled
+                ctls[4].setEnabled(not bool(ctls[5].text()))
             # else, if "fixed" is checked...
             elif ctls[3].checkState() == Qt.Checked:
                 # enable value, but disable expr and datapar plus minmax

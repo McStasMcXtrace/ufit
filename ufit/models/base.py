@@ -67,22 +67,22 @@ class Model(object):
     def __add__(self, other):
         if not isinstance(other, Model):
             return NotImplemented
-        return CombinedModel(self, other, operator.add, '+')
+        return CombinedModel(self, other, '+')
 
     def __sub__(self, other):
         if not isinstance(other, Model):
             return NotImplemented
-        return CombinedModel(self, other, operator.sub, '-')
+        return CombinedModel(self, other, '-')
 
     def __mul__(self, other):
         if not isinstance(other, Model):
             return NotImplemented
-        return CombinedModel(self, other, operator.mul, '*')
+        return CombinedModel(self, other, '*')
 
     def __div__(self, other):
         if not isinstance(other, Model):
             return NotImplemented
-        return CombinedModel(self, other, operator.div, '/')
+        return CombinedModel(self, other, '/')
 
     @property
     def original_params(self):
@@ -143,7 +143,16 @@ class Model(object):
             self.params.append(Param(pname, initval))
 
     def get_components(self):
+        """Return a list of invidual non-modifier components.
+
+        Modifiers are applied to the components as appropriate.
+        """
         return [self]
+
+    def get_description(self):
+        if self.name:
+            return '%s[%s]' % (self.__class__.__name__, self.name)
+        return self.__class__.__name__
 
     def is_modifier(self):
         return False
@@ -158,11 +167,25 @@ class CombinedModel(Model):
     Parameters are combined from both; their names may not clash.
     """
 
-    def __init__(self, a, b, op, opstr=''):
+    op_prio = {
+        '+': 0,
+        '-': 0,
+        '*': 1,
+        '/': 1,
+    }
+
+    op_fcn = {
+        '+': operator.add,
+        '-': operator.sub,
+        '*': operator.mul,
+        '/': operator.div,
+    }
+
+    def __init__(self, a, b, opstr):
         self.params = []
         self._a = a
         self._b = b
-        self._op = op
+        self._op = op = self.op_fcn[opstr]
         self._opstr = opstr
         if a.name and b.name:
             self.name = a.name + opstr + b.name
@@ -177,14 +200,29 @@ class CombinedModel(Model):
             if self._b.is_modifier():
                 # apparently nothing worthy of plotting
                 return []
-            return [CombinedModel(self._a, c, self._op, self._opstr)
+            return [CombinedModel(self._a, c, self._opstr)
                     for c in self._b.get_components()]
         elif self._b.is_modifier():
-            return [CombinedModel(c, self._b, self._op, self._opstr)
+            return [CombinedModel(c, self._b, self._opstr)
                     for c in self._a.get_components()]
         else:
             # no modifiers
             return self._a.get_components() + self._b.get_components()
+
+    def get_description(self):
+        s = ''
+        if isinstance(self._a, CombinedModel) and \
+            self.op_prio[self._a._opstr] < self.op_prio[self._opstr]:
+            s += '(%s)' % self._a.get_description()
+        else:
+            s += self._a.get_description()
+        s += ' ' + self._opstr + ' '
+        if isinstance(self._b, CombinedModel) and \
+            self.op_prio[self._b._opstr] < self.op_prio[self._opstr]:
+            s += '(%s)' % self._b.get_description()
+        else:
+            s += self._b.get_description()
+        return s
 
 
 class Function(Model):
@@ -199,6 +237,9 @@ class Function(Model):
 
         self.fcn = lambda p, x: \
             self._real_fcn(x, *(p[pv] for pv in pvs))
+
+    def get_description(self):
+        return 'Function[%s, %s]' % (self.name, self._real_fcn.func_name)
 
 
 class GlobalModel(Model):
