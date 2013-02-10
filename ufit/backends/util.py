@@ -39,6 +39,7 @@ def prepare_params(params, data):
             else:
                 del dependent[p]
                 dep_order.append((p, expr))
+    #pd.pop('__builtins__', None)
 
     return varying, varynames, dep_order, pd
 
@@ -47,4 +48,4 @@ def update_params(parexprs, data, pd):
     pd['data'] = data.meta
     for p, expr in parexprs:
         pd[p] = param_eval(expr, pd)
-    #del pd['__builtins__']
+    #pd.pop('__builtins__', None)

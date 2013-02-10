@@ -223,12 +223,12 @@ class GlobalModel(Model):
                     diff_params[i].append((p.name, new_param.name))
 
         def new_fcn(p, x):
-            res = []
+            results = []
+            dpd = dict((pn, p[pn]) for pn in overall_params)
             for i, data in enumerate(datas):
-                dpd = dict((pn, p[pn]) for pn in overall_params)
                 dpd.update((opn, p[pn]) for (opn, pn) in diff_params[i])
-                res.extend(model.fcn(dpd, data.x))
-            return array(res)
+                results.append(model.fcn(dpd, data.x))
+            return concatenate(results)
         self.fcn = new_fcn
 
     def generate_results(self, overall_res):
