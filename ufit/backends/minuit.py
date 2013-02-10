@@ -18,12 +18,16 @@ backend_name = 'minuit'
 def do_fit(data, fcn, params, add_kw):
     varying, varynames, dependent, _ = prepare_params(params, data)
 
-    # sadly, pyminuit insists on a function with the exact number and
+    # sadly, parameter names are restricted to 10 characters with pyminuit
+    minuitnames = ['p%d' % j for j in range(len(varynames))]
+    minuit_map = dict(zip(varynames, minuitnames))
+
+    # also sadly, pyminuit insists on a function with the exact number and
     # names of the parameters in the signature, so we have to create
     # such a function dynamically
 
-    code = 'def minuitfcn(' + ', '.join(varynames) + '''):
-        pd = {''' + ', '.join("%r: %s" % (pn, pn) for pn in varynames) + '''}
+    code = 'def minuitfcn(' + ', '.join(minuitnames) + '''):
+        pd = {''' + ', '.join("%r: %s" % v for v in minuit_map.items()) + '''}
         update_params(dependent, data, pd)
         return ((fcn(pd, data.x) - data.y)**2 / data.dy**2).sum()
     '''
@@ -48,11 +52,15 @@ def do_fit(data, fcn, params, add_kw):
         return False, str(e)
     #m.minos()  -> would calculate more exact and asymmetric errors
 
-    pd = m.values.copy()
+    pd = dict((pn, m.values[minuit_map[pn]]) for pn in varynames)
     update_params(dependent, data, pd)
     for p in params:
         p.value = pd[p.name]
-        p.error = m.errors.get(p.name, 0)
-        p.correl = {}  # XXX
+        if p.name in minuit_map:
+            p.error = m.errors[minuit_map[p.name]]
+            p.correl = {}  # XXX
+        else:
+            p.error = 0
+            p.correl = {}
 
     return True, ''
