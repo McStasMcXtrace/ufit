@@ -5,6 +5,7 @@ import matplotlib.pyplot as pl
 
 from ufit import UFitError
 from ufit.utils import attrdict
+from ufit.data.merge import rebin
 
 
 class Dataset(object):
@@ -31,7 +32,7 @@ class Dataset(object):
             if nscale != 1:
                 self.yaxis += ' / %s %s' % (nscale, ncol)
             else:
-                self.yaxis = ' / %s' % ncol
+                self.yaxis += ' / %s' % ncol
         else:
             self.norm = ones(len(self.y_raw))
 
@@ -72,22 +73,17 @@ class Dataset(object):
                               self.meta,
                               self.xcol, self.ycol, self.ncol)
 
-    def merge(self, places, *others):
-        points = {}
+    def merge(self, binsize, *others):
         allsets = (self,) + others
-        for dset in allsets:
-            if dset.xcol != self.xcol or dset.ycol != self.ycol:
-                raise UFitError('cannot merge datasets with different x/ycols')
-            for (x, y, n) in zip(dset.x, dset.y_raw, dset.norm):
-                xr = round(x, places)
-                if xr in points:
-                    points[xr] = (points[xr][0] + y, points[xr][1] + n)
-                else:
-                    points[xr] = (y, n)
-        newcols = array([(x, y, n) for x, (y, n) in sorted(points.iteritems())])
+        all_x = concatenate([dset.x for dset in allsets])
+        all_y = concatenate([dset.y_raw for dset in allsets])
+        all_n = concatenate([dset.norm for dset in allsets])
+        new_array = rebin(all_x, all_y, all_n, binsize)
+        # XXX should we merge meta's?
         return self.__class__('&'.join(d.name for d in allsets),
-                              [self.xcol, self.ycol, self.ncol], newcols,
-                              self.meta, self.xcol, self.ycol, self.ncol)
+                              [self.xcol, self.ycol, self.ncol], new_array,
+                               self.meta, self.xcol, self.ycol, self.ncol,
+                               self.nscale)
 
     def plot(self, _axes=None, title=None, xlabel=None, ylabel=None):
         if _axes is None:
@@ -103,6 +99,7 @@ class Dataset(object):
         _axes.set_xlabel(xlabel or self.xaxis)
         _axes.set_ylabel(ylabel or self.yaxis)
         _axes.legend(prop={'size': 'small'})
+        _axes.grid()
 
 
 class DataList(dict):
