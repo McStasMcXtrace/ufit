@@ -51,6 +51,8 @@ def read_data(filename, fp):
                 meta['experiment'] = oval.lower()
             elif key.endswith('_samplename'):
                 meta['title'] = oval
+            elif key == 'number':
+                meta['filenumber'] = int(oval)
             meta[key] = val
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
@@ -67,8 +69,11 @@ def read_data(filename, fp):
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols)
     if 'Ts' in colnames:
         tindex = colnames.index('Ts')
-        meta['Ts'] = coldata[:,tindex].mean()
+        meta['temperature'] = coldata[:,tindex].mean()
+    if 'sT' in colnames:
+        tindex = colnames.index('sT')
+        meta['temperature'] = coldata[:,tindex].mean()
     if 'B' in colnames:
         tindex = colnames.index('B')
-        meta['B'] = coldata[:,tindex].mean()
+        meta['magfield'] = coldata[:,tindex].mean()
     return colnames, coldata, meta

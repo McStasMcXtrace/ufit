@@ -1,7 +1,7 @@
 # ufit full GUI window
 
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget
+from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, QFrame
 
 from ufit.models import Background
 from ufit.gui.common import MPLCanvas, MPLToolbar, loadUi
@@ -75,6 +75,9 @@ class UFitMain(QMainWindow):
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
+        self.empty = QFrame(self)
+        self.stacker.addWidget(self.empty)
+
         self.datalistmodel = DataListModel()
         self.datalistmodel.panels.append(('<h3>Load data</h3>', self.dloader))
 
@@ -104,12 +107,25 @@ class UFitMain(QMainWindow):
             self.select_new_panel(panel)
             panel.replot()
             self.toolbar.update()
+        else:
+            panels = [self.datalistmodel.panels[i][1] for i in indlist]
+            self.canvas.axes.clear()
+            # XXX select same color for data+fit, cycle markersx
+            for p in panels:
+                p.model.plot(p.data, _axes=self.canvas.axes, labels=False)
+            self.canvas.draw()
+            self.select_new_panel(self.empty)
 
     def handle_new_data(self, data):
         panel = DatasetPanel(self, self.canvas, data)
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
-        self.datalistmodel.panels.append(('<h3>%s</h3>' % data.name, panel))
+        self.datalistmodel.panels.append(
+            ('<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' %
+             (len(self.datalistmodel.panels),
+              data.data_title,
+              data.environment,
+              '<br>'.join(data.sources)), panel))
         self.datalistmodel.reset()
         self.datalist.setCurrentIndex(self.datalistmodel.index(len(self.datalistmodel.panels)-1,0))
 

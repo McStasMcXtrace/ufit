@@ -122,7 +122,7 @@ class Model(object):
             self.params = [p.copy() for p in self._orig_params]
 
     def plot(self, data, title=None, xlabel=None, ylabel=None,
-             _pdict=None, _axes=None):
+             labels=True, _pdict=None, _axes=None):
         if _pdict is None:
             _pdict = prepare_params(self.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
@@ -131,7 +131,7 @@ class Model(object):
             pl.figure()
             _axes = pl.gca()
         data.plot(_axes=_axes, xlabel=xlabel, ylabel=ylabel, title=title)
-        _axes.plot(xx, yy, lw=2, label='fit')
+        _axes.plot(xx, yy, lw=2, label=labels and 'fit' or '')
 
     def plot_components(self, data, _pdict=None, _axes=None):
         if _pdict is None:

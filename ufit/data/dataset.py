@@ -2,20 +2,24 @@
 
 from numpy import array, concatenate, ones, sqrt
 import matplotlib.pyplot as pl
+from matplotlib.cbook import flatten
 
-from ufit import UFitError
 from ufit.utils import attrdict
 from ufit.data.merge import rebin
 
 
 class Dataset(object):
-    def __init__(self, name, colnames, data, meta, xcol, ycol,
-                 ncol=None, nscale=1):
-        self.name = name
+    def __init__(self, colnames, data, meta, xcol, ycol,
+                 ncol=None, nscale=1, name='', sources=None):
         self.colnames = colnames
         self.cols = dict((cn, data[:,i]) for (i, cn) in enumerate(colnames))
         self.data = data
         self.meta = attrdict(meta)
+        self.name = name or str(self.meta.get('filenumber', ''))
+        self.full_name = '%s:%s:%s' % (self.meta.get('instrument', ''),
+                                       self.meta.get('experiment', ''),
+                                       self.name)
+        self.sources = sources or [self.full_name]
 
         self.xcol = xcol
         self.x = self[xcol]
@@ -28,6 +32,7 @@ class Dataset(object):
         self.ncol = ncol
         self.nscale = nscale
         if ncol is not None:
+            self.norm_raw = self[ncol]
             self.norm = self[ncol] / nscale
             if nscale != 1:
                 self.yaxis += ' / %s %s' % (nscale, ncol)
@@ -40,10 +45,21 @@ class Dataset(object):
         self.dy = sqrt(self.y_raw)/self.norm
         self.dy[self.dy==0] = 0.1
 
+    @property
+    def environment(self):
+        s = []
+        if 'temperature' in self.meta:
+            s.append('T = %.3f K' % self.meta['temperature'])
+        return ', '.join(s)
+
+    @property
+    def data_title(self):
+        return self.meta.get('title', '')
+
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
         arr = array((x, y)).T
-        obj = cls(name, [xcol, ycol], arr, meta or {}, xcol, ycol)
+        obj = cls([xcol, ycol], arr, meta or {}, xcol, ycol, name=name)
         obj.dy = dy
         return obj
 
@@ -59,47 +75,46 @@ class Dataset(object):
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return self.__class__(self.name, self.colnames,
-                                  self.data[key], self.meta,
-                                  self.xcol, self.ycol, self.ncol)
+            return self.__class__(self.colnames, self.data[key], self.meta,
+                                  self.xcol, self.ycol, self.ncol, name=self.name)
         elif key in self.cols:
             return self.cols[key]
         raise KeyError('no such data column: %s' % key)
 
     def __or__(self, other):
-        return self.__class__(self.name + '|' + other.name,
-                              self.colnames,
+        return self.__class__(self.colnames,
                               concatenate((self.data, other.data)),
                               self.meta,
-                              self.xcol, self.ycol, self.ncol)
+                              self.xcol, self.ycol, self.ncol,
+                              name=self.name + '|' + other.name)
 
     def merge(self, binsize, *others):
         allsets = (self,) + others
         all_x = concatenate([dset.x for dset in allsets])
         all_y = concatenate([dset.y_raw for dset in allsets])
-        all_n = concatenate([dset.norm for dset in allsets])
+        all_n = concatenate([dset.norm_raw for dset in allsets])
         new_array = rebin(all_x, all_y, all_n, binsize)
+        sources = list(flatten([dset.sources for dset in allsets]))
         # XXX should we merge meta's?
-        return self.__class__('&'.join(d.name for d in allsets),
-                              [self.xcol, self.ycol, self.ncol], new_array,
+        return self.__class__([self.xcol, self.ycol, self.ncol], new_array,
                                self.meta, self.xcol, self.ycol, self.ncol,
-                               self.nscale)
+                               self.nscale,
+                               name='&'.join(d.name for d in allsets),
+                               sources=sources)
 
     def plot(self, _axes=None, title=None, xlabel=None, ylabel=None):
         if _axes is None:
             pl.figure()
             _axes = pl.gca()
         _axes.errorbar(self.x, self.y, self.dy, fmt='o', ms=8,
-                       label='%s:%s:%s' % (self.meta.get('instrument', ''),
-                                           self.meta.get('experiment', ''),
-                                           self.name))
+                       label=self.name)
         _axes.set_title(title or '%s\n%s' % (self.meta.get('title', ''),
                                              self.meta.get('info', '')),
                         size='medium')
         _axes.set_xlabel(xlabel or self.xaxis)
         _axes.set_ylabel(ylabel or self.yaxis)
         _axes.legend(prop={'size': 'small'})
-        _axes.grid()
+        _axes.grid(True)
 
 
 class DataList(dict):

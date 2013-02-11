@@ -4,14 +4,14 @@
 
 from PyQt4.QtCore import Qt, QVariant, QSize, QString, SIGNAL, \
      QAbstractListModel, QModelIndex
-from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle
+from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle, QAbstractItemView
 
 
 class DataListView(QListView):
 
     def __init__(self, parent):
         QListView.__init__(self, parent)
-        #self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def selectionChanged(self, selected, deselected):
         self.emit(SIGNAL('newSelection'))

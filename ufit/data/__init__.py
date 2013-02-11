@@ -36,7 +36,7 @@ class Loader(object):
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)
-        dset = Dataset(str(n), colnames, coldata, meta, xcol, ycol, mcol, mscale)
+        dset = Dataset(colnames, coldata, meta, xcol, ycol, mcol, mscale)
         self.sets[n] = dset
         return dset
 

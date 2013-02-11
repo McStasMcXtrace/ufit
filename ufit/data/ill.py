@@ -26,6 +26,8 @@ def read_data(filename, fp):
             meta['info'] = ' '.join(line[7:].rstrip().lower().split())
         elif line.startswith('TITLE:'):
             meta['title'] = line[6:].strip()
+        elif line.startswith('FILE_:'):
+            meta['filenumber'] = int(line[6:].strip())
         elif line.startswith('PARAM:'):
             parts = line[6:].strip().rstrip(',').split(',')
             for part in parts:
@@ -38,6 +40,8 @@ def read_data(filename, fp):
         line = fp.readline()
         if not line:
             break
+    if 'TT' in meta:
+        meta['temperature'] = meta['TT']
     names = fp.readline().split()
     usecols = range(len(names))
     if names[0] == 'PNT':
