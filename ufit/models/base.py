@@ -271,6 +271,8 @@ class Function(Model):
     """
     def __init__(self, fcn, name='', **init):
         self._real_fcn = fcn
+        if not name and fcn.__name__ != '<lambda>':
+            name = fcn.__name__
         pvs = self._init_params(name, inspect.getargspec(fcn)[0][1:], init)
 
         self.fcn = lambda p, x: \
