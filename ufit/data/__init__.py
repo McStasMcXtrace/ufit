@@ -63,7 +63,9 @@ class Loader(object):
                 if coldata[:,i].sum() > maxmon:
                     mguess = colname
                     maxmon = coldata[:,i].sum()
-                    nmon = int(coldata[:,i].mean())
+                    # use average monitor counts for normalization, but
+                    # round to 2 significant digits
+                    nmon = int(float('%.2g' % coldata[:,i].mean()))
         return colnames, xguess, yguess, mguess, nmon
 
 
