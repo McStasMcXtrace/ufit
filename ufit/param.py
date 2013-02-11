@@ -135,7 +135,7 @@ def prepare_params(params, meta):
         for p, expr in dependent.items():
             try:
                 pd[p] = param_eval(expr, pd)
-            except NameError:
+            except (NameError, AttributeError):
                 pass
             else:
                 del dependent[p]
