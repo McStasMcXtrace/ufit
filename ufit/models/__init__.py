@@ -18,4 +18,5 @@ concrete_models = [
     CKI_Corr,
     Bose,
     Cosine,
+    ExpDecay,
 ]
