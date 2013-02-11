@@ -2,13 +2,19 @@ README for ufit
 ===============
 
 ufit is a universal scattering data fitting package for use in
-noninteractive scripts.  It handles complex fitting functions by
-combining them from pre-defined "model" objects and handling
-parameter interdependencies well.
+noninteractive scripts, and with a graphical user interface.
+
+It handles complex fitting functions by combining them from
+pre-defined "model" objects and handling parameter constraints
+and interdependencies well.
 
 Fitting is done by one of several backends:
+
 * lmfit (L-M leastsq that allows parameter constraints)
 * minuit (pyminuit 1 or 2)
 * scipy (basic L-M leastsq from scipy.optimize)
 
-Results can be easily plotted and further processed.
+Results can be easily plotted and further processed.  Plotting
+is handled by matplotlib.
+
+The GUI uses PyQt 4.
