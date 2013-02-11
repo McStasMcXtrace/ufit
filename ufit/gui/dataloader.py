@@ -69,7 +69,7 @@ class DataLoader(QWidget):
         self.datatemplate.setText(dtempl)
         self.loader.template = dtempl
         try:
-            cols, xguess, yguess, mguess = self.loader.guess_cols(numor)
+            cols, xguess, yguess, mguess, nmon = self.loader.guess_cols(numor)
         except Exception, e:
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
@@ -87,6 +87,7 @@ class DataLoader(QWidget):
                 self.ycol.setCurrentIndex(i)
             if name == mguess:
                 self.moncol.setCurrentIndex(i)
+        self.monscale.setText(str(nmon))
         self.numors.setText(str(numor))
         self.open_data()
 

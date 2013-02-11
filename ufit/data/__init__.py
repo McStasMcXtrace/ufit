@@ -53,6 +53,7 @@ class Loader(object):
             xguess = colnames[0]
         maxcts = 0
         maxmon = 0
+        nmon = 0
         for i, colname in enumerate(colnames):
             if colname.lower().startswith(('ctr', 'cnts')):
                 if coldata[:,i].sum() > maxcts:
@@ -62,7 +63,8 @@ class Loader(object):
                 if coldata[:,i].sum() > maxmon:
                     mguess = colname
                     maxmon = coldata[:,i].sum()
-        return colnames, xguess, yguess, mguess
+                    nmon = int(coldata[:,i].mean())
+        return colnames, xguess, yguess, mguess, nmon
 
 
 # simplified interface for usage in noninteractive scripts

@@ -141,7 +141,7 @@ class Model(object):
         xx = linspace(data.x[0], data.x[-1], 1000)
         for comp in self.get_components():
             yy = comp.fcn(_pdict, xx)
-            _axes.plot(xx, yy, '--', label=comp.name)
+            _axes.plot(xx, yy, '-.', label=comp.name)
         _axes.legend(prop={'size': 'small'})
 
     def add_params(self, **p):

@@ -18,14 +18,20 @@ class Dataset(object):
 
         self.xcol = xcol
         self.x = self[xcol]
+        self.xaxis = xcol
 
         self.ycol = ycol
         self.y_raw = self[ycol]
+        self.yaxis = ycol
 
         self.ncol = ncol
         self.nscale = nscale
         if ncol is not None:
             self.norm = self[ncol] / nscale
+            if nscale != 1:
+                self.yaxis += ' / %s %s' % (nscale, ncol)
+            else:
+                self.yaxis = ' / %s' % ncol
         else:
             self.norm = ones(len(self.y_raw))
 
@@ -94,8 +100,8 @@ class Dataset(object):
         _axes.set_title(title or '%s\n%s' % (self.meta.get('title', ''),
                                              self.meta.get('info', '')),
                         size='medium')
-        _axes.set_xlabel(xlabel or self.xcol)
-        _axes.set_ylabel(ylabel or self.ycol)
+        _axes.set_xlabel(xlabel or self.xaxis)
+        _axes.set_ylabel(ylabel or self.yaxis)
         _axes.legend(prop={'size': 'small'})
 
 
