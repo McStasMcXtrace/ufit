@@ -1,0 +1,27 @@
+Models
+======
+
+* math. functions in expr namespace
+* Function: name from __name__
+* cos
+* exp. decay
+* power law
+* convolution model
+
+GUI
+===
+
+* add'l parameters
+* save/load
+* multiple sets: new data/same model, other model
+* remove bad datapoints
+* data ops: rebin, add, sub, shift
+* keyboard shortcuts in plot
+
+Bugs
+====
+
+* global fit expr fix
+* check param names for syntax
+* bugfix get_components mit (A + B) + C statt A + (B + C)
+* fix initial guess Y axis chaos
