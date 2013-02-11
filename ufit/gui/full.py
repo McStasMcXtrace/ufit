@@ -33,6 +33,7 @@ class DatasetPanel(QTabWidget):
                      self.on_mbuilder_newModel)
         self.addTab(self.mbuilder, 'Model')
         self.addTab(self.fitter, 'Fit')
+        # XXX data ops tab
 
     def on_mbuilder_newModel(self, model):
         self.model = model
@@ -71,23 +72,28 @@ class UFitMain(QMainWindow):
         layout2.setContentsMargins(0, 0, 0, 0)
         self.canvas = MPLCanvas(self)
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
+        # XXX can one add to the MPL toolbar?
         self.toolbar = MPLToolbar(self.canvas, self)
         layout2.addWidget(self.toolbar)
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)
 
         # create data loader
+        # XXX more inputs: data name, take model from
         self.dloader = DataLoader(self, self.canvas)
         self.connect(self.dloader, SIGNAL('newData'), self.handle_new_data)
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
+        # XXX stopgap: add some useful things to do with multiple datasets
+        # (e.g. plot fit parameters vs another parameter)
         self.empty = QFrame(self)
         self.stacker.addWidget(self.empty)
 
         self.datalistmodel = DataListModel(self.panels)
         self.panels.append(('<h3>Load data</h3>', self.dloader))
 
+        # XXX context menu: remove, merge with other
         self.datalist.setModel(self.datalistmodel)
         self.datalist.setItemDelegate(DataListDelegate(self))
         self.datalistmodel.reset()
@@ -119,7 +125,7 @@ class UFitMain(QMainWindow):
         else:
             panels = [self.panels[i][1] for i in indlist]
             self.canvas.axes.clear()
-            # XXX select same color for data+fit, cycle markers
+            # XXX select same color for data+fit, cycle markers, better title
             for p in panels:
                 p.model.plot(p.data, _axes=self.canvas.axes, labels=False)
             self.canvas.draw()
@@ -165,6 +171,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionSave_triggered(self):
+        # XXX track self filename
         self.on_actionSaveAs_triggered()
 
     @qtsig('')
