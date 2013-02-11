@@ -80,7 +80,7 @@ class Fitter(QWidget):
              if isinstance(self.data.meta[m], (int, long, float))]
         for p in self.model.params:
             e0 = QLabel(p.name, self)
-            e1 = SmallLineEdit('%.4g' % p.value, self)
+            e1 = SmallLineEdit('%.5g' % p.value, self)
             e2 = QLabel('', self)
             e3 = QCheckBox(self)
             e4 = QComboBox(self)
@@ -92,8 +92,8 @@ class Fitter(QWidget):
                 e4.lineEdit().setText('')
             else:
                 e4.lineEdit().setText(p.expr or '')
-            e5 = SmallLineEdit(p.pmin is not None and '%.4g' % p.pmin or '', self)
-            e6 = SmallLineEdit(p.pmax is not None and '%.4g' % p.pmax or '', self)
+            e5 = SmallLineEdit(p.pmin is not None and '%.5g' % p.pmin or '', self)
+            e6 = SmallLineEdit(p.pmax is not None and '%.5g' % p.pmax or '', self)
             ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6)
             for j, ctl in enumerate(ctls):
                 layout.addWidget(ctl, i, j)
@@ -168,7 +168,7 @@ class Fitter(QWidget):
                 continue
             p0 = other_params[p.name]
             ctls = self.param_controls[p]
-            ctls[1].setText('%.4g' % p0.value)
+            ctls[1].setText('%.5g' % p0.value)
             ctls[3].setChecked(False)
             if p0.expr and is_float(p0.expr):
                 ctls[1].setText(p0.expr)
@@ -176,8 +176,8 @@ class Fitter(QWidget):
                 ctls[4].lineEdit().setText('')
             else:
                 ctls[4].lineEdit().setText(p0.expr or '')
-            ctls[5].setText(p0.pmin is not None and '%.4g' % p0.pmin or '')
-            ctls[6].setText(p0.pmax is not None and '%.4g' % p0.pmax or '')
+            ctls[5].setText(p0.pmin is not None and '%.5g' % p0.pmin or '')
+            ctls[6].setText(p0.pmax is not None and '%.5g' % p0.pmax or '')
         self.do_plot()
 
     def on_canvas_pick(self, event):
@@ -205,7 +205,7 @@ class Fitter(QWidget):
             self.model.apply_pick(self._pick_values)
             for p in self.model.params:
                 ctls = self.param_controls[p]
-                ctls[1].setText('%.4g' % p.value)
+                ctls[1].setText('%.5g' % p.value)
             self.do_plot()
         self._pick_finished = callback
 
@@ -275,8 +275,8 @@ class Fitter(QWidget):
         self.canvas.draw()
 
         for p in res.params:
-            self.param_controls[p][1].setText('%.4g' % p.value)
-            self.param_controls[p][2].setText(u'± %.4g' % p.error)
+            self.param_controls[p][1].setText('%.5g' % p.value)
+            self.param_controls[p][2].setText(u'± %.5g' % p.error)
 
         self.last_result = res
 

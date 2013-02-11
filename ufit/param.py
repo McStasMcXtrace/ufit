@@ -90,7 +90,7 @@ class Param(object):
         return cp
 
     def __str__(self):
-        s = '%-15s = %10.4g +/- %10.4g' % (self.name, self.value, self.error)
+        s = '%-15s = %10.5g +/- %10.5g' % (self.name, self.value, self.error)
         if self.expr:
             s += ' (fixed: %s)' % self.expr
         if self.overall:
