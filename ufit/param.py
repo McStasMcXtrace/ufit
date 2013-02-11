@@ -1,6 +1,8 @@
 # ufit parameter definitions
 
+import re
 import copy
+import numpy as np
 
 from ufit import UFitError
 
@@ -24,9 +26,26 @@ class limited(tuple):
         return (min, max, v)
 
 
+expr_namespace = {
+    'data': None,  # replaced by the dataset's metadata dict, but in here
+                   # so that no parameter can be called "data"
+}
+for fcn in ['pi', 'sqrt', 'sin', 'cos', 'tan', 'arcsin', 'arccos',
+            'arctan', 'exp', 'log', 'radians', 'degrees', 'ceil',
+            'floor', 'sinh', 'cosh', 'tanh']:
+    expr_namespace[fcn] = getattr(np, fcn)
+
+id_re = re.compile('[a-zA-Z_][a-zA-Z0-9_]*$')
+
+
 class Param(object):
     def __init__(self, name, value=0, expr=None, pmin=None, pmax=None,
                  overall=False, finalize=lambda x: x, delta=0):
+        if not id_re.match(name):
+            raise UFitError('Parameter name %r is not a valid Python '
+                            'identifier' % name)
+        if name in expr_namespace:
+            raise UFitError('Parameter name %r is reserved' % name)
         self.name = name
         self.value = value
         self.expr = expr
@@ -98,6 +117,7 @@ def prepare_params(params, meta):
             varynames.append(p.name)
 
     pd = dict((p.name, p.value) for p in varying)
+    pd.update(expr_namespace)
     pd['data'] = meta
 
     # poor man's dependency tracking of parameter expressions
@@ -122,6 +142,7 @@ def prepare_params(params, meta):
 
 
 def update_params(parexprs, meta, pd):
+    pd.update(expr_namespace)
     pd['data'] = meta
     for p, expr in parexprs:
         pd[p] = param_eval(expr, pd)

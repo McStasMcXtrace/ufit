@@ -1,7 +1,6 @@
 Models
 ======
 
-* math. functions in expr namespace
 * Function: name from __name__
 * cos
 * exp. decay
@@ -22,6 +21,5 @@ Bugs
 ====
 
 * global fit expr fix
-* check param names for syntax
 * bugfix get_components mit (A + B) + C statt A + (B + C)
 * fix initial guess Y axis chaos
