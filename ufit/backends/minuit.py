@@ -2,8 +2,8 @@
 
 from __future__ import absolute_import
 
-from ufit.backends.util import prepare_data, prepare_params, update_params, \
-     get_chisqr
+from ufit.param import prepare_params, update_params
+from ufit.backends.util import prepare_data, get_chisqr
 
 try:
     from minuit import Minuit

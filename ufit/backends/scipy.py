@@ -3,8 +3,9 @@
 from __future__ import absolute_import
 from numpy import sqrt, inf
 from scipy.optimize import leastsq
-from ufit.backends.util import prepare_data, prepare_params, update_params, \
-     get_chisqr
+
+from ufit.param import prepare_params, update_params
+from ufit.backends.util import prepare_data, get_chisqr
 
 __all__ = ['do_fit', 'backend_name']
 

@@ -6,7 +6,8 @@ from numpy import concatenate, linspace
 import matplotlib.pyplot as pl
 
 from ufit import backends, UFitError, Param, Run, Result
-from ufit.backends.util import prepare_params, get_chisqr
+from ufit.param import prepare_params
+from ufit.backends.util import get_chisqr
 
 
 class Model(object):
