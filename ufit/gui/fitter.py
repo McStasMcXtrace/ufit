@@ -183,6 +183,8 @@ class Fitter(QWidget):
     def on_canvas_pick(self, event):
         if not self.picking:
             return
+        if event.xdata is None:
+            return
         self._pick_values.append((event.xdata, event.ydata))
         if len(self._pick_values) == len(self._pick_points):
             self.picking = False

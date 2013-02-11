@@ -82,4 +82,4 @@ def read_data(*args):
     return global_loader.load(*args)
 
 def as_data(x, y, dy, name=''):
-    return Run.from_arrays(name, x, y, dy)
+    return Run.from_arrays(name or 'data', x, y, dy)
