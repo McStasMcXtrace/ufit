@@ -26,7 +26,9 @@ def rebin(x, y, n, binsize):
 
     for i in xrange(nbins):
         stop = newarray[i, 0]
-        indices = x < stop + halfbinsize
+        # get indices of all data points with x values lying below stop
+        indices = x <= (stop + halfbinsize)
+        # remove indices of data already used in previous bins
         indices &= data_unused
         if indices.any():
             newarray[i, 1] += y[indices].sum()

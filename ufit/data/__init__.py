@@ -55,7 +55,7 @@ class Loader(object):
         maxmon = 0
         nmon = 0
         for i, colname in enumerate(colnames):
-            if colname.lower().startswith(('ctr', 'cnts')):
+            if colname.lower().startswith(('ctr', 'cnts', 'det')):
                 if coldata[:,i].sum() > maxcts:
                     yguess = colname
                     maxcts = coldata[:,i].sum()
