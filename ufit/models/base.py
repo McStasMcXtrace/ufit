@@ -6,6 +6,7 @@ from numpy import concatenate, linspace
 import matplotlib.pyplot as pl
 
 from ufit import backends, UFitError, Param, Run, Result
+from ufit.data.run import attrdict
 from ufit.param import prepare_params
 from ufit.backends.util import get_chisqr
 
@@ -113,11 +114,15 @@ class Model(object):
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg, chi2)
 
+    def global_fit(self, datas, **kw):
+        return GlobalModel(self, datas).fit(datas, **kw)
+
     def reset(self):
         if self._orig_params is not None:
             self.params = [p.copy() for p in self._orig_params]
 
-    def plot(self, data, title=None, xlabel=None, ylabel=None, _pdict=None, _axes=None):
+    def plot(self, data, title=None, xlabel=None, ylabel=None,
+             _pdict=None, _axes=None):
         if _pdict is None:
             _pdict = prepare_params(self.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
@@ -138,15 +143,6 @@ class Model(object):
             yy = comp.fcn(_pdict, xx)
             _axes.plot(xx, yy, '--', label=comp.name)
         _axes.legend(prop={'size': 'small'})
-
-    def global_fit(self, datas, **kw):
-        new_model = GlobalModel(self, datas)
-        cumulative_data = Run.from_arrays('cumulative data',
-                                          concatenate([d.x for d in datas]),
-                                          concatenate([d.y for d in datas]),
-                                          concatenate([d.dy for d in datas]))
-        res = new_model.fit(cumulative_data, **kw)
-        return new_model.generate_results(res)
 
     def add_params(self, **p):
         for pname, initval in p.iteritems():
@@ -283,16 +279,25 @@ class Function(Model):
 
 
 class GlobalModel(Model):
-    """Model for a global fit with some parameters varied."""
+    """Model for a global fit for multiple datasets.
+
+    Parameters can be global ("overall" parameters) or local to each dataset.
+    Global parameters can be referenced in expressions from local parameters,
+    but no the other way around.
+    """
 
     def __init__(self, model, datas):
         self._model = model
         self._datas = datas
         ndata = len(datas)
 
+        # generate a new parameter list with the model's original parameters
+        # duplicated N times for N datasets, except for overall parameters;
+        # the duplicates get named oldname__i where i is the data index
+
         self.params = []
-        overall_params = self._overall_params = []
-        diff_params = self._diff_params = [[] for i in range(ndata)]
+        overall_params = []
+        diff_params = [[] for i in range(ndata)]
         for p in model.params:
             if p.overall:
                 self.params.append(p.copy())
@@ -301,27 +306,60 @@ class GlobalModel(Model):
                 for i in range(ndata):
                     new_param = p.copy(p.name + '__' + str(i))
                     self.params.append(new_param)
-                    diff_params[i].append((p.name, new_param.name))
+                    diff_params[i].append((p.name, new_param))
+
+        # rewrite expressions to refer to the new parameter names (__i suffix)
+        # and new data meta dictionaries (data.di)
+
+        for i, dplist in enumerate(diff_params):
+            for oldname, param in dplist:
+                param._orig_expr = param.expr
+                if not param.expr:
+                    continue
+                for oldname0, p0 in dplist:
+                    param.expr = param.expr.replace(oldname0, p0.name)
+                param.expr = param.expr.replace('data.', 'data.d%d.' % i)
+
+        # global fitting function: call model function once for each dataset
+        # with the original data, with the parameter values taken from the
+        # duplicated params
 
         def new_fcn(p, x):
             results = []
             dpd = dict((pn, p[pn]) for pn in overall_params)
             for i, data in enumerate(datas):
-                dpd.update((opn, p[pn]) for (opn, pn) in diff_params[i])
+                dpd.update((opn, p[pn.name]) for (opn, pn) in diff_params[i])
                 results.append(model.fcn(dpd, data.x))
             return concatenate(results)
         self.fcn = new_fcn
 
-    def generate_results(self, overall_res):
+    def fit(self, datas, **kw):
+
+        # fit a cumulative data set consisting of a concatenation of all data
+
+        cumulative_data = Run.from_arrays(
+            'cumulative data',
+            concatenate([d.x for d in datas]),
+            concatenate([d.y for d in datas]),
+            concatenate([d.dy for d in datas]),
+            attrdict(('d%d' % i, d.meta) for (i, d) in enumerate(datas)),
+        )
+        overall_res = Model.fit(self, cumulative_data, **kw)
+
+        # generate a list of results for each dataset with the original
+        # parameter names and expressions
+
         reslist = []
-        for i, data in enumerate(self._datas):
+        for i, data in enumerate(datas):
             suffix = '__%d' % i
             paramlist = []
             for p in self.params:
                 if p.overall:
                     paramlist.append(p)
                 elif p.name.endswith(suffix):
-                    paramlist.append(p.copy(p.name[:-len(suffix)])) # XXX
+                    clone_param = p.copy(p.name[:-len(suffix)])
+                    clone_param.expr = clone_param._orig_expr
+                    paramlist.append(clone_param)
             chi2 = get_chisqr(self._model.fcn, data.x, data.y, data.dy, paramlist)
             reslist.append(Result(overall_res.success, data, self._model,
                                   paramlist, overall_res.message, chi2))
