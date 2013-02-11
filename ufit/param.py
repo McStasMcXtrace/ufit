@@ -41,6 +41,8 @@ class Param(object):
 
     @classmethod
     def from_init(cls, name, pdef):
+        if isinstance(pdef, cls):
+            return pdef
         self = cls(name)
         while not isinstance(pdef, (int, long, float, str)):
             if isinstance(pdef, overall):
