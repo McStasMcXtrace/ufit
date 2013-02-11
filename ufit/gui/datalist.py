@@ -20,9 +20,9 @@ class DataListView(QListView):
 
 class DataListModel(QAbstractListModel):
 
-    def __init__(self):
+    def __init__(self, panels):
         QAbstractListModel.__init__(self)
-        self.panels = []
+        self.panels = panels
 
     def rowCount(self, index=QModelIndex()):
         return len(self.panels)

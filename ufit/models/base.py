@@ -167,6 +167,10 @@ class Model(object):
             return '%s[%s]' % (self.__class__.__name__, self.name)
         return self.__class__.__name__
 
+    def __reduce__(self):
+        """Pickling support: reconstruct the object from a constructor call."""
+        return (self.__class__, (self.name,) + tuple(self.params))
+
     def get_pick_points(self):
         """Get a list of point names that should be picked for initial guess."""
         if self.name:
@@ -218,19 +222,31 @@ class CombinedModel(Model):
 
         self.fcn = lambda p, x: op(a.fcn(p, x), b.fcn(p, x))
 
+        # cache this!
+        self._components = None
+
+    def __reduce__(self):
+        """Pickling support: reconstruct the object from __init__ parameters."""
+        return (self.__class__, (self._a, self._b, self._opstr))
+
     def get_components(self):
+        if self._components is not None:
+            return self._components
         if self._a.is_modifier():
             if self._b.is_modifier():
                 # apparently nothing worthy of plotting
-                return []
-            return [CombinedModel(self._a, c, self._opstr)
-                    for c in self._b.get_components()]
+                ret = []
+            else:
+                ret = [CombinedModel(self._a, c, self._opstr)
+                       for c in self._b.get_components()]
         elif self._b.is_modifier():
-            return [CombinedModel(c, self._b, self._opstr)
-                    for c in self._a.get_components()]
+            ret = [CombinedModel(c, self._b, self._opstr)
+                   for c in self._a.get_components()]
         else:
             # no modifiers
-            return self._a.get_components() + self._b.get_components()
+            ret = self._a.get_components() + self._b.get_components()
+        self._components = ret
+        return ret
 
     def get_description(self):
         s = ''

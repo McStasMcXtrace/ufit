@@ -67,6 +67,9 @@ class Dataset(object):
         return '<%s (%d points)>' % (self.name, len(self.x))
 
     def __getattr__(self, key):
+        if key == '__setstate__':
+            # pickling support
+            raise AttributeError
         if key in self.cols:
             return self.cols[key]
         elif key in self.meta:

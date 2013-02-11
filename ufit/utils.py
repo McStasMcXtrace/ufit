@@ -21,4 +21,7 @@ def get_chisqr(fcn, x, y, dy, params):
 
 class attrdict(dict):
     def __getattr__(self, key):
-        return self[key]
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError

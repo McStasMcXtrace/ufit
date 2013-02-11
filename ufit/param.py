@@ -40,7 +40,7 @@ id_re = re.compile('[a-zA-Z_][a-zA-Z0-9_]*$')
 
 class Param(object):
     def __init__(self, name, value=0, expr=None, pmin=None, pmax=None,
-                 overall=False, finalize=lambda x: x, delta=0):
+                 overall=False, delta=0, finalize=lambda x: x):
         if not id_re.match(name):
             raise UFitError('Parameter name %r is not a valid Python '
                             'identifier' % name)
@@ -88,6 +88,10 @@ class Param(object):
         cp = copy.copy(self)
         cp.name = newname or self.name
         return cp
+
+    def __reduce__(self):
+        return (Param, (self.name, self.value, self.expr, self.pmin,
+                        self.pmax, self.overall, self.delta))
 
     def __str__(self):
         s = '%-15s = %10.5g +/- %10.5g' % (self.name, self.value, self.error)

@@ -7,7 +7,6 @@ GUI
 ===
 
 * add'l parameters
-* save/load
 * multiple sets: new data/same model, other model
 * remove bad datapoints
 * data ops: rebin, add, sub, shift
