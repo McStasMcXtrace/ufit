@@ -1,5 +1,7 @@
 # ufit, universal fitting package
 
+import matplotlib
+matplotlib.rc('font', family='Helvetica')
 
 def debug(str):
     if __debug__:

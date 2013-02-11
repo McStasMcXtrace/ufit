@@ -92,7 +92,8 @@ class Dataset(object):
                                            self.meta.get('experiment', ''),
                                            self.name))
         _axes.set_title(title or '%s\n%s' % (self.meta.get('title', ''),
-                                             self.meta.get('info', '')))
+                                             self.meta.get('info', '')),
+                        size='medium')
         _axes.set_xlabel(xlabel or self.xcol)
         _axes.set_ylabel(ylabel or self.ycol)
         _axes.legend(prop={'size': 'small'})
