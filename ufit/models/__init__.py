@@ -19,4 +19,5 @@ concrete_models = [
     Bose,
     Cosine,
     ExpDecay,
+    PowerLaw,
 ]

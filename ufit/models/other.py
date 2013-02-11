@@ -1,6 +1,6 @@
 # ufit other models
 
-from numpy import cos, exp, pi, log
+from numpy import cos, exp, pi, log, piecewise, sign
 
 from ufit.models.base import Model
 
@@ -51,4 +51,33 @@ class ExpDecay(Model):
             self.params[0].name: pmax[1],
             self.params[1].name: phalf[0]/log(2),
             self.params[2].name: pmin[1],
+        }
+
+
+class PowerLaw(Model):
+    """Power law
+
+    Parameters:
+    * start - starting point
+    * scale - x value scaling (positive => right side of starting point)
+    * beta  - exponent
+    """
+    param_names = ['start', 'scale', 'beta']
+
+    def __init__(self, name='', scale=1, start=0, ampl=None, beta=None):
+        ps, psc, pb = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: piecewise(
+            p[psc]*(x-p[ps]), [p[psc]*(x-p[ps]) < 0],
+            [0, lambda v: pow(v, p[pb])])
+
+    pick_points = ['starting point', 'one point on curve',
+                   'another point on curve']
+
+    def convert_pick(self, pstart, p1, p2):
+        beta = log(p1[1]/p2[1])/log((p1[0]-pstart[0])/(p2[0]-pstart[0]))
+        scale = sign(p1[0] - pstart[0])*(p1[1] / abs(p1[0] - pstart[0])**beta)
+        return {
+            self.params[0].name: pstart[0],
+            self.params[1].name: scale,
+            self.params[3].name: beta,
         }
