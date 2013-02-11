@@ -6,13 +6,14 @@ from ufit.models.corr import *
 from ufit.models.conv import *
 
 
-concrete_models = set([
+concrete_models = [
     Gauss,
     Lorentz,
+    Voigt,
     PseudoVoigt,
     DHO,
     Background,
     SlopingBackground,
     CKI_Corr,
     Bose,
-])
+]

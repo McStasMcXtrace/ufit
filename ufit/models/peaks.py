@@ -1,6 +1,7 @@
 # peak models
 
-from numpy import exp, log
+from numpy import exp, log, sqrt, pi
+from scipy.special import wofz
 
 from ufit.models import Model
 
@@ -59,6 +60,41 @@ class Lorentz(Model):
             self.params[0].name: p[0],  # position
             self.params[1].name: p[1],  # peak amplitude
             self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM
+        }
+
+
+class Voigt(Model):
+    """Voigt peak
+
+    A convolution of a Gaussian and a Lorentzian.
+
+    Parameters:
+    * pos - Peak center position
+    * ampl - Amplitude at center
+    * fwhm - Full width at half maximum of the Gauss part
+    * shape - Lorentz contribution
+    """
+    param_names = ['pos', 'ampl', 'fwhm', 'shape']
+
+    def __init__(self, name='', pos=None, ampl=None, fwhm=None, shape=None):
+        pp, pa, pf, psh = self._init_params(name, self.param_names, locals())
+        # amplitude and fwhms should be positive
+        self.params[1].finalize = abs
+        self.params[2].finalize = abs
+        self.params[3].finalize = abs
+
+        self.fcn = lambda p, x: \
+            p[pa] / wofz(1j*sqrt(log(2))*p[psh]).real * \
+            wofz(2*sqrt(log(2)) * (x-p[pp])/p[pf] + 1j*sqrt(log(2))*p[psh]).real
+
+    pick_points = ['peak', 'width']
+
+    def convert_pick(self, p, w):
+        return {
+            self.params[0].name: p[0],  # position
+            self.params[1].name: p[1],  # peak amplitude
+            self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM of Gauss
+            self.params[3].name: 0,
         }
 
 
