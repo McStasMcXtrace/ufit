@@ -184,7 +184,7 @@
         </font>
        </property>
        <property name="text">
-        <string>1. Data loading</string>
+        <string>Data loading</string>
        </property>
       </widget>
      </item>

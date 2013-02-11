@@ -79,7 +79,7 @@ p, li { white-space: pre-wrap; }
         </font>
        </property>
        <property name="text">
-        <string>2. Model definition:</string>
+        <string>Model definition:</string>
        </property>
       </widget>
      </item>
