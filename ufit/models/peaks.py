@@ -1,6 +1,6 @@
 # peak models
 
-from numpy import exp, log, sqrt, pi
+from numpy import exp, log, sqrt
 from scipy.special import wofz
 
 from ufit.models import Model

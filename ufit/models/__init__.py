@@ -4,6 +4,7 @@ from ufit.models.base import *
 from ufit.models.peaks import *
 from ufit.models.corr import *
 from ufit.models.conv import *
+from ufit.models.other import *
 
 
 concrete_models = [
@@ -16,4 +17,5 @@ concrete_models = [
     SlopingBackground,
     CKI_Corr,
     Bose,
+    Cosine,
 ]
