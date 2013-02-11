@@ -45,10 +45,11 @@ def do_fit(data, fcn, params, limits, add_kw):
     for kw in add_kw:
         setattr(m, kw, add_kw[kw])
     for p in varying:
-        m.values[p.name] = p.value
+        m.values[minuit_map[p.name]] = p.value
+        m.errors[p.name] = p.value/100. or 0.01
         if p.pmin is not None or p.pmax is not None:
-            m.limits[p.name] = (p.pmin is None and -1e8 or p.pmin,
-                                p.pmax is None and +1e8 or p.pmax)
+            m.limits[minuit_map[p.name]] = (p.pmin is None and -1e8 or p.pmin,
+                                            p.pmax is None and +1e8 or p.pmax)
     try:
         m.migrad()
         m.hesse()
