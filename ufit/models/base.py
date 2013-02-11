@@ -5,10 +5,10 @@ import operator
 from numpy import concatenate, linspace
 import matplotlib.pyplot as pl
 
-from ufit import backends, UFitError, Param, Run, Result
-from ufit.data.run import attrdict
+from ufit import backends, UFitError, Param, Dataset, Result
+from ufit.data.dataset import attrdict
 from ufit.param import prepare_params
-from ufit.backends.util import get_chisqr
+from ufit.utils import get_chisqr
 
 
 class Model(object):
@@ -337,7 +337,7 @@ class GlobalModel(Model):
 
         # fit a cumulative data set consisting of a concatenation of all data
 
-        cumulative_data = Run.from_arrays(
+        cumulative_data = Dataset.from_arrays(
             'cumulative data',
             concatenate([d.x for d in datas]),
             concatenate([d.y for d in datas]),

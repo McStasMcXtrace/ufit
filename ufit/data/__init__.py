@@ -4,15 +4,15 @@ from numpy import array
 
 from ufit import UFitError
 from ufit.data import ill, nicos
-from ufit.data.run import Run, RunList
+from ufit.data.dataset import Dataset, DataList
 
 data_formats = {
     'ill': ill,
     'nicos': nicos,
 }
 
-__all__ = ['Run', 'runs', 'set_datatemplate', 'set_dataformat', 'read_data',
-           'as_data']
+__all__ = ['Dataset', 'sets', 'set_datatemplate', 'set_dataformat',
+           'read_data', 'as_data']
 
 
 # XXX standardize column names (or select a few to standardize)
@@ -21,7 +21,7 @@ class Loader(object):
     def __init__(self):
         self.format = 'auto'
         self.template = '%d'
-        self.runs = RunList()
+        self.sets = DataList()
 
     def _get_reader(self, filename, fobj):
         if self.format == 'auto':
@@ -36,9 +36,9 @@ class Loader(object):
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)
-        run = Run(str(n), colnames, coldata, meta, xcol, ycol, mcol, mscale)
-        self.runs[n] = run
-        return run
+        dset = Dataset(str(n), colnames, coldata, meta, xcol, ycol, mcol, mscale)
+        self.sets[n] = dset
+        return dset
 
     def guess_cols(self, n):
         filename = self.template % n
@@ -68,7 +68,7 @@ class Loader(object):
 # simplified interface for usage in noninteractive scripts
 
 global_loader = Loader()
-runs = global_loader.runs
+sets = global_loader.sets
 
 def set_datatemplate(s):
     global_loader.template = s
@@ -82,4 +82,4 @@ def read_data(*args):
     return global_loader.load(*args)
 
 def as_data(x, y, dy, name=''):
-    return Run.from_arrays(name or 'data', x, y, dy)
+    return Dataset.from_arrays(name or 'data', x, y, dy)

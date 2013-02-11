@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 from ufit.param import prepare_params, update_params
-from ufit.backends.util import prepare_data, get_chisqr
+from ufit.utils import prepare_data
 
 from lmfit import Parameters, minimize
 

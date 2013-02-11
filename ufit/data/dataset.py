@@ -1,16 +1,13 @@
-# ufit data "run" classes
+# ufit dataset classes
 
 from numpy import array, concatenate, ones, sqrt
 import matplotlib.pyplot as pl
 
 from ufit import UFitError
+from ufit.utils import attrdict
 
 
-class attrdict(dict):
-    def __getattr__(self, key):
-        return self[key]
-
-class Run(object):
+class Dataset(object):
     def __init__(self, name, colnames, data, meta, xcol, ycol,
                  ncol=None, nscale=1):
         self.name = name
@@ -55,35 +52,36 @@ class Run(object):
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return Run(self.name, self.colnames, self.data[key], self.meta,
-                       self.xcol, self.ycol, self.ncol)
+            return self.__class__(self.name, self.colnames,
+                                  self.data[key], self.meta,
+                                  self.xcol, self.ycol, self.ncol)
         elif key in self.cols:
             return self.cols[key]
         raise KeyError('no such data column: %s' % key)
 
     def __or__(self, other):
-        return Run(self.name + '|' + other.name,
-                   self.colnames,
-                   concatenate((self.data, other.data)),
-                   self.meta,
-                   self.xcol, self.ycol, self.ncol)
+        return self.__class__(self.name + '|' + other.name,
+                              self.colnames,
+                              concatenate((self.data, other.data)),
+                              self.meta,
+                              self.xcol, self.ycol, self.ncol)
 
     def merge(self, places, *others):
         points = {}
-        allruns = (self,) + others
-        for run in allruns:
-            if run.xcol != self.xcol or run.ycol != self.ycol:
+        allsets = (self,) + others
+        for dset in allsets:
+            if dset.xcol != self.xcol or dset.ycol != self.ycol:
                 raise UFitError('cannot merge datasets with different x/ycols')
-            for (x, y, n) in zip(run.x, run.y_raw, run.norm):
+            for (x, y, n) in zip(dset.x, dset.y_raw, dset.norm):
                 xr = round(x, places)
                 if xr in points:
                     points[xr] = (points[xr][0] + y, points[xr][1] + n)
                 else:
                     points[xr] = (y, n)
         newcols = array([(x, y, n) for x, (y, n) in sorted(points.iteritems())])
-        return Run('&'.join(d.name for d in allruns),
-                   [self.xcol, self.ycol, self.ncol],
-                   newcols, self.meta, self.xcol, self.ycol, self.ncol)
+        return self.__class__('&'.join(d.name for d in allsets),
+                              [self.xcol, self.ycol, self.ncol], newcols,
+                              self.meta, self.xcol, self.ycol, self.ncol)
 
     def plot(self, _axes=None, title=None, xlabel=None, ylabel=None):
         if _axes is None:
@@ -100,7 +98,7 @@ class Run(object):
         _axes.legend(prop={'size': 'small'})
 
 
-class RunList(dict):
+class DataList(dict):
 
     def __getitem__(self, obj):
         if isinstance(obj, slice):

@@ -1,6 +1,4 @@
-# ufit backend utilities
-
-from ufit import UFitError
+# ufit utilities
 
 def prepare_data(data, limits):
     if limits == (None, None):
@@ -19,3 +17,8 @@ def get_chisqr(fcn, x, y, dy, params):
     sum_sqr = ((fcn(paramdict, x) - y)**2 / dy**2).sum()
     nfree = len(y) - sum(1 for p in params if not p.expr)
     return sum_sqr / nfree
+
+
+class attrdict(dict):
+    def __getattr__(self, key):
+        return self[key]
