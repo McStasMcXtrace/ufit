@@ -11,7 +11,8 @@ data_formats = {
     'nicos': nicos,
 }
 
-__all__ = ['Run', 'runs', 'set_datatemplate', 'set_dataformat', 'read_data']
+__all__ = ['Run', 'runs', 'set_datatemplate', 'set_dataformat', 'read_data',
+           'as_data']
 
 
 # XXX standardize column names (or select a few to standardize)
@@ -81,4 +82,4 @@ def read_data(*args):
     return global_loader.load(*args)
 
 def as_data(x, y, dy, name=''):
-    return Run.from_array(name, x, y, dy)
+    return Run.from_arrays(name, x, y, dy)
