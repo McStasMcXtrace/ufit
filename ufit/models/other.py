@@ -79,5 +79,5 @@ class PowerLaw(Model):
         return {
             self.params[0].name: pstart[0],
             self.params[1].name: scale,
-            self.params[3].name: beta,
+            self.params[2].name: beta,
         }
