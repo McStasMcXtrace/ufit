@@ -79,3 +79,6 @@ def set_dataformat(s):
 
 def read_data(*args):
     return global_loader.load(*args)
+
+def as_data(x, y, dy, name=''):
+    return Run.from_array(name, x, y, dy)
