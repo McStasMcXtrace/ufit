@@ -26,15 +26,18 @@ class limited(tuple):
 
 class Param(object):
     def __init__(self, name, value=0, expr=None, pmin=None, pmax=None,
-                 overall=False, finalize=lambda x: x):
+                 overall=False, finalize=lambda x: x, delta=0):
         self.name = name
         self.value = value
         self.expr = expr
         self.pmin = pmin
         self.pmax = pmax
+        # true if a global parameter for a global fit
         self.overall = overall
         # transform parameter after successful fit
         self.finalize = finalize
+        # for backends that support setting parameter increments
+        self.delta = delta
         # properties set on fit result
         self.error = 0
         self.correl = {}
