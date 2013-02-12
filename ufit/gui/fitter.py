@@ -234,6 +234,12 @@ class Fitter(QWidget):
 
     def do_plot(self, *ignored):
         self.update_from_controls()
+        if self.standalone:
+            self._replot()
+        else:
+            self.emit(SIGNAL('replotRequest'))
+
+    def _replot(self):
         self.plotter.reset(limits=True)
         try:
             self.plotter.plot_data(self.data)
@@ -273,12 +279,10 @@ class Fitter(QWidget):
             self.param_controls[p][1].setText('%.5g' % p.value)
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
 
-        #res.printout()
-        self.plotter.reset(limits=True)
-        self.plotter.plot_data(self.data)
-        self.plotter.plot_model_full(self.model, self.data,
-                                     paramdict=res.paramvalues)
-        self.plotter.draw()
+        if self.standalone:
+            self._replot()
+        else:
+            self.emit(SIGNAL('replotRequest'))
 
         self.last_result = res
 

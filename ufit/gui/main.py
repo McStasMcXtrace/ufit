@@ -33,6 +33,7 @@ class DatasetPanel(QTabWidget):
         self.canvas = canvas
         self.mbuilder.initialize(self.data, self.model)
         self.fitter.initialize(self.model, self.data, fit=False)
+        self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
         self.addTab(self.mbuilder, 'Model')
@@ -47,12 +48,12 @@ class DatasetPanel(QTabWidget):
     def save_limits(self):
         self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
 
-    # XXX keep this mess in one place
-    def replot(self):
-        self.canvas.plotter.reset(self._limits)
+    def replot(self, limits=True, paramdict=None):
+        self.canvas.plotter.reset(limits)
         try:
             self.canvas.plotter.plot_data(self.data)
-            self.canvas.plotter.plot_model_full(self.model, self.data)
+            self.canvas.plotter.plot_model_full(self.model, self.data,
+                                                paramdict=paramdict)
         except Exception:
             return
         self.canvas.draw()
@@ -121,7 +122,7 @@ class UFitMain(QMainWindow):
         elif len(indlist) == 1:
             panel = self.panels[indlist[0]][1]
             self.select_new_panel(panel)
-            panel.replot()
+            panel.replot(panel._limits)
             self.toolbar.update()
         else:
             panels = [self.panels[i][1] for i in indlist]
@@ -145,8 +146,9 @@ class UFitMain(QMainWindow):
               data.environment,
               '<br>'.join(data.sources)), panel))
         self.datalistmodel.reset()
-        self.datalist.setCurrentIndex(
-            self.datalistmodel.index(len(self.panels)-1, 0))
+        if not self._loading:
+            self.datalist.setCurrentIndex(
+                self.datalistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
     def on_actionLoadData_triggered(self):
@@ -190,7 +192,7 @@ class UFitMain(QMainWindow):
     def save_session(self, filename):
         fp = open(filename, 'wb')
         info = {
-            'panels': [(panel[1].data, panel[1].model) for panel in self.panels[1:]]
+            'panels': [(panel[1].data, panel[1].model) for panel in self.panels]
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
