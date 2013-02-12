@@ -16,6 +16,8 @@ from ufit.models.base import Model
 class Cosine(Model):
     """Cosine
 
+    y = ampl * cos(freq * x + phase)
+
     Parameters:
     * ampl - amplitude
     * freq - frequency (omega or k)
@@ -32,14 +34,16 @@ class Cosine(Model):
     def convert_pick(self, pmax, pmin):
         freq = pi/abs(pmin[0] - pmax[0])
         return {
-            self.params[0].name: pmax[1] - pmin[1],           # amplitude
-            self.params[1].name: freq,                        # frequency
-            self.params[2].name: (- freq*pmax[0]) % (2*pi), # phase
+            self.params[0].name: pmax[1] - pmin[1],          # amplitude
+            self.params[1].name: freq,                       # frequency
+            self.params[2].name: (- freq*pmax[0]) % (2*pi),  # phase
         }
 
 
 class ExpDecay(Model):
     """Exponential decay
+
+    y = y1 + (y0 - y1) * exp(-x/tau)
 
     Parameters:
     * y0  - value at x = 0
@@ -89,3 +93,55 @@ class PowerLaw(Model):
             self.params[1].name: scale,
             self.params[2].name: beta,
         }
+
+
+class StraightLine(Model):
+    """Straight line
+
+    y = slope * x + y0
+
+    Parameters:
+    * slope
+    * y0  - intercept
+    """
+    param_names = ['slope', 'y0']
+
+    def __init__(self, name='', slope=1, y0=0):
+        psl, py0 = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: p[psl]*x + p[py0]
+
+    pick_points = ['one point on curve', 'another point on curve']
+
+    def convert_pick(self, b1, b2):
+        slope = (b2[1] - b1[1]) / (b2[0] - b1[0])
+        return {
+            self.params[0].name: slope,
+            self.params[1].name: b1[1] - slope*b1[0],
+        }
+
+
+class Parabola(Model):
+    """Parabola
+
+    y = stretch * (x - x0)^2 + y0
+
+    Parameters:
+    * x0  - x coordinate of vertex
+    * y0  - y coordinate of vertex
+    * stretch - stretch factor
+    """
+    param_names = ['x0', 'y0', 'stretch']
+
+    def __init__(self, name='', x0=0, y0=0, stretch=1):
+        px0, py0, ps = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: p[ps] * (x - p[px0])**2 + p[py0]
+
+    pick_points = ['vertex', 'another point on curve']
+
+    def convert_pick(self, vx, p2):
+        return {
+            self.params[0].name: vx[0],
+            self.params[1].name: vx[1],
+            self.params[2].name: (p2[1] - vx[1]) / (p2[0] - vx[0])**2,
+        }
+

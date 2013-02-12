@@ -27,6 +27,8 @@ concrete_models = [
     SlopingBackground,
     CKI_Corr,
     Bose,
+    StraightLine,
+    Parabola,
     Cosine,
     ExpDecay,
     PowerLaw,
