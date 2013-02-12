@@ -19,23 +19,20 @@ from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
 class ModelBuilder(QWidget):
 
-    def __init__(self, parent, plotter, standalone=False):
+    def __init__(self, parent):
         QWidget.__init__(self, parent)
-        self.plotter = plotter
         self.data = None
         self.last_model = None
+        self.createUI()
 
-        self.standalone = standalone
-        self.createUI(standalone)
-
-    def createUI(self, standalone):
+    def createUI(self):
         loadUi(self, 'modelbuilder.ui')
         self.model_dict = {}
         for model in concrete_models:
             QListWidgetItem(model.__name__, self.premodels)
             self.model_dict[model.__name__] = model
-        self.buttonBox.addButton('Preview', QDialogButtonBox.NoRole)
-        self.buttonBox.addButton(QDialogButtonBox.Ok)
+        self.buttonBox.addButton('Check', QDialogButtonBox.NoRole)
+        self.buttonBox.addButton(QDialogButtonBox.Apply)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
@@ -43,7 +40,7 @@ class ModelBuilder(QWidget):
             self.modeldef.setText('')
         elif role == QDialogButtonBox.NoRole:
             self.eval_model()
-        else:  # "ok"
+        else:  # "apply"
             self.eval_model(final=True)
 
     def on_premodels_currentItemChanged(self, current, previous):
@@ -79,14 +76,8 @@ class ModelBuilder(QWidget):
 
     def initialize(self, data, model):
         self.model = model
-        self.modeldef.setText(model.get_description())
         self.data = data
-        if self.standalone:
-            self.setWindowTitle('Model: data %s' % data.name)
-            self.plotter.reset()
-            self.plotter.plot_data(data)
-            self.plotter.plot_model_full(model, data)
-            self.plotter.draw()
+        self.modeldef.setText(model.get_description())
 
     def eval_model(self, final=False):
         modeldef = str(self.modeldef.toPlainText()).replace('\n', ' ')
@@ -107,28 +98,3 @@ class ModelBuilder(QWidget):
             self.emit(SIGNAL('closeRequest'))
         else:
             self.statusLabel.setText('Model definition is good.')
-
-
-class ModelBuilderMain(QMainWindow):
-    def __init__(self, data):
-        QMainWindow.__init__(self)
-        layout = QSplitter(Qt.Vertical, self)
-        self.canvas = MPLCanvas(self)
-        self.toolbar = MPLToolbar(self.canvas, self)
-        layout.addWidget(self.toolbar)
-        layout.addWidget(self.canvas)
-        self.mbuilder = ModelBuilder(self, self.canvas.plotter,
-                                     standalone=True)
-        self.mbuilder.initialize(data)
-        self.connect(self.mbuilder, SIGNAL('closeRequest'), self.close)
-        layout.addWidget(self.fitter)
-        self.setCentralWidget(layout)
-        self.setWindowTitle(self.fitter.windowTitle())
-
-
-def start(data):
-    app = QApplication([])
-    win = ModelBuilderMain(data)
-    win.show()
-    app.exec_()
-    return win.mbuilder.last_model

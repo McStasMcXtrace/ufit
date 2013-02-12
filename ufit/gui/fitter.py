@@ -25,9 +25,8 @@ def is_float(x):
 
 class Fitter(QWidget):
 
-    def __init__(self, parent, plotter, standalone=False):
+    def __init__(self, parent, standalone=False):
         QWidget.__init__(self, parent)
-        self.plotter = plotter
         self.picking = None
         self.last_result = None
         self.model = None
@@ -68,10 +67,7 @@ class Fitter(QWidget):
             if fit:
                 self.do_fit()
             else:
-                self.plotter.reset()
-                self.plotter.plot_data(data)
-                self.plotter.plot_model_full(model, data)
-                self.plotter.draw()
+                self.emit(SIGNAL('replotRequest'), None)
 
     def create_param_controls(self):
         self.param_controls = {}
@@ -234,20 +230,7 @@ class Fitter(QWidget):
 
     def do_plot(self, *ignored):
         self.update_from_controls()
-        if self.standalone:
-            self._replot()
-        else:
-            self.emit(SIGNAL('replotRequest'))
-
-    def _replot(self):
-        self.plotter.reset(limits=True)
-        try:
-            self.plotter.plot_data(self.data)
-            self.plotter.plot_model_full(self.model, self.data)
-        except Exception, e:
-            self.statusLabel.setText('Error during plot: %s' % e)
-            return
-        self.plotter.draw()
+        self.emit(SIGNAL('replotRequest'))
 
     def do_fit(self):
         if self.picking:
@@ -279,10 +262,7 @@ class Fitter(QWidget):
             self.param_controls[p][1].setText('%.5g' % p.value)
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
 
-        if self.standalone:
-            self._replot()
-        else:
-            self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('replotRequest'), True, res.paramvalues)
 
         self.last_result = res
 
@@ -295,13 +275,26 @@ class FitterMain(QMainWindow):
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        self.fitter = Fitter(self, self.canvas.plotter, standalone=True)
+        self.fitter = Fitter(self, standalone=True)
         self.fitter.initialize(model, data, fit)
         self.canvas.mpl_connect('button_press_event', self.fitter.on_canvas_pick)
         self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
+        self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
         layout.addWidget(self.fitter)
         self.setCentralWidget(layout)
         self.setWindowTitle(self.fitter.windowTitle())
+
+    def replot(self, limits=True, paramdict=None):
+        plotter = self.canvas.plotter
+        plotter.reset(limits=limits)
+        try:
+            plotter.plot_data(self.fitter.data)
+            plotter.plot_model_full(self.fitter.model, self.fitter.data,
+                                    paramdict=paramdict)
+        except Exception, e:
+            pass
+        else:
+            self.plotter.draw()
 
 
 def start(model, data, fit=True):

@@ -25,8 +25,8 @@ class DatasetPanel(QTabWidget):
     def __init__(self, parent, canvas, data, model=None):
         QTabWidget.__init__(self, parent)
         self.data = data
-        self.mbuilder = ModelBuilder(self, canvas.plotter)
-        self.fitter = Fitter(self, canvas.plotter)
+        self.mbuilder = ModelBuilder(self)
+        self.fitter = Fitter(self)
         self.model = model or self.mbuilder.default_model(data)
         self._limits = None
 
@@ -49,11 +49,11 @@ class DatasetPanel(QTabWidget):
         self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
 
     def replot(self, limits=True, paramdict=None):
-        self.canvas.plotter.reset(limits)
+        plotter = self.canvas.plotter
+        plotter.reset(limits)
         try:
-            self.canvas.plotter.plot_data(self.data)
-            self.canvas.plotter.plot_model_full(self.model, self.data,
-                                                paramdict=paramdict)
+            plotter.plot_data(self.data)
+            plotter.plot_model_full(self.model, self.data, paramdict=paramdict)
         except Exception:
             return
         self.canvas.draw()
