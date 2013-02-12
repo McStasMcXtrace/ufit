@@ -1,4 +1,12 @@
-# ufit backend using scipy.optimize.leastsq
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Backend using plain scipy leastsq."""
 
 from __future__ import absolute_import
 from numpy import sqrt, inf

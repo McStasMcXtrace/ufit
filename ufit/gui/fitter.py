@@ -1,5 +1,12 @@
-# -*- coding: utf-8 -*-
-# ufit interactive fitting gui
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Data fitter panel."""
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \

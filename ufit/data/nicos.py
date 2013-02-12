@@ -1,4 +1,12 @@
-# ufit NICOS data reader
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Load routine for NICOS2 data."""
 
 import time
 from numpy import loadtxt

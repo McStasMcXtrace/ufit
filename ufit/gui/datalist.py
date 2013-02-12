@@ -1,4 +1,12 @@
-# ufit data list view
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""A list view and model for different datasets in the GUI."""
 
 # parts borrowed from M. Janoschek' nfit2 GUI
 

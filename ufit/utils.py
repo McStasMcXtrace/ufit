@@ -1,4 +1,13 @@
-# ufit utilities
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Utility functions and classes."""
+
 
 def prepare_data(data, limits):
     if limits == (None, None):

@@ -1,4 +1,12 @@
-# ufit data loading/reading routines
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Data loading and treatment for ufit."""
 
 from numpy import array
 

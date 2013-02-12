@@ -1,4 +1,12 @@
-# peak models
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Models for different peak shapes."""
 
 from numpy import exp, log, sqrt
 from scipy.special import wofz

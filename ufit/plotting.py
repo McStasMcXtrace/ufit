@@ -1,6 +1,17 @@
-# ufit plotting routines
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Plotting routines for ufit using matplotlib."""
 
 from itertools import cycle
+
+import matplotlib
+matplotlib.rc('font', family='Helvetica')
 
 import numpy as np
 from numpy import array, mgrid, clip, linspace
