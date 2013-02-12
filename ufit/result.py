@@ -10,6 +10,7 @@
 
 from numpy import linspace
 
+from ufit.plotting import DataPlotter
 
 class Result(object):
     def __init__(self, success, data, model, params, message, chisqr):
@@ -43,8 +44,11 @@ class Result(object):
         print '=' * 80
 
     def plot(self, **kw):
-        self.data.plot(**kw)
-        self.model.plot(self.data, _pdict=self.paramvalues, **kw)
+        plotter = DataPlotter()
+        plotter.plot_data(self.data, **kw)
+        plotter.plot_model(self.model, self.data, **kw)
 
-    def plot_components(self, **kw):
-        self.model.plot_components(self.data, _pdict=self.paramvalues, **kw)
+    def plotfull(self, **kw):
+        plotter = DataPlotter()
+        plotter.plot_data(self.data, **kw)
+        plotter.plot_model_full(self.model, self.data, **kw)
