@@ -40,7 +40,8 @@ id_re = re.compile('[a-zA-Z_][a-zA-Z0-9_]*$')
 
 class Param(object):
     def __init__(self, name, value=0, expr=None, pmin=None, pmax=None,
-                 overall=False, delta=0, finalize=lambda x: x):
+                 overall=False, delta=0, error=0, correl=None,
+                 finalize=lambda x: x):
         if not id_re.match(name):
             raise UFitError('Parameter name %r is not a valid Python '
                             'identifier' % name)
@@ -58,8 +59,8 @@ class Param(object):
         # for backends that support setting parameter increments
         self.delta = delta
         # properties set on fit result
-        self.error = 0
-        self.correl = {}
+        self.error = error
+        self.correl = correl or {}
 
     @classmethod
     def from_init(cls, name, pdef):
@@ -91,7 +92,8 @@ class Param(object):
 
     def __reduce__(self):
         return (Param, (self.name, self.value, self.expr, self.pmin,
-                        self.pmax, self.overall, self.delta))
+                        self.pmax, self.overall, self.delta, self.error,
+                        self.correl))
 
     def __str__(self):
         s = '%-15s = %10.5g +/- %10.5g' % (self.name, self.value, self.error)
