@@ -19,6 +19,7 @@ class DataListView(QListView):
 
     def __init__(self, parent):
         QListView.__init__(self, parent)
+        self.setItemDelegate(DataListDelegate(self))
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def selectionChanged(self, selected, deselected):

@@ -87,7 +87,6 @@ class UFitMain(QMainWindow):
         # XXX more inputs: data name, take model from
         self.dloader = DataLoader(self, self.canvas.plotter)
         self.connect(self.dloader, SIGNAL('newData'), self.handle_new_data)
-        # XXX remove from datalist, add own button above it
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
@@ -96,12 +95,9 @@ class UFitMain(QMainWindow):
         self.empty = QFrame(self)
         self.stacker.addWidget(self.empty)
 
-        self.datalistmodel = DataListModel(self.panels)
-        self.panels.append(('<h3>Load data</h3>', self.dloader))
-
         # XXX context menu: remove, merge with other
+        self.datalistmodel = DataListModel(self.panels)
         self.datalist.setModel(self.datalistmodel)
-        self.datalist.setItemDelegate(DataListDelegate(self))
         self.datalistmodel.reset()
         self.connect(self.datalist, SIGNAL('newSelection'),
                      self.on_datalist_newSelection)
@@ -116,13 +112,16 @@ class UFitMain(QMainWindow):
         if isinstance(self.current_panel, DatasetPanel):
             self.current_panel.fitter.on_canvas_pick(event)
 
+    @qtsig('')
+    def on_loadBtn_clicked(self):
+        self.select_new_panel(self.dloader)
+
     def on_datalist_newSelection(self):
         if self._loading:
             return
         indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
-        if 0 in indlist:
-            self.datalist.setCurrentIndex(self.datalistmodel.index(0,0))
-            self.select_new_panel(self.dloader)
+        if len(indlist) == 0:
+            self.on_loadBtn_clicked()
         elif len(indlist) == 1:
             panel = self.panels[indlist[0]][1]
             self.select_new_panel(panel)
@@ -155,7 +154,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionLoadData_triggered(self):
-        self.datalist.setCurrentIndex(self.datalistmodel.index(0,0))
+        self.on_loadBtn_clicked()
 
     @qtsig('')
     def on_actionLoad_triggered(self):
