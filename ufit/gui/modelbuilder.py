@@ -60,15 +60,13 @@ class ModelBuilder(QWidget):
                                          'for the model part:')[0]
         if not modelname:
             return
-        params = ', '.join('%s=0' % s for s in model.param_names)
         currentmodel = str(self.modeldef.toPlainText())
         prefix = ''
         if currentmodel:
-            prefix = '\n+ '
+            prefix = ' + '
         tc = self.modeldef.textCursor()
         tc.movePosition(QTextCursor.End)
-        tc.insertText('%s%s(%r, %s)' % (prefix, model.__name__,
-                                        str(modelname), params))
+        tc.insertText('%s%s(%r)' % (prefix, model.__name__, str(modelname)))
 
     # XXX make a more intelligent model
     def default_model(self, data):
