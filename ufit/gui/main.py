@@ -62,7 +62,7 @@ class UFitMain(QMainWindow):
         self.current_panel = None
         self.panels = []
 
-        loadUi(self, 'full.ui')
+        loadUi(self, 'main.ui')
 
         # populate plot view
         layout2 = QVBoxLayout()
