@@ -60,7 +60,10 @@ class Model(object):
                     raise KeyError
                 self.params.append(Param.from_init(pname, initval))
             except KeyError:
-                raise UFitError('Parameter %s needs an initializer' % pname)
+                # not raising an exception allows the GUI to omit irrelevant
+                # initializers
+                self.params.append(Param.from_init(pname, 0))
+                #raise UFitError('Parameter %s needs an initializer' % pname)
         return pnames_real
 
     def _combine_params(self, a, b):
@@ -144,10 +147,10 @@ class Model(object):
         return False
 
     def get_description(self):
-        """Get a human-readable description of the model."""
+        """Get a Python description of the model (no parameters)."""
         if self.name:
-            return '%s[%s]' % (self.__class__.__name__, self.name)
-        return self.__class__.__name__
+            return '%s(%r)' % (self.__class__.__name__, self.name)
+        return '%s()' % self.__class__.__name__
 
     def __reduce__(self):
         """Pickling support: reconstruct the object from a constructor call."""

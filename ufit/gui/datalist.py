@@ -12,7 +12,8 @@
 
 from PyQt4.QtCore import Qt, QVariant, QSize, QString, SIGNAL, \
      QAbstractListModel, QModelIndex
-from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle, QAbstractItemView
+from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle, \
+     QAbstractItemView
 
 
 class DataListView(QListView):

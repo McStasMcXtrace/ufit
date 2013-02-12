@@ -34,6 +34,7 @@ class Fitter(QWidget):
         self.data = None
         self.param_controls = {}
 
+        self.standalone = standalone
         self.createUI(standalone)
 
     def createUI(self, standalone):
@@ -63,14 +64,14 @@ class Fitter(QWidget):
             oldp_dict = dict((p.name, p) for p in old_model.params)
             self.restore_from_params(oldp_dict)
 
-        # XXX stop this when loading GUI session
-        if fit:
-            self.do_fit()
-        else:
-            self.plotter.reset()
-            self.plotter.plot_data(data)
-            self.plotter.plot_model_full(model, data)
-            self.plotter.draw()
+        if self.standalone:
+            if fit:
+                self.do_fit()
+            else:
+                self.plotter.reset()
+                self.plotter.plot_data(data)
+                self.plotter.plot_model_full(model, data)
+                self.plotter.draw()
 
     def create_param_controls(self):
         self.param_controls = {}

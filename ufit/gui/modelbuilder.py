@@ -13,7 +13,7 @@ from PyQt4.QtGui import QWidget, QApplication, QSplitter, QMainWindow, \
      QListWidgetItem, QDialogButtonBox, QMessageBox, QInputDialog, QTextCursor
 
 from ufit import models, param
-from ufit.models import concrete_models
+from ufit.models import Background, Gauss, concrete_models
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
 
@@ -25,6 +25,7 @@ class ModelBuilder(QWidget):
         self.data = None
         self.last_model = None
 
+        self.standalone = standalone
         self.createUI(standalone)
 
     def createUI(self, standalone):
@@ -72,13 +73,20 @@ class ModelBuilder(QWidget):
         tc.insertText('%s%s(%r, %s)' % (prefix, model.__name__,
                                         str(modelname), params))
 
-    def initialize(self, data):
+    # XXX make a more intelligent model
+    def default_model(self, data):
+        return Background(bkgd=0) + Gauss('peak', pos=0, ampl=1, fwhm=1)
+
+    def initialize(self, data, model):
+        self.model = model
+        self.modeldef.setText(model.get_description())
         self.data = data
-        self.setWindowTitle('Model: data %s' % data.name)
-        # XXX stop this when loading GUI session
-        self.plotter.reset()
-        self.plotter.plot_data(data)
-        self.plotter.draw()
+        if self.standalone:
+            self.setWindowTitle('Model: data %s' % data.name)
+            self.plotter.reset()
+            self.plotter.plot_data(data)
+            self.plotter.plot_model_full(model, data)
+            self.plotter.draw()
 
     def eval_model(self, final=False):
         modeldef = str(self.modeldef.toPlainText()).replace('\n', ' ')

@@ -14,7 +14,6 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
      QFrame, QMessageBox, QFileDialog
 
-from ufit.models import Background, Gauss
 from ufit.gui.common import MPLCanvas, MPLToolbar, loadUi
 from ufit.gui.dataloader import DataLoader
 from ufit.gui.modelbuilder import ModelBuilder
@@ -26,16 +25,13 @@ class DatasetPanel(QTabWidget):
     def __init__(self, parent, canvas, data, model=None):
         QTabWidget.__init__(self, parent)
         self.data = data
-        # XXX make a more intelligent model
-        self.model = model or \
-            (Background(bkgd=0) + Gauss('peak', pos=0, ampl=1, fwhm=1))
+        self.mbuilder = ModelBuilder(self, canvas.plotter)
+        self.fitter = Fitter(self, canvas.plotter)
+        self.model = model or self.mbuilder.default_model(data)
         self._limits = None
 
         self.canvas = canvas
-        self.mbuilder = ModelBuilder(self, canvas.plotter)
-        self.fitter = Fitter(self, canvas.plotter)
-        # XXX restore model in modelbuilder
-        self.mbuilder.initialize(self.data)
+        self.mbuilder.initialize(self.data, self.model)
         self.fitter.initialize(self.model, self.data, fit=False)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
