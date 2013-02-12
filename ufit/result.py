@@ -14,8 +14,13 @@ class Result(object):
         self.paramdict = dict((p.name, p) for p in params)
         self.paramvalues = dict((p.name, p.value) for p in params)
 
-        self.xx = linspace(data.x[0], data.x[-1], 1000)
-        self.yy = model.fcn(self.paramvalues, self.xx)
+    @property
+    def xx(self):
+        return linspace(self.data.x[0], self.data.x[-1], 1000)
+
+    @property
+    def yy(self):
+        return self.model.fcn(self.paramvalues, self.xx)
 
     def printout(self):
         print 'Fit results for %s' % self.data.name
@@ -30,6 +35,7 @@ class Result(object):
         print '=' * 80
 
     def plot(self, **kw):
+        self.data.plot(**kw)
         self.model.plot(self.data, _pdict=self.paramvalues, **kw)
 
     def plot_components(self, **kw):

@@ -6,11 +6,11 @@ from PyQt4 import uic
 from PyQt4.QtCore import QSize
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget
 
-from matplotlib import rc
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
-
 from matplotlib.figure import Figure
+
+from ufit.plotting import DataPlotter
 
 uipath = path.dirname(__file__)
 
@@ -24,6 +24,7 @@ class MPLCanvas(FigureCanvas):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
         self.axes = fig.add_subplot(111)
+        self.plotter = DataPlotter(self, self.axes)
         # make tight_layout do the right thing
         self.axes.set_xlabel('x')
         self.axes.set_ylabel('y')
@@ -41,7 +42,10 @@ class MPLCanvas(FigureCanvas):
         winch = w/dpival
         hinch = h/dpival
         self.figure.set_size_inches(winch, hinch)
-        self.figure.tight_layout(pad=2)
+        try:
+            self.figure.tight_layout(pad=2)
+        except Exception:
+            pass
         self.draw()
         self.update()
         QWidget.resizeEvent(self, event)

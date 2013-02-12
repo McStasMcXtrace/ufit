@@ -1,11 +1,10 @@
 # ufit dataset classes
 
 from numpy import array, concatenate, ones, sqrt
-import matplotlib.pyplot as pl
-from matplotlib.cbook import flatten
 
 from ufit.utils import attrdict
 from ufit.data.merge import rebin
+from ufit.plotting import DataPlotter
 
 
 class Dataset(object):
@@ -97,7 +96,7 @@ class Dataset(object):
         all_y = concatenate([dset.y_raw for dset in allsets])
         all_n = concatenate([dset.norm_raw for dset in allsets])
         new_array = rebin(all_x, all_y, all_n, binsize)
-        sources = list(flatten([dset.sources for dset in allsets]))
+        sources = sum((dset.sources for dset in allsets), [])
         # XXX should we merge meta's?
         return self.__class__([self.xcol, self.ycol, self.ncol], new_array,
                                self.meta, self.xcol, self.ycol, self.ncol,
@@ -105,19 +104,8 @@ class Dataset(object):
                                name='&'.join(d.name for d in allsets),
                                sources=sources)
 
-    def plot(self, _axes=None, title=None, xlabel=None, ylabel=None):
-        if _axes is None:
-            pl.figure()
-            _axes = pl.gca()
-        _axes.errorbar(self.x, self.y, self.dy, fmt='o', ms=8,
-                       label=self.name)
-        _axes.set_title(title or '%s\n%s' % (self.meta.get('title', ''),
-                                             self.meta.get('info', '')),
-                        size='medium')
-        _axes.set_xlabel(xlabel or self.xaxis)
-        _axes.set_ylabel(ylabel or self.yaxis)
-        _axes.legend(prop={'size': 'small'})
-        _axes.grid(True)
+    def plot(self, _axes=None):
+        DataPlotter(_axes).plot_data(self)
 
 
 class DataList(dict):

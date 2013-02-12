@@ -18,9 +18,9 @@ def is_float(x):
 
 class Fitter(QWidget):
 
-    def __init__(self, parent, canvas, standalone=False):
+    def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
-        self.canvas = canvas
+        self.plotter = plotter
         self.picking = None
         self.last_result = None
         self.model = None
@@ -56,13 +56,14 @@ class Fitter(QWidget):
             oldp_dict = dict((p.name, p) for p in old_model.params)
             self.restore_from_params(oldp_dict)
 
+        # XXX stop this when loading GUI session
         if fit:
             self.do_fit()
         else:
-            self.canvas.axes.clear()
-            model.plot(data, _axes=self.canvas.axes)
-            model.plot_components(data, _axes=self.canvas.axes)
-            self.canvas.draw()
+            self.plotter.reset()
+            self.plotter.plot_data(data)
+            self.plotter.plot_model_full(model, data)
+            self.plotter.draw()
 
     def create_param_controls(self):
         self.param_controls = {}
@@ -75,13 +76,13 @@ class Fitter(QWidget):
             layout.addWidget(ctl, 0, j)
         i = 1
         self.original_params = {}
-        combo_items = [par.name for par in self.model.params] + \
+        combo_items = [''] + [par.name for par in self.model.params] + \
             ['data.' + m for m in sorted(self.data.meta)
              if isinstance(self.data.meta[m], (int, long, float))]
         for p in self.model.params:
             e0 = QLabel(p.name, self)
             e1 = SmallLineEdit('%.5g' % p.value, self)
-            e2 = QLabel('', self)
+            e2 = QLabel(u'± %.5g' % p.error, self)
             e3 = QCheckBox(self)
             e4 = QComboBox(self)
             e4.setEditable(True)
@@ -169,6 +170,7 @@ class Fitter(QWidget):
             p0 = other_params[p.name]
             ctls = self.param_controls[p]
             ctls[1].setText('%.5g' % p0.value)
+            ctls[2].setText(u'± %.5g' % p0.error)
             ctls[3].setChecked(False)
             if p0.expr and is_float(p0.expr):
                 ctls[1].setText(p0.expr)
@@ -224,19 +226,14 @@ class Fitter(QWidget):
 
     def do_plot(self, *ignored):
         self.update_from_controls()
-        xlims = self.canvas.axes.get_xlim()
-        ylims = self.canvas.axes.get_ylim()
-        self.canvas.axes.clear()
+        self.plotter.reset(limits=True)
         try:
-            self.model.plot(self.data, _axes=self.canvas.axes)
-            self.model.plot_components(self.data, _axes=self.canvas.axes)
+            self.plotter.plot_data(self.data)
+            self.plotter.plot_model_full(self.model, self.data)
         except Exception, e:
             self.statusLabel.setText('Error during plot: %s' % e)
             return
-        if xlims != (0, 1):
-            self.canvas.axes.set_xlim(*xlims)
-            self.canvas.axes.set_ylim(*ylims)
-        self.canvas.draw()
+        self.plotter.draw()
 
     def do_fit(self):
         if self.picking:
@@ -263,20 +260,17 @@ class Fitter(QWidget):
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
                                  + res.message +
                                  ' Reduced chi^2 = %.3g.' % res.chisqr)
-        #res.printout()
-        xlims = self.canvas.axes.get_xlim()
-        ylims = self.canvas.axes.get_ylim()
-        self.canvas.axes.clear()
-        res.plot(_axes=self.canvas.axes)
-        res.plot_components(_axes=self.canvas.axes)
-        if xlims != (0, 1):
-            self.canvas.axes.set_xlim(*xlims)
-            self.canvas.axes.set_ylim(*ylims)
-        self.canvas.draw()
 
         for p in res.params:
             self.param_controls[p][1].setText('%.5g' % p.value)
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
+
+        #res.printout()
+        self.plotter.reset(limits=True)
+        self.plotter.plot_data(self.data)
+        self.plotter.plot_model_full(self.model, self.data,
+                                     paramdict=res.paramvalues)
+        self.plotter.draw()
 
         self.last_result = res
 
@@ -289,7 +283,7 @@ class FitterMain(QMainWindow):
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        self.fitter = Fitter(self, self.canvas, standalone=True)
+        self.fitter = Fitter(self, self.canvas.plotter, standalone=True)
         self.fitter.initialize(model, data, fit)
         self.canvas.mpl_connect('button_press_event', self.fitter.on_canvas_pick)
         self.connect(self.fitter, SIGNAL('closeRequest'), self.close)

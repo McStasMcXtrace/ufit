@@ -12,9 +12,9 @@ from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
 class ModelBuilder(QWidget):
 
-    def __init__(self, parent, canvas, standalone=False):
+    def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
-        self.canvas = canvas
+        self.plotter = plotter
         self.data = None
         self.last_model = None
 
@@ -68,9 +68,10 @@ class ModelBuilder(QWidget):
     def initialize(self, data):
         self.data = data
         self.setWindowTitle('Model: data %s' % data.name)
-        self.canvas.axes.clear()
-        data.plot(_axes=self.canvas.axes)
-        self.canvas.draw()
+        # XXX stop this when loading GUI session
+        self.plotter.reset()
+        self.plotter.plot_data(data)
+        self.plotter.draw()
 
     def eval_model(self, final=False):
         modeldef = str(self.modeldef.toPlainText()).replace('\n', ' ')
@@ -101,7 +102,8 @@ class ModelBuilderMain(QMainWindow):
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        self.mbuilder = ModelBuilder(self, self.canvas, standalone=True)
+        self.mbuilder = ModelBuilder(self, self.canvas.plotter,
+                                     standalone=True)
         self.mbuilder.initialize(data)
         self.connect(self.mbuilder, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.fitter)

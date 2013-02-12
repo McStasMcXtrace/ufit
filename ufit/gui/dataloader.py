@@ -15,9 +15,9 @@ numor_re = re.compile(r'\d+')
 
 class DataLoader(QWidget):
 
-    def __init__(self, parent, canvas, standalone=False):
+    def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
-        self.canvas = canvas
+        self.plotter = plotter
         self.last_data = None
         self.loader = Loader()
         self.createUI(standalone)
@@ -122,9 +122,9 @@ class DataLoader(QWidget):
             self.emit(SIGNAL('newData'), data)
             self.emit(SIGNAL('closeRequest'))
         else:
-            self.canvas.axes.clear()
-            data.plot(_axes=self.canvas.axes)
-            self.canvas.draw()
+            self.plotter.reset()
+            self.plotter.plot_data(data)
+            self.plotter.draw()
 
     def initialize(self):
         pass
@@ -138,7 +138,7 @@ class DataLoaderMain(QMainWindow):
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        self.dloader = DataLoader(self, self.canvas, standalone=True)
+        self.dloader = DataLoader(self, self.canvas.plotter, standalone=True)
         self.dloader.initialize()
         self.connect(self.dloader, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.fitter)

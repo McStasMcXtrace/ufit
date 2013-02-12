@@ -2,13 +2,12 @@
 
 import inspect
 import operator
-from numpy import concatenate, linspace
-import matplotlib.pyplot as pl
+from numpy import concatenate
 
 from ufit import backends, UFitError, Param, Dataset, Result
 from ufit.data.dataset import attrdict
-from ufit.param import prepare_params
 from ufit.utils import get_chisqr
+from ufit.plotting import DataPlotter
 
 
 class Model(object):
@@ -121,28 +120,11 @@ class Model(object):
         if self._orig_params is not None:
             self.params = [p.copy() for p in self._orig_params]
 
-    def plot(self, data, title=None, xlabel=None, ylabel=None,
-             labels=True, _pdict=None, _axes=None):
-        if _pdict is None:
-            _pdict = prepare_params(self.params, data.meta)[3]
-        xx = linspace(data.x[0], data.x[-1], 1000)
-        yy = self.fcn(_pdict, xx)
-        if _axes is None:
-            pl.figure()
-            _axes = pl.gca()
-        data.plot(_axes=_axes, xlabel=xlabel, ylabel=ylabel, title=title)
-        _axes.plot(xx, yy, lw=2, label=labels and 'fit' or '')
+    def plot(self, data, labels=True, _pdict=None, _axes=None):
+        DataPlotter(_axes).plot_model(self, data, labels, _pdict)
 
-    def plot_components(self, data, _pdict=None, _axes=None):
-        if _pdict is None:
-            _pdict = prepare_params(self.params, data.meta)[3]
-        if _axes is None:
-            _axes = pl.gca()
-        xx = linspace(data.x[0], data.x[-1], 1000)
-        for comp in self.get_components():
-            yy = comp.fcn(_pdict, xx)
-            _axes.plot(xx, yy, '-.', label=comp.name)
-        _axes.legend(prop={'size': 'small'})
+    def plot_components(self, data, labels=True, _pdict=None, _axes=None):
+        DataPlotter(_axes).plot_model_components(self, data, labels, _pdict)
 
     def add_params(self, **p):
         for pname, initval in p.iteritems():

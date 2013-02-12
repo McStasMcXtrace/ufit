@@ -24,8 +24,8 @@ class DatasetPanel(QTabWidget):
         self._limits = None
 
         self.canvas = canvas
-        self.mbuilder = ModelBuilder(self, canvas)
-        self.fitter = Fitter(self, canvas)
+        self.mbuilder = ModelBuilder(self, canvas.plotter)
+        self.fitter = Fitter(self, canvas.plotter)
         # XXX restore model in modelbuilder
         self.mbuilder.initialize(self.data)
         self.fitter.initialize(self.model, self.data, fit=False)
@@ -45,15 +45,12 @@ class DatasetPanel(QTabWidget):
 
     # XXX keep this mess in one place
     def replot(self):
-        self.canvas.axes.clear()
+        self.canvas.plotter.reset(self._limits)
         try:
-            self.model.plot(self.data, _axes=self.canvas.axes)
-            self.model.plot_components(self.data, _axes=self.canvas.axes)
+            self.canvas.plotter.plot_data(self.data)
+            self.canvas.plotter.plot_model_full(self.model, self.data)
         except Exception:
             return
-        if self._limits:
-            self.canvas.axes.set_xlim(*self._limits[0])
-            self.canvas.axes.set_ylim(*self._limits[1])
         self.canvas.draw()
 
 
@@ -80,8 +77,9 @@ class UFitMain(QMainWindow):
 
         # create data loader
         # XXX more inputs: data name, take model from
-        self.dloader = DataLoader(self, self.canvas)
+        self.dloader = DataLoader(self, self.canvas.plotter)
         self.connect(self.dloader, SIGNAL('newData'), self.handle_new_data)
+        # XXX remove from datalist, add own button above it
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
@@ -124,10 +122,12 @@ class UFitMain(QMainWindow):
             self.toolbar.update()
         else:
             panels = [self.panels[i][1] for i in indlist]
-            self.canvas.axes.clear()
-            # XXX select same color for data+fit, cycle markers, better title
+            self.canvas.plotter.reset()
             for p in panels:
-                p.model.plot(p.data, _axes=self.canvas.axes, labels=False)
+                c = self.canvas.plotter.plot_data(p.data)
+                self.canvas.plotter.plot_model(p.model, p.data, labels=False,
+                                               color=c)
+            # XXX better title
             self.canvas.draw()
             self.select_new_panel(self.empty)
 
@@ -168,6 +168,8 @@ class UFitMain(QMainWindow):
                 self.handle_new_data(data, model)
         finally:
             self._loading = False
+        self.datalist.setCurrentIndex(
+            self.datalistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
     def on_actionSave_triggered(self):
@@ -201,7 +203,9 @@ class UFitMain(QMainWindow):
 
 
 def main(args):
+    import time
     print 'starting up app...'
+    t1 = time.time()
     app = QApplication([])
     # XXX window geometry
     win = UFitMain()
@@ -213,6 +217,7 @@ def main(args):
         else:
             win.dloader.set_template(datafile)
 
-    print 'loading finished, main window showing...'
+    t2 = time.time()
+    print 'loading finished (%.3f), main window showing...' % (t2-t1)
     win.show()
     app.exec_()
