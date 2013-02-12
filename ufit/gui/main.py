@@ -16,34 +16,47 @@ from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
 
 from ufit.gui.common import MPLCanvas, MPLToolbar, loadUi
 from ufit.gui.dataloader import DataLoader
+from ufit.gui.dataops import DataOps
 from ufit.gui.modelbuilder import ModelBuilder
 from ufit.gui.fitter import Fitter
-from ufit.gui.datalist import DataListModel, DataListDelegate
+from ufit.gui.datalist import DataListModel
 
 
 class DatasetPanel(QTabWidget):
     def __init__(self, parent, canvas, data, model=None):
         QTabWidget.__init__(self, parent)
         self.data = data
+        self.dataops = DataOps(self)
         self.mbuilder = ModelBuilder(self)
         self.fitter = Fitter(self)
         self.model = model or self.mbuilder.default_model(data)
         self._limits = None
+        self.picker_widget = None
 
         self.canvas = canvas
+        self.dataops.initialize(self.data)
         self.mbuilder.initialize(self.data, self.model)
         self.fitter.initialize(self.model, self.data, fit=False)
-        self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
+        self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
-        self.addTab(self.mbuilder, 'Model')
-        self.addTab(self.fitter, 'Fit')
-        # XXX data ops tab
+        self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
+        self.connect(self.fitter, SIGNAL('pickRequest'), self.set_picker)
+        self.addTab(self.dataops, 'Data operations')
+        self.addTab(self.mbuilder, 'Modeling')
+        self.addTab(self.fitter, 'Fitting')
 
     def on_mbuilder_newModel(self, model):
         self.model = model
         self.fitter.initialize(self.model, self.data, fit=False)
-        self.setCurrentIndex(1)
+        self.setCurrentWidget(self.fitter)
+
+    def set_picker(self, widget):
+        self.picker_widget = widget
+
+    def on_canvas_pick(self, event):
+        if self.picker_widget:
+            self.picker_widget.on_canvas_pick(event)
 
     def save_limits(self):
         self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
@@ -107,7 +120,7 @@ class UFitMain(QMainWindow):
 
     def on_canvas_pick(self, event):
         if isinstance(self.current_panel, DatasetPanel):
-            self.current_panel.fitter.on_canvas_pick(event)
+            self.current_panel.on_canvas_pick(event)
 
     @qtsig('')
     def on_loadBtn_clicked(self):
@@ -141,7 +154,7 @@ class UFitMain(QMainWindow):
         self.stacker.setCurrentWidget(panel)
         self.panels.append(
             ('<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' %
-             (len(self.panels),
+             (len(self.panels) + 1,
               data.data_title,
               data.environment,
               '<br>'.join(data.sources)), panel))

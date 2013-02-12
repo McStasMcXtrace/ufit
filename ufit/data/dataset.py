@@ -48,6 +48,8 @@ class Dataset(object):
         else:
             self.norm = ones(len(self.y_raw))
 
+        self.indices = ones(len(self.x), bool)
+
         self.y = self.y_raw/self.norm
         self.dy = sqrt(self.y_raw)/self.norm
         self.dy[self.dy==0] = 0.1

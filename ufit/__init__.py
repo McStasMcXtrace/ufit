@@ -18,3 +18,5 @@ from ufit.param import *
 from ufit.data import *
 from ufit.models import *
 from ufit.backends import *
+
+from pylab import *

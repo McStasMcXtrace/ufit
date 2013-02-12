@@ -203,6 +203,7 @@ class Fitter(QWidget):
     def do_pick(self, *args):
         if self.picking:
             return
+        self.emit(SIGNAL('pickRequest'), self)
         self._pick_points = self.model.get_pick_points()
         self._pick_values = []
         self.picking = 'Guess'
@@ -211,7 +212,8 @@ class Fitter(QWidget):
             self.model.apply_pick(self._pick_values)
             for p in self.model.params:
                 ctls = self.param_controls[p]
-                ctls[1].setText('%.5g' % p.value)
+                if not p.expr:
+                    ctls[1].setText('%.5g' % p.value)
             self.do_plot()
         self._pick_finished = callback
 
@@ -276,10 +278,11 @@ class FitterMain(QMainWindow):
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         self.fitter = Fitter(self, standalone=True)
-        self.fitter.initialize(model, data, fit)
-        self.canvas.mpl_connect('button_press_event', self.fitter.on_canvas_pick)
+        self.canvas.mpl_connect('button_press_event',
+                                self.fitter.on_canvas_pick)
         self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
         self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
+        self.fitter.initialize(model, data, fit)
         layout.addWidget(self.fitter)
         self.setCentralWidget(layout)
         self.setWindowTitle(self.fitter.windowTitle())
@@ -292,9 +295,9 @@ class FitterMain(QMainWindow):
             plotter.plot_model_full(self.fitter.model, self.fitter.data,
                                     paramdict=paramdict)
         except Exception, e:
-            pass
+            print 'Error while plotting:', e
         else:
-            self.plotter.draw()
+            plotter.draw()
 
 
 def start(model, data, fit=True):
