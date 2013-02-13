@@ -14,6 +14,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget
 
 from ufit.gui.common import loadUi
+from ufit.data.merge import rebin
 
 
 class DataOps(QWidget):
@@ -80,4 +81,16 @@ class DataOps(QWidget):
         """'Remove' bad data points (just mask them out)."""
         for point in points:
             self.data.mask[self.data.x == point] = False
+        self.emit(SIGNAL('replotRequest'))
+
+    @qtsig('')
+    def on_rebinBtn_clicked(self):
+        binsize = self.precision.value()
+        new_array = rebin(self.data.x, self.data.y_raw, self.data.norm_raw,
+                          binsize)
+        self.data.__init__([self.data.xcol, self.data.ycol, self.data.ncol],
+                           new_array, self.data.meta,
+                           self.data.xcol, self.data.ycol, self.data.ncol,
+                           self.data.nscale, name=self.data.name,
+                           sources=self.data.sources)
         self.emit(SIGNAL('replotRequest'))
