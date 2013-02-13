@@ -11,7 +11,7 @@
 from __future__ import absolute_import
 
 from ufit.param import prepare_params, update_params
-from ufit.utils import prepare_data, get_chisqr
+from ufit.utils import get_chisqr
 
 try:
     from minuit import Minuit
@@ -24,8 +24,8 @@ __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'minuit'
 
-def do_fit(data, fcn, params, limits, add_kw):
-    x, y, dy = prepare_data(data, limits)
+def do_fit(data, fcn, params, add_kw):
+    x, y, dy = data.fit_columns
     meta = data.meta
     varying, varynames, dependent, _ = prepare_params(params, meta)
 

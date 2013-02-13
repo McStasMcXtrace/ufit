@@ -9,18 +9,6 @@
 """Utility functions and classes."""
 
 
-def prepare_data(data, limits):
-    if limits == (None, None):
-        return data.x, data.y, data.dy
-    if limits[0] is None:
-        indices = data.x <= limits[1]
-    elif limits[1] is None:
-        indices = data.x >= limits[0]
-    else:
-        indices = (data.x >= limits[0]) & (data.x <= limits[1])
-    return data.x[indices], data.y[indices], data.dy[indices]
-
-
 def get_chisqr(fcn, x, y, dy, params):
     paramdict = dict((p.name, p.value) for p in params)
     sum_sqr = ((fcn(paramdict, x) - y)**2 / dy**2).sum()

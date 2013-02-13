@@ -11,7 +11,6 @@
 from __future__ import absolute_import
 
 from ufit.param import prepare_params, update_params
-from ufit.utils import prepare_data
 
 from lmfit import Parameters, minimize
 
@@ -19,13 +18,13 @@ __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'lmfit'
 
-def do_fit(data, fcn, params, limits, add_kw):
+def do_fit(data, fcn, params, add_kw):
 
     # lmfit can handle expression-based parameters itself, but that is
     # a) buggy (cannot pass custom items into namespace without subclass)
     # and b) it is better to use the same mechanism in all backends
 
-    x, y, dy = prepare_data(data, limits)
+    x, y, dy = data.fit_columns
     meta = data.meta
     varying, varynames, dependent, _ = prepare_params(params, meta)
 

@@ -48,11 +48,23 @@ class Dataset(object):
         else:
             self.norm = ones(len(self.y_raw))
 
-        self.indices = ones(len(self.x), bool)
+        # points with mask = False are masked out
+        self.mask = ones(len(self.x), bool)
+        self.fitmin = None
+        self.fitmax = None
 
         self.y = self.y_raw/self.norm
         self.dy = sqrt(self.y_raw)/self.norm
         self.dy[self.dy==0] = 0.1
+
+    @property
+    def fit_columns(self):
+        mask = self.mask.copy()
+        if self.fitmin is not None:
+            mask &= self.x >= self.fitmin
+        if self.fitmax is not None:
+            mask &= self.x <= self.fitmax
+        return self.x[mask], self.y[mask], self.dy[mask]
 
     @property
     def environment(self):
