@@ -8,7 +8,7 @@
 
 """Data operations panel."""
 
-from numpy import ones
+from numpy import ones, sqrt
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget
@@ -34,6 +34,7 @@ class DataOps(QWidget):
             self.limitmin.setText('%.5g' % self.data.fitmin)
         if self.data.fitmax is not None:
             self.limitmax.setText('%.5g' % self.data.fitmax)
+        self.monscale.setText(str(self.data.nscale))
 
     def on_canvas_pick(self, event):
         if not hasattr(event, 'artist'):
@@ -94,3 +95,46 @@ class DataOps(QWidget):
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
         self.emit(SIGNAL('replotRequest'))
+
+    @qtsig('')
+    def on_mulBtn_clicked(self):
+        try:
+            const = float(self.mul_constant.text())
+        except ValueError:
+            return
+        self.data.y *= const
+        self.data.y_raw *= const
+        self.data.dy *= const
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_addBtn_clicked(self):
+        try:
+            const = float(self.add_constant.text())
+        except ValueError:
+            return
+        self.data.y += const
+        self.data.y_raw += const * self.data.norm
+        # XXX how to treat dy?
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_shiftBtn_clicked(self):
+        try:
+            const = float(self.shift_constant.text())
+        except ValueError:
+            return
+        self.data.x += const
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_monscaleBtn_clicked(self):
+        try:
+            const = int(self.monscale.text())
+        except ValueError:
+            return
+        self.data.nscale = const
+        self.data.norm = self.data.norm_raw / const
+        self.data.y = self.data.y_raw/self.data.norm
+        self.data.dy = sqrt(self.data.y_raw)/self.data.norm
+        self.emit(SIGNAL('replotRequest'), None)

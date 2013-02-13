@@ -302,6 +302,11 @@
   <tabstop>shiftBtn</tabstop>
   <tabstop>monscale</tabstop>
   <tabstop>monscaleBtn</tabstop>
+  <tabstop>badPointsBtn</tabstop>
+  <tabstop>badResetBtn</tabstop>
+  <tabstop>limitmin</tabstop>
+  <tabstop>limitmax</tabstop>
+  <tabstop>limitsBtn</tabstop>
  </tabstops>
  <resources/>
  <connections/>
