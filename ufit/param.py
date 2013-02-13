@@ -142,7 +142,7 @@ def prepare_params(params, meta):
         if maxit == 0:
             raise UFitError('detected unresolved parameter dependencies '
                             'among %s' % dependent.keys())
-        for p, expr in dependent.items():
+        for p, expr in dependent.items():  # dictionary will change
             try:
                 pd[p] = param_eval(expr, pd)
             except (NameError, AttributeError):

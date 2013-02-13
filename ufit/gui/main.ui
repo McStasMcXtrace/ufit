@@ -19,45 +19,50 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QSplitter" name="vsplitter">
+     <widget class="QSplitter" name="splitter">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QFrame" name="plotframe">
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+      <widget class="QSplitter" name="vsplitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
+       <widget class="QFrame" name="plotframe">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+       </widget>
+       <widget class="QStackedWidget" name="stacker"/>
       </widget>
-      <widget class="QStackedWidget" name="stacker"/>
-     </widget>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+      <widget class="QWidget" name="">
+       <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QPushButton" name="loadBtn">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="loadBtn">
+            <property name="text">
+             <string>Load data</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Load data</string>
+           <string>Select one or more datasets:</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="DataListView" name="datalist"/>
+        </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Select one or more datasets:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="DataListView" name="datalist"/>
-      </item>
-     </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -67,7 +72,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

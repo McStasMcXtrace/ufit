@@ -46,11 +46,27 @@ class DataPlotter(object):
         self.axes.clear()
         self.marker_cycle = cycle(self.markers)
 
-    def plot_data(self, data):
+    def plot_data(self, data, multi=False):
         """Plot dataset."""
         axes = self.axes
-        eb = axes.errorbar(data.x, data.y, data.dy, fmt=self.marker_cycle.next(),
-                           ms=8, label=data.name)
+        marker = self.marker_cycle.next()
+        if data.mask.all():
+            eb = axes.errorbar(data.x, data.y, data.dy, ls='', marker=marker,
+                               ms=8, label=data.name, picker=5)
+            color = eb[0].get_color()
+        else:
+            mask = data.mask
+            eb = axes.errorbar(data.x[mask], data.y[mask], data.dy[mask], ls='',
+                               marker=marker, ms=8, label=data.name, picker=5)
+            color = eb[0].get_color()
+            axes.errorbar(data.x[~mask], data.y[~mask], data.dy[~mask], ls='',
+                          marker=marker, ms=8, picker=5, mfc='white', mec=color,
+                          label='')
+        if not multi:
+            if data.fitmin is not None:
+                axes.axvline(data.fitmin, ls='-', color='gray')
+            if data.fitmax is not None:
+                axes.axvline(data.fitmax, ls='-', color='grey')
         axes.set_title('%s\n%s' % (data.meta.get('title', ''),
                                    data.meta.get('info', '')),
                        size='medium')
@@ -63,14 +79,14 @@ class DataPlotter(object):
             axes.set_ylim(*self._limits[1])
         if self.toolbar:
             self.toolbar.update()
-        return eb[0].get_color()
+        return color
 
     def plot_model_full(self, model, data, labels=True, paramdict=None, **kw):
         if paramdict is None:
             paramdict = prepare_params(model.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
         yy = model.fcn(paramdict, xx)
-        self.axes.plot(xx, yy, lw=2, label=labels and 'fit' or '', **kw)
+        self.axes.plot(xx, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
         for comp in model.get_components():
             yy = comp.fcn(paramdict, xx)
             self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
@@ -81,7 +97,7 @@ class DataPlotter(object):
             paramdict = prepare_params(model.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
         yy = model.fcn(paramdict, xx)
-        self.axes.plot(xx, yy, lw=2, label=labels and 'fit' or '', **kw)
+        self.axes.plot(xx, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
 
     def plot_model_components(self, model, data, labels=True, paramdict=None,
                               **kw):

@@ -8,9 +8,10 @@
 
 """Data operations panel."""
 
-from PyQt4.QtCore import pyqtSignature as qtsig
-from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
-     QMainWindow, QSplitter, QApplication
+from numpy import ones
+
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
+from PyQt4.QtGui import QWidget
 
 from ufit.gui.common import loadUi
 
@@ -24,22 +25,59 @@ class DataOps(QWidget):
         self.picked_points = []
 
         loadUi(self, 'dataops.ui')
+        self.pickedlabel.hide()
 
     def initialize(self, data):
         self.data = data
+        if self.data.fitmin is not None:
+            self.limitmin.setText('%.5g' % self.data.fitmin)
+        if self.data.fitmax is not None:
+            self.limitmax.setText('%.5g' % self.data.fitmax)
+
+    def on_canvas_pick(self, event):
+        if not hasattr(event, 'artist'):
+            return
+        if self.picking:
+            xdata = event.artist.get_xdata()[event.ind]
+            self.picked_points.append(xdata)
+            self.pickedlabel.setText('%d picked' % len(self.picked_points))
+
+    @qtsig('')
+    def on_badResetBtn_clicked(self):
+        self.data.mask = ones(len(self.data.x), bool)
+        self.emit(SIGNAL('replotRequest'))
 
     @qtsig('')
     def on_badPointsBtn_clicked(self):
         if self.picking == 'bad':
-            self.on_badPointsBtn.setText('Remove bad datapoints')
+            self.badPointsBtn.setText('Start')
+            self.pickedlabel.hide()
+            self.picking = None
             self.removeBadPoints(self.picked_points)
         elif not self.picking:
-            self.on_badPointsBtn.setText('Click points on plot, then '
-                                         'here to finish')
+            self.badPointsBtn.setText('Click points on plot, then '
+                                      'here to finish')
+            self.emit(SIGNAL('pickRequest'), self)
+            self.picking = 'bad'
+            self.picked_points = []
+            self.pickedlabel.setText('0 picked')
+            self.pickedlabel.show()
 
-    def on_canvas_pick(self, event):
-        if self.picking and event.xdata:
-            self.picked_points.append((event.xdata, event.ydata))
+    @qtsig('')
+    def on_limitsBtn_clicked(self):
+        try:
+            limitmin = float(self.limitmin.text())
+        except ValueError:
+            limitmin = None
+        try:
+            limitmax = float(self.limitmax.text())
+        except ValueError:
+            limitmax = None
+        self.data.fitmin, self.data.fitmax = limitmin, limitmax
+        self.emit(SIGNAL('replotRequest'))
 
     def removeBadPoints(self, points):
-        pass
+        """'Remove' bad data points (just mask them out)."""
+        for point in points:
+            self.data.mask[self.data.x == point] = False
+        self.emit(SIGNAL('replotRequest'))

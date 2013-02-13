@@ -107,11 +107,11 @@ class Model(object):
             return self.params
         return self._orig_params
 
-    def fit(self, data, xmin=None, xmax=None, **kw):
+    def fit(self, data, **kw):
         if self._orig_params is None:
             self._orig_params = [p.copy() for p in self.params]
-        success, msg, chi2 = backends.backend.do_fit(data, self.fcn, self.params,
-                                                     (xmin, xmax), kw)
+        success, msg, chi2 = backends.backend.do_fit(data, self.fcn,
+                                                     self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg, chi2)

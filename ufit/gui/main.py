@@ -38,6 +38,7 @@ class DatasetPanel(QTabWidget):
         self.mbuilder.initialize(self.data, self.model)
         self.fitter.initialize(self.model, self.data, fit=False)
         self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
+        self.connect(self.dataops, SIGNAL('replotRequest'), self.replot)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
         self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
@@ -67,7 +68,8 @@ class DatasetPanel(QTabWidget):
         try:
             plotter.plot_data(self.data)
             plotter.plot_model_full(self.model, self.data, paramdict=paramdict)
-        except Exception:
+        except Exception, e:
+            print 'Error while plotting:', e
             return
         self.canvas.draw()
 
@@ -87,6 +89,7 @@ class UFitMain(QMainWindow):
         layout2.setContentsMargins(0, 0, 0, 0)
         self.canvas = MPLCanvas(self)
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
+        self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         # XXX can one add to the MPL toolbar?
         self.toolbar = MPLToolbar(self.canvas, self)
         layout2.addWidget(self.toolbar)
@@ -140,8 +143,9 @@ class UFitMain(QMainWindow):
         else:
             panels = [self.panels[i][1] for i in indlist]
             self.canvas.plotter.reset()
+            # XXX this doesn't belong here
             for p in panels:
-                c = self.canvas.plotter.plot_data(p.data)
+                c = self.canvas.plotter.plot_data(p.data, multi=True)
                 self.canvas.plotter.plot_model(p.model, p.data, labels=False,
                                                color=c)
             # XXX better title

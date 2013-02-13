@@ -6,9 +6,9 @@ Models
 GUI
 ===
 
+* numor list extended syntax
 * add'l parameters
 * multiple sets: new data/same model, other model
-* remove bad datapoints
 * data ops: rebin, add, sub, shift
 * keyboard shortcuts in plot
 

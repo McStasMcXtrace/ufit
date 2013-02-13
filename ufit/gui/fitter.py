@@ -189,7 +189,7 @@ class Fitter(QWidget):
     def on_canvas_pick(self, event):
         if not self.picking:
             return
-        if event.xdata is None:
+        if not hasattr(event, 'xdata') or event.xdata is None:
             return
         self._pick_values.append((event.xdata, event.ydata))
         if len(self._pick_values) == len(self._pick_points):
@@ -217,19 +217,6 @@ class Fitter(QWidget):
             self.do_plot()
         self._pick_finished = callback
 
-    @qtsig('')
-    def on_picklimits_clicked(self):
-        if self.picking:
-            return
-        self._pick_points = ['left limit', 'right limit']
-        self._pick_values = []
-        self.picking = 'Limits'
-        self.statusLabel.setText('Limits: click on %s' % self._pick_points[0])
-        def callback():
-            self.limitmin.setText('%.3g' % self._pick_values[0][0])
-            self.limitmax.setText('%.3g' % self._pick_values[1][0])
-        self._pick_finished = callback
-
     def do_plot(self, *ignored):
         self.update_from_controls()
         self.emit(SIGNAL('replotRequest'))
@@ -239,20 +226,12 @@ class Fitter(QWidget):
             QMessageBox.information(self, 'Fitting',
                                     'Please finish the picking operation first.')
             return
-        try:
-            fitmin = float(self.limitmin.text())
-        except Exception:
-            fitmin = None
-        try:
-            fitmax = float(self.limitmax.text())
-        except Exception:
-            fitmax = None
         self.update_from_controls()
         self.statusLabel.setText('Working...')
         self.statusLabel.repaint()
         QApplication.processEvents()
         try:
-            res = self.model.fit(self.data, xmin=fitmin, xmax=fitmax)
+            res = self.model.fit(self.data)
         except Exception, e:
             self.statusLabel.setText('Error during fit: %s' % e)
             return
