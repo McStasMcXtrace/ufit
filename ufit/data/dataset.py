@@ -56,6 +56,8 @@ class Dataset(object):
         self.y = self.y_raw/self.norm
         self.dy = sqrt(self.y_raw)/self.norm
         self.dy[self.dy==0] = 0.1
+        ##self.y = self.y_raw
+        ##self.dy = self.norm_raw
 
     @property
     def fit_columns(self):
@@ -113,6 +115,8 @@ class Dataset(object):
                               name=self.name + '|' + other.name)
 
     def merge(self, binsize, *others):
+        if not others:
+            return self
         allsets = (self,) + others
         all_x = concatenate([dset.x for dset in allsets])
         all_y = concatenate([dset.y_raw for dset in allsets])
