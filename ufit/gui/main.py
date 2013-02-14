@@ -183,7 +183,7 @@ class UFitMain(QMainWindow):
             self.canvas.draw()
             self.select_new_panel(self.empty)
 
-    def handle_new_data(self, data, model=None):
+    def handle_new_data(self, data, update=True, model=None):
         panel = DatasetPanel(self, self.canvas, data, model)
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
@@ -196,7 +196,7 @@ class UFitMain(QMainWindow):
               ', '.join(data.environment),
               '<br>'.join(data.sources)), panel))
         self.pristine = False
-        if not self._loading:
+        if not self._loading and update:
             self.datalistmodel.reset()
             self.datalist.setCurrentIndex(
                 self.datalistmodel.index(len(self.panels)-1, 0))
@@ -246,7 +246,7 @@ class UFitMain(QMainWindow):
         self._loading = True
         try:
             for data, model in info['panels']:
-                self.handle_new_data(data, model)
+                self.handle_new_data(data, False, model)
         finally:
             self._loading = False
         self.datalistmodel.reset()

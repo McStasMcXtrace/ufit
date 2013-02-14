@@ -123,8 +123,9 @@ class DataLoader(QWidget):
             return
         if final:
             self.last_data = datas[-1]
-            for data in datas:
-                self.emit(SIGNAL('newData'), data)
+            for data in datas[:-1]:
+                self.emit(SIGNAL('newData'), data, False)
+            self.emit(SIGNAL('newData'), datas[-1])
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()
