@@ -34,6 +34,7 @@ class DataPlotter(object):
         self.marker_cycle = cycle(self.markers)
         self.toolbar = toolbar
         self._limits = None
+        self.lines = False
 
     def draw(self):
         self.canvas.draw()
@@ -50,13 +51,14 @@ class DataPlotter(object):
         """Plot dataset."""
         axes = self.axes
         marker = self.marker_cycle.next()
+        ls = '-' if self.lines else ''
         if data.mask.all():
-            eb = axes.errorbar(data.x, data.y, data.dy, ls='', marker=marker,
+            eb = axes.errorbar(data.x, data.y, data.dy, ls=ls, marker=marker,
                                ms=8, label=data.name, picker=5)
             color = eb[0].get_color()
         else:
             mask = data.mask
-            eb = axes.errorbar(data.x[mask], data.y[mask], data.dy[mask], ls='',
+            eb = axes.errorbar(data.x[mask], data.y[mask], data.dy[mask], ls=ls,
                                marker=marker, ms=8, label=data.name, picker=5)
             color = eb[0].get_color()
             axes.errorbar(data.x[~mask], data.y[~mask], data.dy[~mask], ls='',

@@ -10,7 +10,7 @@
 
 import cPickle as pickle
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
      QFrame, QMessageBox, QFileDialog
 
@@ -128,6 +128,7 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_loadBtn_clicked(self):
         self.select_new_panel(self.dloader)
+        self.datalist.setCurrentIndex(QModelIndex())
 
     def on_datalist_newSelection(self):
         if self._loading:
@@ -170,6 +171,11 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_actionLoadData_triggered(self):
         self.on_loadBtn_clicked()
+
+    @qtsig('')
+    def on_actionConnectData_toggled(self, on):
+        self.canvas.plotter.lines = on
+        # XXX replot
 
     @qtsig('')
     def on_actionLoad_triggered(self):
