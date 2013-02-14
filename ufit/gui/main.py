@@ -8,6 +8,8 @@
 
 """Main window for the standalone GUI."""
 
+import sys
+from os import path
 import cPickle as pickle
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex
@@ -81,6 +83,8 @@ class UFitMain(QMainWindow):
         self._loading = False
         self.current_panel = None
         self.panels = []
+        self.pristine = True  # nothing loaded so far
+        self.filename = None
 
         loadUi(self, 'main.ui')
 
@@ -163,8 +167,9 @@ class UFitMain(QMainWindow):
               data.data_title,
               data.environment,
               '<br>'.join(data.sources)), panel))
-        self.datalistmodel.reset()
+        self.pristine = False
         if not self._loading:
+            self.datalistmodel.reset()
             self.datalist.setCurrentIndex(
                 self.datalistmodel.index(len(self.panels)-1, 0))
 
@@ -177,13 +182,36 @@ class UFitMain(QMainWindow):
         self.canvas.plotter.lines = on
         # XXX replot
 
+    def check_save(self):
+        if self.pristine:  # nothing there to be saved
+            return True
+        resp = QMessageBox.question(self, 'ufit', 'Save current session?',
+            QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+        if resp == QMessageBox.Yes:
+            return self.save_session()
+        elif resp == QMessageBox.No:
+            return True
+        return False
+
     @qtsig('')
     def on_actionLoad_triggered(self):
+        if not self.check_save():
+            return
+        if self.filename:
+            initialdir = path.dirname(self.filename)
+        else:
+            initialdir = ''
         filename = QFileDialog.getOpenFileName(
-            self, 'Select file name', '', 'ufit files (*.ufit)')
+            self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return
-        self.load_session(str(filename))
+        self.filename = unicode(filename).encode(sys.getfilesystemencoding())
+        try:
+            self.load_session(self.filename)
+        except Exception, err:
+            QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
+        else:
+            self.setWindowTitle('ufit - %s' % self.filename)
 
     def load_session(self, filename):
         for panel in self.panels[1:]:
@@ -196,23 +224,48 @@ class UFitMain(QMainWindow):
                 self.handle_new_data(data, model)
         finally:
             self._loading = False
+        self.datalistmodel.reset()
         self.datalist.setCurrentIndex(
             self.datalistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
     def on_actionSave_triggered(self):
-        # XXX track self filename
-        self.on_actionSaveAs_triggered()
+        self.save_session()
 
     @qtsig('')
     def on_actionSaveAs_triggered(self):
-        filename = QFileDialog.getSaveFileName(
-            self, 'Select file name', '', 'ufit files (*.ufit)')
-        if filename == '':
-            return
-        self.save_session(str(filename))
+        self.save_session_as()
 
-    def save_session(self, filename):
+    def save_session(self):
+        if self.filename is None:
+            return self.save_session_as()
+        try:
+            self.save_session_inner(self.filename)
+        except Exception, err:
+            QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
+            return False
+        return True
+
+    def save_session_as(self):
+        if self.filename:
+            initialdir = path.dirname(self.filename)
+        else:
+            initialdir = ''
+        filename = QFileDialog.getSaveFileName(
+            self, 'Select file name', initialdir, 'ufit files (*.ufit)')
+        if filename == '':
+            return False
+        self.filename = unicode(filename).encode(sys.getfilesystemencoding())
+        try:
+            self.save_session_inner(self.filename)
+        except Exception, err:
+            QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
+            return False
+        else:
+            self.setWindowTitle('ufit - %s' % self.filename)
+            return True
+
+    def save_session_inner(self, filename):
         fp = open(filename, 'wb')
         info = {
             'panels': [(panel[1].data, panel[1].model) for panel in self.panels]
@@ -220,14 +273,27 @@ class UFitMain(QMainWindow):
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     @qtsig('')
-    def on_actionAbout_triggered(self):
-        QMessageBox.information(self, 'About',
-                                'ufit, written by Georg Brandl 2013.')
+    def on_actionRemoveData_triggered(self):
+        pass
+
+    @qtsig('')
+    def on_actionMergeData_triggered(self):
+        pass
 
     @qtsig('')
     def on_actionQuit_triggered(self):
-        # XXX ask for saving
         self.close()
+
+    def closeEvent(self, event):
+        if not self.check_save():
+            event.ignore()
+        else:
+            event.accept()
+
+    @qtsig('')
+    def on_actionAbout_triggered(self):
+        QMessageBox.information(self, 'About',
+                                'ufit, written by Georg Brandl 2013.')
 
 
 def main(args):

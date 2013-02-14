@@ -89,28 +89,37 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;Data</string>
     </property>
+    <addaction name="actionRemoveData"/>
+    <addaction name="actionMergeData"/>
+    <addaction name="separator"/>
     <addaction name="actionConnectData"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuHelp"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionLoad">
    <property name="text">
     <string>&amp;Load session...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionSave">
    <property name="text">
     <string>&amp;Save session</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -122,15 +131,24 @@
    <property name="text">
     <string>&amp;Quit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="actionSaveAs">
    <property name="text">
     <string>Save session as...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
   </action>
   <action name="actionLoadData">
    <property name="text">
     <string>Load data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
   <action name="actionConnectData">
@@ -139,6 +157,16 @@
    </property>
    <property name="text">
     <string>Connect datapoints</string>
+   </property>
+  </action>
+  <action name="actionRemoveData">
+   <property name="text">
+    <string>Remove selected dataset(s)</string>
+   </property>
+  </action>
+  <action name="actionMergeData">
+   <property name="text">
+    <string>Merge selected datasets</string>
    </property>
   </action>
  </widget>
