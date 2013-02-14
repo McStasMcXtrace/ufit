@@ -108,29 +108,22 @@ class DataLoader(QWidget):
         except Exception:
             QMessageBox.information(self, 'Error', 'Monitor scale must be integer.')
             return
+        numors = str(self.numors.text())
         try:
-            numors = map(int, str(self.numors.text()).split(','))
-        except Exception:
-            QMessageBox.information(self, 'Error',
-                                    'Numor list must be n1,n2,n3 etc.')
-            return
-        try:
-            datas = [self.loader.load(numor, xcol, ycol, mcol, mscale)
-                     for numor in numors]
+            datas = self.loader.load_numors(numors, prec,
+                                            xcol, ycol, mcol, mscale)
         except Exception, e:
             QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
             return
-        if len(datas) == 1:
-            data = datas[0]
-        else:
-            data = datas[0].merge(prec, *datas[1:])
         if final:
-            self.last_data = data
-            self.emit(SIGNAL('newData'), data)
+            self.last_data = datas[-1]
+            for data in datas:
+                self.emit(SIGNAL('newData'), data)
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()
-            self.plotter.plot_data(data)
+            for data in datas:
+                self.plotter.plot_data(data)
             self.plotter.draw()
 
     def initialize(self):
