@@ -58,6 +58,9 @@ def read_data(filename, fp):
     # Berlin implementation adds "Finished ..." in the last line,
     # pretend that it is a comment
     arr = loadtxt(fp, ndmin=2, usecols=usecols, comments='F')
+    for i, n in enumerate(names):
+        meta[n] = arr[:,i].mean()
+        meta[n + '__std'] = arr[:,i].std()
     if len(arr) == 0:
         raise UFitError('No data in %s' % filename)
     return names, arr, meta

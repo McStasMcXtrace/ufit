@@ -10,7 +10,9 @@ def rebin(x, y, n, binsize):
 
     # calculate new x values
     halfbinsize = binsize/2.
-    stops = arange(x.min() - binsize, x.max() + binsize, binsize) + halfbinsize
+    stops = arange(x.min() - (x.min() % binsize) - binsize,
+                   x.max() - (x.max() % binsize) + 2*binsize,
+                   binsize) + halfbinsize
     nbins = len(stops)
 
     # newarray will be the new x, y, m array
