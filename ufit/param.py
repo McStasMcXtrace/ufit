@@ -114,7 +114,11 @@ class Param(object):
         return s
 
     def __repr__(self):
-        return '<Param %s>' % self
+        if self.expr:
+            return '<Param %s = %.5g (expr: %s)>' % (
+                self.name, self.value, self.expr)
+        return '<Param %s = %.5g +/- %s>' % (
+            self.name, self.value, self.error)
 
 
 # XXX replace by something more safe later

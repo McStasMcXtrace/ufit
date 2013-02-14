@@ -303,7 +303,7 @@ class Function(Model):
             self._real_fcn(x, *(p[pv] for pv in pvs))
 
     def get_description(self):
-        return 'Function[%s, %s]' % (self.name, self._real_fcn.func_name)
+        return 'Function(%s, %s)' % (self.name, self._real_fcn.func_name)
 
 
 class GlobalModel(Model):
