@@ -104,8 +104,10 @@ class Fitter(QWidget):
                 layout.addWidget(ctl, i, j)
             i += 1
             self.original_params[p.name] = p.copy()
-            #self.connect(e1, SIGNAL('textEdited(const QString&)'),
-            #             self.do_plot)
+            self.connect(e1, SIGNAL('returnPressed()'), self.do_plot)
+            self.connect(e4.lineEdit(), SIGNAL('returnPressed()'), self.do_plot)
+            self.connect(e5, SIGNAL('returnPressed()'), self.do_plot)
+            self.connect(e6, SIGNAL('returnPressed()'), self.do_plot)
             self.connect(e3, SIGNAL('clicked(bool)'), self.update_enables)
             self.connect(e4, SIGNAL('editTextChanged(const QString&)'),
                          self.update_enables)
