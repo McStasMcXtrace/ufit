@@ -12,6 +12,9 @@ from numpy import linspace
 
 from ufit.plotting import DataPlotter
 
+__all__ = ['Result']
+
+
 class Result(object):
     def __init__(self, success, data, model, params, message, chisqr):
         self.success = success

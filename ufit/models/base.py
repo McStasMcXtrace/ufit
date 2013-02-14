@@ -9,6 +9,8 @@ from ufit.data.dataset import attrdict
 from ufit.utils import get_chisqr
 from ufit.plotting import DataPlotter
 
+__all__ = ['Model', 'CombinedModel', 'Function']
+
 
 class Model(object):
     """Base class for Model functions.

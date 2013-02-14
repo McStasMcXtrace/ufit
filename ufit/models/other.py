@@ -12,6 +12,8 @@ from numpy import cos, exp, pi, log, piecewise, sign
 
 from ufit.models.base import Model
 
+__all__ = ['Cosine', 'ExpDecay', 'PowerLaw', 'StraightLine', 'Parabola']
+
 
 class Cosine(Model):
     """Cosine

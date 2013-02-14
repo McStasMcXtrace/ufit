@@ -4,6 +4,8 @@ from numpy import convolve
 
 from ufit.models.base import Model
 
+__all__ = ['Convolution']
+
 
 class Convolution(Model):
     """Models a 1-D convolution of two models."""

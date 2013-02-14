@@ -6,15 +6,7 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
-def debug(str):
-    if __debug__:
-        print str
+"""Unified "from ufit.lab import *" module for quick scripts."""
 
-class UFitError(Exception):
-    pass
-
-from ufit.result import *
-from ufit.param import *
-from ufit.data import *
-from ufit.models import *
-from ufit.backends import *
+from ufit import *
+from pylab import *

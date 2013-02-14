@@ -18,4 +18,3 @@ Bugs
 
 * bugfix get_components mit (A + B) + C statt A + (B + C)
 * fix initial guess Y axis chaos
-* clean up __all__

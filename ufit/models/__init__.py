@@ -14,6 +14,9 @@ from ufit.models.corr import *
 from ufit.models.conv import *
 from ufit.models.other import *
 
+from ufit.models import base, peaks, corr, other
+
+__all__ = base.__all__ + peaks.__all__ + corr.__all__ + other.__all__
 
 # Concrete models that can be used in the simplified GUI interface.
 

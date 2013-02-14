@@ -13,6 +13,8 @@ from scipy.special import wofz
 
 from ufit.models import Model
 
+__all__ = ['Gauss', 'Lorentz', 'Voigt', 'PseudoVoigt', 'DHO']
+
 
 class Gauss(Model):
     """Gaussian peak

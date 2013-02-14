@@ -12,6 +12,8 @@ from numpy import exp, sqrt, arcsin, tan, pi
 
 from ufit.models import Model
 
+__all__ = ['Background', 'SlopingBackground', 'CKI_Corr', 'Bose']
+
 
 class Background(Model):
     """Constant background
