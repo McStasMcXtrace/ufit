@@ -188,6 +188,8 @@ class UFitMain(QMainWindow):
         panel = DatasetPanel(self, self.canvas, data, model)
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
+        # XXX generate HTML in panel itself
+        # XXX numbering is meaningless
         self.panels.append(
             ('<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' %
              (len(self.panels) + 1,
@@ -309,8 +311,11 @@ class UFitMain(QMainWindow):
         dlg = QDialog(self)
         loadUi(dlg, 'rebin.ui')
         if dlg.exec_():
-            # XXX
-            pass
+            precision = dlg.precision.value()
+            datalist = [p[1].data for i, p in enumerate(self.panels)
+                        if i in indlist]
+            new_data = datalist[0].merge(precision, *datalist[1:])
+            self.handle_new_data(new_data)
 
     @qtsig('')
     def on_actionQuit_triggered(self):
@@ -346,7 +351,11 @@ def main(args):
     if args:
         datafile = args[0]
         if datafile.endswith('.ufit'):
-            mainwindow.load_session(datafile)
+            try:
+                mainwindow.load_session(datafile)
+            except Exception, err:
+                QMessageBox.warning(mainwindow,
+                                    'Error', 'Loading failed: %s' % err)
         else:
             mainwindow.dloader.set_template(datafile)
 
