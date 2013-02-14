@@ -8,13 +8,13 @@
 
 """Model builder panel."""
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
-from PyQt4.QtGui import QWidget, QApplication, QSplitter, QMainWindow, \
-     QListWidgetItem, QDialogButtonBox, QMessageBox, QInputDialog, QTextCursor
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
+from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
+     QMessageBox, QInputDialog, QTextCursor
 
 from ufit import models, param
 from ufit.models import Background, Gauss, concrete_models
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
+from ufit.gui.common import loadUi
 
 
 class ModelBuilder(QWidget):
@@ -83,6 +83,7 @@ class ModelBuilder(QWidget):
             QMessageBox.information(self, 'Error', 'No model defined.')
             return
         d = models.__dict__.copy()
+        d.update(param.expr_namespace)
         d.update(param.__dict__)
         try:
             model = eval(modeldef, d)
