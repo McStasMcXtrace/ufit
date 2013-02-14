@@ -212,6 +212,10 @@ class CombinedModel(Model):
         # cache this!
         self._components = None
 
+    def __repr__(self):
+        return '<%s %r %s %r>' % (self.__class__.__name__,
+                                  self._a, self._opstr, self._b)
+
     def __reduce__(self):
         """Pickling support: reconstruct the object from __init__ parameters."""
         return (self.__class__, (self._a, self._b, self._opstr))
@@ -219,7 +223,28 @@ class CombinedModel(Model):
     def get_components(self):
         if self._components is not None:
             return self._components
-        if self._a.is_modifier():
+        if self._opstr in ('+', '*'):
+            modifiers = []
+            components = []
+            first = self
+            while isinstance(first, CombinedModel) and \
+                first._opstr == self._opstr:
+                second = first._b
+                first = first._a
+                if second.is_modifier():
+                    modifiers.append(second)
+                else:
+                    components.append(second)
+            if first.is_modifier():
+                modifiers.append(first)
+            else:
+                components.append(first)
+            ret = sum((c.get_components() for c in components), [])
+            if modifiers:
+                all_mods = reduce(lambda a, b: CombinedModel(a, b, self._opstr),
+                                  modifiers)
+                ret = [CombinedModel(all_mods, c, self._opstr) for c in ret]
+        elif self._a.is_modifier():
             if self._b.is_modifier():
                 # apparently nothing worthy of plotting
                 ret = []
