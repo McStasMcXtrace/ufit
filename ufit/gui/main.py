@@ -12,11 +12,11 @@ import sys
 from os import path
 import cPickle as pickle
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, QVariant
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
-     QFrame, QMessageBox, QFileDialog
+     QFrame, QMessageBox, QFileDialog, QDialog
 
-from ufit.gui.common import MPLCanvas, MPLToolbar, loadUi
+from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi
 from ufit.gui.dataloader import DataLoader
 from ufit.gui.dataops import DataOps
 from ufit.gui.modelbuilder import ModelBuilder
@@ -85,6 +85,7 @@ class UFitMain(QMainWindow):
         self.panels = []
         self.pristine = True  # nothing loaded so far
         self.filename = None
+        self.sgroup = SettingGroup('main')
 
         loadUi(self, 'main.ui')
 
@@ -112,12 +113,23 @@ class UFitMain(QMainWindow):
         self.empty = QFrame(self)
         self.stacker.addWidget(self.empty)
 
-        # XXX context menu: remove, merge with other
         self.datalistmodel = DataListModel(self.panels)
         self.datalist.setModel(self.datalistmodel)
         self.datalistmodel.reset()
+        self.datalist.addAction(self.actionMergeData)
+        self.datalist.addAction(self.actionRemoveData)
         self.connect(self.datalist, SIGNAL('newSelection'),
                      self.on_datalist_newSelection)
+
+        with self.sgroup as settings:
+            geometry = settings.value('geometry').toByteArray()
+            self.restoreGeometry(geometry)
+            windowstate = settings.value('windowstate').toByteArray()
+            self.restoreState(windowstate)
+            splitstate = settings.value('splitstate').toByteArray()
+            self.splitter.restoreState(splitstate)
+            vsplitstate = settings.value('vsplitstate').toByteArray()
+            self.vsplitter.restoreState(vsplitstate)
 
     def select_new_panel(self, panel):
         if isinstance(self.current_panel, DatasetPanel):
@@ -133,6 +145,21 @@ class UFitMain(QMainWindow):
     def on_loadBtn_clicked(self):
         self.select_new_panel(self.dloader)
         self.datalist.setCurrentIndex(QModelIndex())
+
+    @qtsig('')
+    def on_removeBtn_clicked(self):
+        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        if not indlist:
+            return
+        if QMessageBox.question(self, 'ufit',
+                                'OK to remove %d dataset(s)?' % len(indlist),
+                                QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
+            return
+        new_panels = [p for i, p in enumerate(self.panels)
+                      if i not in indlist]
+        self.panels[:] = new_panels
+        self.datalistmodel.reset()
+        self.on_loadBtn_clicked()
 
     def on_datalist_newSelection(self):
         if self._loading:
@@ -177,7 +204,6 @@ class UFitMain(QMainWindow):
     def on_actionLoadData_triggered(self):
         self.on_loadBtn_clicked()
 
-    @qtsig('')
     def on_actionConnectData_toggled(self, on):
         self.canvas.plotter.lines = on
         # XXX replot
@@ -210,8 +236,6 @@ class UFitMain(QMainWindow):
             self.load_session(self.filename)
         except Exception, err:
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
-        else:
-            self.setWindowTitle('ufit - %s' % self.filename)
 
     def load_session(self, filename):
         for panel in self.panels[1:]:
@@ -227,6 +251,7 @@ class UFitMain(QMainWindow):
         self.datalistmodel.reset()
         self.datalist.setCurrentIndex(
             self.datalistmodel.index(len(self.panels)-1, 0))
+        self.setWindowTitle('ufit - %s' % self.filename)
 
     @qtsig('')
     def on_actionSave_triggered(self):
@@ -274,11 +299,18 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionRemoveData_triggered(self):
-        pass
+        self.on_removeBtn_clicked()
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        pass
+        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        if len(indlist) < 2:
+            return
+        dlg = QDialog(self)
+        loadUi(dlg, 'rebin.ui')
+        if dlg.exec_():
+            # XXX
+            pass
 
     @qtsig('')
     def on_actionQuit_triggered(self):
@@ -287,8 +319,14 @@ class UFitMain(QMainWindow):
     def closeEvent(self, event):
         if not self.check_save():
             event.ignore()
-        else:
-            event.accept()
+            return
+        event.accept()
+        with self.sgroup as settings:
+            settings.setValue('geometry', QVariant(self.saveGeometry()))
+            settings.setValue('windowstate', QVariant(self.saveState()))
+            settings.setValue('splitstate', QVariant(self.splitter.saveState()))
+            settings.setValue('vsplitstate',
+                              QVariant(self.vsplitter.saveState()))
 
     @qtsig('')
     def on_actionAbout_triggered(self):
@@ -301,17 +339,18 @@ def main(args):
     print 'starting up app...'
     t1 = time.time()
     app = QApplication([])
-    # XXX window geometry
-    win = UFitMain()
+    app.setOrganizationName('ufit')
+    app.setApplicationName('gui')
+    mainwindow = UFitMain()
 
     if args:
         datafile = args[0]
         if datafile.endswith('.ufit'):
-            win.load_session(datafile)
+            mainwindow.load_session(datafile)
         else:
-            win.dloader.set_template(datafile)
+            mainwindow.dloader.set_template(datafile)
 
     t2 = time.time()
-    print 'loading finished (%.3f), main window showing...' % (t2-t1)
-    win.show()
+    print 'loading finished (%.3f s), main window showing...' % (t2-t1)
+    mainwindow.show()
     app.exec_()

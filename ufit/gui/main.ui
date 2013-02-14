@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>278</width>
     <height>600</height>
    </rect>
   </property>
@@ -44,7 +44,14 @@
           <item>
            <widget class="QPushButton" name="loadBtn">
             <property name="text">
-             <string>Load data</string>
+             <string>Load new data</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="removeBtn">
+            <property name="text">
+             <string>Remove</string>
             </property>
            </widget>
           </item>
@@ -58,7 +65,11 @@
          </widget>
         </item>
         <item>
-         <widget class="DataListView" name="datalist"/>
+         <widget class="DataListView" name="datalist">
+          <property name="contextMenuPolicy">
+           <enum>Qt::ActionsContextMenu</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -71,7 +82,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>278</width>
      <height>19</height>
     </rect>
    </property>

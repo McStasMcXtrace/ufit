@@ -11,7 +11,7 @@
 from os import path
 
 from PyQt4 import uic
-from PyQt4.QtCore import QSize
+from PyQt4.QtCore import QSize, QSettings
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget
 
 from matplotlib.backends.backend_qt4agg import \
@@ -65,3 +65,17 @@ class SmallLineEdit(QLineEdit):
     def sizeHint(self):
         sz = QLineEdit.sizeHint(self)
         return QSize(sz.width()/1.5, sz.height())
+
+
+class SettingGroup(object):
+    def __init__(self, name):
+        self.name = name
+        self.settings = QSettings()
+
+    def __enter__(self):
+        self.settings.beginGroup(self.name)
+        return self.settings
+
+    def __exit__(self, *args):
+        self.settings.endGroup()
+        self.settings.sync()
