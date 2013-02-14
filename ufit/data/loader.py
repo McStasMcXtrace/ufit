@@ -14,9 +14,6 @@ from ufit import UFitError
 from ufit.data.dataset import Dataset, DataList
 
 
-# XXX standardize column names (or select a few to standardize)
-
-
 class Loader(object):
     def __init__(self):
         self.format = 'auto'
@@ -41,6 +38,8 @@ class Loader(object):
             meta['filenumber'] = n
         if 'filedesc' not in meta:
             meta['filedesc'] = str(n)
+        if 'environment' not in meta:
+            meta['environment'] = []
         meta['datafilename'] = filename
         datarr = ones((len(coldata), 4))
         datarr[:,0] = coldata[:,colnames.index(xcol)]

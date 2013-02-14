@@ -85,6 +85,8 @@ class DataLoader(QWidget):
         self.xcol.clear()
         self.ycol.clear()
         self.moncol.clear()
+        self.moncol.addItem('(none)')
+        self.moncol.setCurrentIndex(0)
         for i, name in enumerate(cols):
             self.xcol.addItem(name)
             self.ycol.addItem(name)
@@ -94,8 +96,8 @@ class DataLoader(QWidget):
             if name == yguess:
                 self.ycol.setCurrentIndex(i)
             if name == mguess:
-                self.moncol.setCurrentIndex(i)
-        self.monscale.setText(str(nmon))
+                self.moncol.setCurrentIndex(i+1)
+        self.monscale.setText(str(nmon or 1))
         self.numors.setText(str(numor))
         self.open_data()
 
@@ -104,6 +106,8 @@ class DataLoader(QWidget):
         xcol = str(self.xcol.currentText())
         ycol = str(self.ycol.currentText())
         mcol = str(self.moncol.currentText())
+        if mcol == '(none)':
+            mcol = None
         try:
             mscale = int(self.monscale.text())
         except Exception:

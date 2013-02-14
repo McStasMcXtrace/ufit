@@ -95,7 +95,6 @@ class UFitMain(QMainWindow):
         self.canvas = MPLCanvas(self)
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
-        # XXX can one add to the MPL toolbar?
         self.toolbar = MPLToolbar(self.canvas, self)
         layout2.addWidget(self.toolbar)
         layout2.addWidget(self.canvas)

@@ -40,7 +40,7 @@ class Dataset(object):
             else:
                 self.yaxis += ' / %s' % ncol
         else:
-            self.norm = ones(len(self.y_raw))
+            self.norm_raw = self.norm = ones(len(self.y_raw))
 
         self.y = self.y_raw / self.norm
         self.dy = self.dy_raw / self.norm

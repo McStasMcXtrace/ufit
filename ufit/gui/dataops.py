@@ -87,14 +87,12 @@ class DataOps(QWidget):
     @qtsig('')
     def on_rebinBtn_clicked(self):
         binsize = self.precision.value()
-        new_array = rebin(self.data.x, self.data.y_raw, self.data.norm_raw,
-                          binsize)
-        self.data.__init__([self.data.xcol, self.data.ycol, self.data.ncol],
-                           new_array, self.data.meta,
+        new_array = rebin(self.data._data, binsize)
+        self.data.__init__(self.data.meta, new_array,
                            self.data.xcol, self.data.ycol, self.data.ncol,
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
-        self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')
     def on_mulBtn_clicked(self):
@@ -115,7 +113,6 @@ class DataOps(QWidget):
             return
         self.data.y += const
         self.data.y_raw += const * self.data.norm
-        # XXX how to treat dy?
         self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')

@@ -33,5 +33,8 @@ def read_data(filename, fp):
         colnames = dtline.split()
     else:
         fp.seek(0, 0)
+        colnames = None
     arr = loadtxt(fp, ndmin=2)
+    if colnames is None:
+        colnames = ['Column %d' % i for i in range(1, arr.shape[1]+1)]
     return colnames, arr, {}
