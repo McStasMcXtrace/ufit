@@ -8,7 +8,7 @@
 
 """Base dataset class."""
 
-from numpy import array, concatenate, ones, sqrt
+from numpy import array, concatenate, ones
 
 from ufit.utils import attrdict
 from ufit.data.merge import rebin
@@ -16,31 +16,25 @@ from ufit.plotting import DataPlotter
 
 
 class Dataset(object):
-    def __init__(self, colnames, data, meta, xcol, ycol,
-                 ncol=None, nscale=1, name='', sources=None):
-        self.colnames = colnames
-        self.cols = dict((cn, data[:,i]) for (i, cn) in enumerate(colnames))
-        self.data = data
+    def __init__(self, meta, data, xcol, ycol, ncol=None, nscale=1,
+                 name='', sources=None):
         self.meta = attrdict(meta)
-        self.name = name or str(self.meta.get('filenumber', ''))
-        self.full_name = '%s:%s:%s' % (self.meta.get('instrument', ''),
-                                       self.meta.get('experiment', ''),
-                                       self.name)
-        self.sources = sources or [self.full_name]
+        self.name = name or str(self.meta.filenumber)
+        self.sources = sources or [self.filedesc]
+        self._data = data
 
-        self.xcol = xcol
-        self.x = self[xcol]
-        self.xaxis = xcol
+        self.xcol = self.xaxis = xcol
+        self.x = self.x_raw = data[:,0]
 
-        self.ycol = ycol
-        self.y_raw = self[ycol]
-        self.yaxis = ycol
+        self.ycol = self.yaxis = ycol
+        self.y_raw = data[:,1]
+        self.dy_raw = data[:,2]
 
         self.ncol = ncol
         self.nscale = nscale
-        if ncol is not None:
-            self.norm_raw = self[ncol]
-            self.norm = self[ncol] / nscale
+        if ncol is not None and data.shape[1] > 3:
+            self.norm_raw = data[:,3]
+            self.norm = self.norm_raw / nscale
             if nscale != 1:
                 self.yaxis += ' / %s %s' % (nscale, ncol)
             else:
@@ -48,16 +42,13 @@ class Dataset(object):
         else:
             self.norm = ones(len(self.y_raw))
 
+        self.y = self.y_raw / self.norm
+        self.dy = self.dy_raw / self.norm
+
         # points with mask = False are masked out
         self.mask = ones(len(self.x), bool)
         self.fitmin = None
         self.fitmax = None
-
-        self.y = self.y_raw/self.norm
-        self.dy = sqrt(self.y_raw)/self.norm
-        self.dy[self.dy==0] = 0.1
-        ##self.y = self.y_raw
-        ##self.dy = self.norm_raw
 
     @property
     def fit_columns(self):
@@ -68,23 +59,9 @@ class Dataset(object):
             mask &= self.x <= self.fitmax
         return self.x[mask], self.y[mask], self.dy[mask]
 
-    @property
-    def environment(self):
-        s = []
-        if 'temperature' in self.meta:
-            s.append('T = %.3f K' % self.meta['temperature'])
-        return ', '.join(s)
-
-    @property
-    def data_title(self):
-        return self.meta.get('title', '')
-
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
-        arr = array((x, y)).T
-        obj = cls([xcol, ycol], arr, meta or {}, xcol, ycol, name=name)
-        obj.dy = dy
-        return obj
+        return cls(meta or {}, array((x, y, dy)).T, xcol, ycol, name=name)
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))
@@ -93,42 +70,35 @@ class Dataset(object):
         if key == '__setstate__':
             # pickling support
             raise AttributeError
-        if key in self.cols:
-            return self.cols[key]
         elif key in self.meta:
             return self.meta[key]
         raise AttributeError('no such data column: %s' % key)
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return self.__class__(self.colnames, self.data[key], self.meta,
-                                  self.xcol, self.ycol, self.ncol, name=self.name)
-        elif key in self.cols:
-            return self.cols[key]
-        raise KeyError('no such data column: %s' % key)
+            return self.__class__(self.meta, self._data[key],
+                                  self.xcol, self.ycol, self.ncol, self.nscale,
+                                  name=self.name, sources=self.sources)
+        raise KeyError
 
     def __or__(self, other):
-        return self.__class__(self.colnames,
-                              concatenate((self.data, other.data)),
-                              self.meta,
-                              self.xcol, self.ycol, self.ncol,
-                              name=self.name + '|' + other.name)
+        return self.__class__(self.meta, concatenate((self._data, other._data)),
+                              self.xcol, self.ycol, self.ncol, self.nscale,
+                              name=self.name + '|' + other.name,
+                              sources=self.sources + other.sources)
 
     def merge(self, binsize, *others):
         if not others:
             return self
         allsets = (self,) + others
-        all_x = concatenate([dset.x for dset in allsets])
-        all_y = concatenate([dset.y_raw for dset in allsets])
-        all_n = concatenate([dset.norm_raw for dset in allsets])
-        new_array = rebin(all_x, all_y, all_n, binsize)
+        alldata = concatenate([dset._data for dset in allsets])
+        new_array = rebin(alldata, binsize)
         sources = sum((dset.sources for dset in allsets), [])
         # XXX should we merge meta's?
-        return self.__class__([self.xcol, self.ycol, self.ncol], new_array,
-                               self.meta, self.xcol, self.ycol, self.ncol,
-                               self.nscale,
-                               name='&'.join(d.name for d in allsets),
-                               sources=sources)
+        return self.__class__(self.meta, new_array,
+                              self.xcol, self.ycol, self.ncol, self.nscale,
+                              name='&'.join(d.name for d in allsets),
+                              sources=sources)
 
     def plot(self, _axes=None):
         DataPlotter(_axes).plot_data(self)

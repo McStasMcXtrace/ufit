@@ -364,13 +364,14 @@ class GlobalModel(Model):
     def fit(self, datas, **kw):
 
         # fit a cumulative data set consisting of a concatenation of all data
+        fitcols = [d.fit_columns for d in datas]
 
         cumulative_data = Dataset.from_arrays(
             'cumulative data',
-            concatenate([d.x for d in datas]),
-            concatenate([d.y for d in datas]),
-            concatenate([d.dy for d in datas]),
-            attrdict(('d%d' % i, d.meta) for (i, d) in enumerate(datas)),
+            concatenate([cols[0] for cols in fitcols]),
+            concatenate([cols[1] for cols in fitcols]),
+            concatenate([cols[2] for cols in fitcols]),
+            dict(('d%d' % i, d.meta) for (i, d) in enumerate(datas)),
         )
         overall_res = Model.fit(self, cumulative_data, **kw)
 

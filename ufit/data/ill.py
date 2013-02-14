@@ -48,9 +48,13 @@ def read_data(filename, fp):
         line = fp.readline()
         if not line:
             break
-    if 'TT' in meta:
-        meta['temperature'] = meta['TT']
+    meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
+                                     meta.get('experiment', ''),
+                                     meta.get('filenumber'))
     names = fp.readline().split()
+    # XXX make error message style consistent
+    if not names:
+        raise UFitError('No columns in file')
     usecols = range(len(names))
     if names[0] == 'PNT':
         usecols = range(1, len(names))
@@ -60,7 +64,9 @@ def read_data(filename, fp):
     arr = loadtxt(fp, ndmin=2, usecols=usecols, comments='F')
     for i, n in enumerate(names):
         meta[n] = arr[:,i].mean()
-        meta[n + '__std'] = arr[:,i].std()
+    meta['environment'] = []
+    if 'TT' in meta:
+        meta['environment'].append('T = %.3f K' % meta['TT'])
     if len(arr) == 0:
-        raise UFitError('No data in %s' % filename)
+        raise UFitError('No data in file')
     return names, arr, meta

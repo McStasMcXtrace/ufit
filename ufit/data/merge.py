@@ -1,12 +1,14 @@
 # data merging
 
-from numpy import arange, ones, zeros
+from numpy import arange, ones, zeros, sqrt
 
 from ufit import UFitError
 
 
-def rebin(x, y, n, binsize):
-    """Simple rebinning of (x, y, n) data."""
+def rebin(data, binsize):
+    """Simple rebinning of (x, y, dy, n) data."""
+
+    x, y, dy, n = data.T
 
     # calculate new x values
     halfbinsize = binsize/2.
@@ -15,8 +17,8 @@ def rebin(x, y, n, binsize):
                    binsize) + halfbinsize
     nbins = len(stops)
 
-    # newarray will be the new x, y, m array
-    newarray = zeros((nbins, 3))
+    # newarray will be the new x, y, dy, n array
+    newarray = zeros((nbins, 4))
     newarray[:,0] = stops
 
     # this will keep track which data values we already used
@@ -34,7 +36,8 @@ def rebin(x, y, n, binsize):
         indices &= data_unused
         if indices.any():
             newarray[i, 1] += y[indices].sum()
-            newarray[i, 2] += n[indices].sum()
+            newarray[i, 2] += sqrt((dy[indices]**2).sum())
+            newarray[i, 3] += n[indices].sum()
             data_unused[indices] = False
         else:
             new_used[i] = False

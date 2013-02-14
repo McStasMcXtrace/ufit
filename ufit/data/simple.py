@@ -6,24 +6,32 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
-"""Load routine for simple three-column data files."""
+"""Load routine for simple whitespace-separated column data files."""
 
-from numpy import loadtxt, sqrt
-
-from ufit import UFitError
+from numpy import loadtxt
 
 
 def check_data(fp):
     dtline = fp.readline()
     try:
-        x, y, dy = map(float, dtline.split())
-    except (ValueError, TypeError):
+        map(float, dtline.split())
+    except ValueError:
+        fp.seek(0, 0)
         return False
     fp.seek(0, 0)
     return True
 
 
 def read_data(filename, fp):
-    colnames = ['x', 'y', 'dy']
+    dtline = fp.readline()
+    try:
+        if dtline.startswith(('#', '%')):
+            dtline = dtline[1:]
+        map(float, dtline.split())
+    except ValueError:
+        # must be headers...
+        colnames = dtline.split()
+    else:
+        fp.seek(0, 0)
     arr = loadtxt(fp, ndmin=2)
     return colnames, arr, {}

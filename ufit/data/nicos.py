@@ -61,7 +61,11 @@ def read_data(filename, fp):
                 meta['title'] = oval
             elif key == 'number':
                 meta['filenumber'] = int(oval)
+            # 'info' key already has the right name
             meta[key] = val
+    meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
+                                     meta.get('experiment', ''),
+                                     meta.get('filenumber'))
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
     def convert_value(s):
@@ -75,13 +79,14 @@ def read_data(filename, fp):
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols)
-    if 'Ts' in colnames:
-        tindex = colnames.index('Ts')
-        meta['temperature'] = coldata[:,tindex].mean()
-    if 'sT' in colnames:
-        tindex = colnames.index('sT')
-        meta['temperature'] = coldata[:,tindex].mean()
-    if 'B' in colnames:
-        tindex = colnames.index('B')
-        meta['magfield'] = coldata[:,tindex].mean()
+    cols = dict((name, coldata[:,i]) for (i, name) in enumerate(colnames))
+    meta['environment'] = []
+    for col in cols:
+        meta[col] = cols[col].mean()
+    if 'Ts' in cols:
+        meta['environment'].append('T = %.3f K' % meta['Ts'])
+    elif 'sT' in cols:
+        meta['environment'].append('T = %.3f K' % meta['sT'])
+    if 'B' in cols:
+        meta['environment'].append('B = %.3f K' % meta['B'])
     return colnames, coldata, meta

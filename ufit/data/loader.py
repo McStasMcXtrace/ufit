@@ -8,7 +8,7 @@
 
 """Data loader object."""
 
-from numpy import array
+from numpy import array, ones, sqrt
 
 from ufit import UFitError
 from ufit.data.dataset import Dataset, DataList
@@ -29,15 +29,29 @@ class Loader(object):
             for n, m in data_formats.iteritems():
                 if m.check_data(fobj):
                     return m
-            raise UFitError('File %s not recognized')
+            raise UFitError('File %s not recognized' % filename)
         return data_formats[self.format]
 
-    def load(self, n, xcol, ycol, mcol=None, mscale=1):
+    def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
         filename = self.template % n
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)
-        dset = Dataset(colnames, coldata, meta, xcol, ycol, mcol, mscale)
+        if 'filenumber' not in meta:
+            meta['filenumber'] = n
+        if 'filedesc' not in meta:
+            meta['filedesc'] = str(n)
+        meta['datafilename'] = filename
+        datarr = ones((len(coldata), 4))
+        datarr[:,0] = coldata[:,colnames.index(xcol)]
+        datarr[:,1] = coldata[:,colnames.index(ycol)]
+        if dycol is not None:
+            datarr[:,2] = coldata[:,colnames.index(dycol)]
+        else:
+            datarr[:,2] = sqrt(datarr[:,1])
+        if ncol is not None:
+            datarr[:,3] = coldata[:,colnames.index(ncol)]
+        dset = Dataset(meta, datarr, xcol, ycol, ncol, nscale)
         self.sets[n] = dset
         return dset
 
@@ -67,9 +81,12 @@ class Loader(object):
                     # use average monitor counts for normalization, but
                     # round to 2 significant digits
                     nmon = int(float('%.2g' % coldata[:,i].mean()))
+        if yguess is None and len(colnames) > 1:
+            yguess = colnames[1]
         return colnames, xguess, yguess, mguess, nmon
 
-    def load_numors(self, nstring, binsize, xcol, ycol, mcol=None, mscale=1):
+    def load_numors(self, nstring, binsize, xcol, ycol, dycol=None,
+                    ncol=None, nscale=1):
         """Load a number of data files and merge them according to numor
         list operations:
 
@@ -90,7 +107,7 @@ class Loader(object):
         for part1 in parts1:
             if '-' in part1:
                 a, b = map(toint, part1.split('-'))
-                datasets.extend(self.load(n, xcol, ycol, mcol, mscale)
+                datasets.extend(self.load(n, xcol, ycol, dycol, ncol, nscale)
                                 for n in range(a, b+1))
             else:
                 parts2 = part1.split('+')
@@ -98,11 +115,12 @@ class Loader(object):
                 for part2 in parts2:
                     if '>' in part2:
                         a, b = map(toint, part2.split('>'))
-                        ds = [self.load(n, xcol, ycol, mcol, mscale)
+                        ds = [self.load(n, xcol, ycol, dycol, ncol, nscale)
                               for n in range(a, b+1)]
                         inner.append(ds[0].merge(binsize, *ds[1:]))
                     else:
                         inner.append(
-                            self.load(toint(part2), xcol, ycol, mcol, mscale))
+                            self.load(toint(part2), xcol, ycol, dycol,
+                                      ncol, nscale))
                 datasets.append(inner[0].merge(binsize, *inner[1:]))
         return datasets

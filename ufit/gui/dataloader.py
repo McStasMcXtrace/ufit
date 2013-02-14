@@ -78,6 +78,7 @@ class DataLoader(QWidget):
         try:
             cols, xguess, yguess, mguess, nmon = self.loader.guess_cols(numor)
         except Exception, e:
+            raise
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return
@@ -110,8 +111,9 @@ class DataLoader(QWidget):
             return
         numors = str(self.numors.text())
         try:
+            # XXX support dycol
             datas = self.loader.load_numors(numors, prec,
-                                            xcol, ycol, mcol, mscale)
+                                            xcol, ycol, None, mcol, mscale)
         except Exception, e:
             QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
             return

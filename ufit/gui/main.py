@@ -193,8 +193,8 @@ class UFitMain(QMainWindow):
         self.panels.append(
             ('<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' %
              (len(self.panels) + 1,
-              data.data_title,
-              data.environment,
+              data.meta.get('title', ''),
+              ', '.join(data.environment),
               '<br>'.join(data.sources)), panel))
         self.pristine = False
         if not self._loading:
