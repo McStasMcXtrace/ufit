@@ -34,6 +34,7 @@ class DatasetPanel(QTabWidget):
         self.model = model or self.mbuilder.default_model(data)
         self._limits = None
         self.picker_widget = None
+        self.index = 0
 
         self.canvas = canvas
         self.dataops.initialize(self.data)
@@ -48,6 +49,13 @@ class DatasetPanel(QTabWidget):
         self.addTab(self.dataops, 'Data operations')
         self.addTab(self.mbuilder, 'Modeling')
         self.addTab(self.fitter, 'Fitting')
+
+    def as_html(self):
+        return '<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' % \
+            (self.index,
+             self.data.meta.get('title', ''),
+             ', '.join(self.data.environment),
+             '<br>'.join(self.data.sources))
 
     def on_mbuilder_newModel(self, model):
         self.model = model
@@ -86,6 +94,7 @@ class UFitMain(QMainWindow):
         self.pristine = True  # nothing loaded so far
         self.filename = None
         self.sgroup = SettingGroup('main')
+        self.max_index = 1
 
         loadUi(self, 'main.ui')
 
@@ -154,8 +163,7 @@ class UFitMain(QMainWindow):
                                 'OK to remove %d dataset(s)?' % len(indlist),
                                 QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
             return
-        new_panels = [p for i, p in enumerate(self.panels)
-                      if i not in indlist]
+        new_panels = [p for i, p in enumerate(self.panels) if i not in indlist]
         self.panels[:] = new_panels
         self.datalistmodel.reset()
         self.on_loadBtn_clicked()
@@ -167,13 +175,14 @@ class UFitMain(QMainWindow):
         if len(indlist) == 0:
             self.on_loadBtn_clicked()
         elif len(indlist) == 1:
-            panel = self.panels[indlist[0]][1]
+            panel = self.panels[indlist[0]]
             self.select_new_panel(panel)
             panel.replot(panel._limits)
             self.toolbar.update()
         else:
-            panels = [self.panels[i][1] for i in indlist]
+            panels = [self.panels[i] for i in indlist]
             self.canvas.plotter.reset()
+            self.isModal()
             # XXX this doesn't belong here
             for p in panels:
                 c = self.canvas.plotter.plot_data(p.data, multi=True)
@@ -185,16 +194,11 @@ class UFitMain(QMainWindow):
 
     def handle_new_data(self, data, update=True, model=None):
         panel = DatasetPanel(self, self.canvas, data, model)
+        panel.index = self.max_index
+        self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
-        # XXX generate HTML in panel itself
-        # XXX numbering is meaningless
-        self.panels.append(
-            ('<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' %
-             (len(self.panels) + 1,
-              data.meta.get('title', ''),
-              ', '.join(data.environment),
-              '<br>'.join(data.sources)), panel))
+        self.panels.append(panel)
         self.pristine = False
         if not self._loading and update:
             self.datalistmodel.reset()
@@ -240,7 +244,7 @@ class UFitMain(QMainWindow):
 
     def load_session(self, filename):
         for panel in self.panels[1:]:
-            self.stacker.removeWidget(panel[1])
+            self.stacker.removeWidget(panel)
         del self.panels[1:]
         info = pickle.load(open(filename, 'rb'))
         self._loading = True
@@ -294,7 +298,7 @@ class UFitMain(QMainWindow):
     def save_session_inner(self, filename):
         fp = open(filename, 'wb')
         info = {
-            'panels': [(panel[1].data, panel[1].model) for panel in self.panels]
+            'panels': [(panel.data, panel.model) for panel in self.panels]
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -311,7 +315,7 @@ class UFitMain(QMainWindow):
         loadUi(dlg, 'rebin.ui')
         if dlg.exec_():
             precision = dlg.precision.value()
-            datalist = [p[1].data for i, p in enumerate(self.panels)
+            datalist = [p.data for i, p in enumerate(self.panels)
                         if i in indlist]
             new_data = datalist[0].merge(precision, *datalist[1:])
             self.handle_new_data(new_data)

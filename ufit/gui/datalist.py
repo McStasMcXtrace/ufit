@@ -42,7 +42,7 @@ class DataListModel(QAbstractListModel):
             return QVariant()
         nr = index.row()
         if role == Qt.DisplayRole:
-            return QVariant(self.panels[nr][0])
+            return QVariant(self.panels[nr].as_html())
         elif role == Qt.TextAlignmentRole:
             return QVariant(int(Qt.AlignLeft|Qt.AlignVCenter))
         return QVariant()
