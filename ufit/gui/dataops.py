@@ -8,7 +8,7 @@
 
 """Data operations panel."""
 
-from numpy import ones, sqrt
+from numpy import ones, sqrt, mean
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget
@@ -103,6 +103,7 @@ class DataOps(QWidget):
         self.data.y *= const
         self.data.y_raw *= const
         self.data.dy *= const
+        self.data.dy_raw *= const
         self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')
@@ -135,3 +136,94 @@ class DataOps(QWidget):
         self.data.y = self.data.y_raw/self.data.norm
         self.data.dy = sqrt(self.data.y_raw)/self.data.norm
         self.emit(SIGNAL('replotRequest'), None)
+
+
+class MultiDataOps(QWidget):
+
+    def __init__(self, parent):
+        QWidget.__init__(self, parent)
+        self.data = None
+
+        loadUi(self, 'multiops.ui')
+
+    def initialize(self, panels):
+        self.panels = panels
+        self.datas = [p.data for p in panels]
+        self.monscale.setText(str(int(mean([d.nscale for d in self.datas]))))
+        self.onemodel.clear()
+        self.onemodel.addItems(['i%d' % p.index for p in panels])
+
+    @qtsig('')
+    def on_rebinBtn_clicked(self):
+        binsize = self.precision.value()
+        for data in self.datas:
+            new_array = rebin(data._data, binsize)
+            data.__init__(data.meta, new_array,
+                          data.xcol, data.ycol, data.ncol,
+                          data.nscale, name=data.name,
+                          sources=data.sources)
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_mulBtn_clicked(self):
+        try:
+            const = float(self.mul_constant.text())
+        except ValueError:
+            return
+        for data in self.datas:
+            data.y *= const
+            data.y_raw *= const
+            data.dy *= const
+            data.dy_raw *= const
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_addBtn_clicked(self):
+        try:
+            const = float(self.add_constant.text())
+        except ValueError:
+            return
+        for data in self.datas:
+            data.y += const
+            data.y_raw += const * data.norm
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_shiftBtn_clicked(self):
+        try:
+            const = float(self.shift_constant.text())
+        except ValueError:
+            return
+        for data in self.datas:
+            data.x += const
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_monscaleBtn_clicked(self):
+        try:
+            const = int(self.monscale.text())
+        except ValueError:
+            return
+        for data in self.datas:
+            data.nscale = const
+            data.norm = data.norm_raw / const
+            data.y = data.y_raw/data.norm
+            data.dy = sqrt(data.y_raw)/data.norm
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_mergeBtn_clicked(self):
+        precision = self.mergeprecision.value()
+        new_data = self.datas[0].merge(precision, *self.datas[1:])
+        self.emit(SIGNAL('newData'), new_data)
+
+    @qtsig('')
+    def on_onemodelBtn_clicked(self):
+        which = self.onemodel.currentIndex()
+        if which < 0:
+            return
+        model = self.panels[which].model
+        for i, panel in enumerate(self.panels):
+            if i == which:
+                continue
+            panel.handle_new_model(model)

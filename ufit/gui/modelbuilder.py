@@ -12,8 +12,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
      QMessageBox, QInputDialog, QTextCursor
 
-from ufit import models, param
-from ufit.models import Background, Gauss, concrete_models
+from ufit.models import Background, Gauss, concrete_models, eval_model
 from ufit.gui.common import loadUi
 
 
@@ -82,11 +81,8 @@ class ModelBuilder(QWidget):
         if not modeldef:
             QMessageBox.information(self, 'Error', 'No model defined.')
             return
-        d = models.__dict__.copy()
-        d.update(param.expr_namespace)
-        d.update(param.__dict__)
         try:
-            model = eval(modeldef, d)
+            model = eval_model(modeldef)
         except Exception, e:
             QMessageBox.information(self, 'Error',
                                     'Could not evaluate model: %s' % e)

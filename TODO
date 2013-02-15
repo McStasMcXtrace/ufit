@@ -6,8 +6,9 @@ Models
 GUI
 ===
 
+* load/save: preserve param values when saving as eval_model
+* one model for all: stop sharing params
 * add'l parameters
-* multiple sets: new data/same model, other model
 * keyboard shortcuts in plot
 * export plot as python script
 

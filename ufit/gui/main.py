@@ -14,11 +14,11 @@ import cPickle as pickle
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, QVariant
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
-     QFrame, QMessageBox, QFileDialog, QDialog
+     QMessageBox, QFileDialog, QDialog
 
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi
 from ufit.gui.dataloader import DataLoader
-from ufit.gui.dataops import DataOps
+from ufit.gui.dataops import DataOps, MultiDataOps
 from ufit.gui.modelbuilder import ModelBuilder
 from ufit.gui.fitter import Fitter
 from ufit.gui.datalist import DataListModel
@@ -58,6 +58,11 @@ class DatasetPanel(QTabWidget):
              '<br>'.join(self.data.sources))
 
     def on_mbuilder_newModel(self, model):
+        self.handle_new_model(model, update_mbuilder=False)
+
+    def handle_new_model(self, model, update_mbuilder=True):
+        if update_mbuilder:
+            self.mbuilder.modeldef.setText(model.get_description())
         self.model = model
         self.fitter.initialize(self.model, self.data, fit=False)
         self.setCurrentWidget(self.fitter)
@@ -116,10 +121,10 @@ class UFitMain(QMainWindow):
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
-        # XXX stopgap: add some useful things to do with multiple datasets
-        # (e.g. plot fit parameters vs another parameter)
-        self.empty = QFrame(self)
-        self.stacker.addWidget(self.empty)
+        self.multiops = MultiDataOps(self)
+        self.connect(self.multiops, SIGNAL('newData'), self.handle_new_data)
+        self.connect(self.multiops, SIGNAL('replotRequest'), self.plot_multi)
+        self.stacker.addWidget(self.multiops)
 
         self.datalistmodel = DataListModel(self.panels)
         self.datalist.setModel(self.datalistmodel)
@@ -180,17 +185,20 @@ class UFitMain(QMainWindow):
             panel.replot(panel._limits)
             self.toolbar.update()
         else:
-            panels = [self.panels[i] for i in indlist]
-            self.canvas.plotter.reset()
-            self.isModal()
-            # XXX this doesn't belong here
-            for p in panels:
-                c = self.canvas.plotter.plot_data(p.data, multi=True)
-                self.canvas.plotter.plot_model(p.model, p.data, labels=False,
-                                               color=c)
-            # XXX better title
-            self.canvas.draw()
-            self.select_new_panel(self.empty)
+            self.plot_multi()
+            self.multiops.initialize([self.panels[i] for i in indlist])
+            self.select_new_panel(self.multiops)
+
+    def plot_multi(self, *ignored):
+        # XXX better title
+        self.canvas.plotter.reset()
+        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        panels = [self.panels[i] for i in indlist]
+        for p in panels:
+            c = self.canvas.plotter.plot_data(p.data, multi=True)
+            self.canvas.plotter.plot_model(p.model, p.data, labels=False,
+                                           color=c)
+        self.canvas.draw()
 
     def handle_new_data(self, data, update=True, model=None):
         panel = DatasetPanel(self, self.canvas, data, model)
@@ -352,13 +360,15 @@ def main(args):
     mainwindow = UFitMain()
 
     if args:
-        datafile = args[0]
+        datafile = path.abspath(args[0])
         if datafile.endswith('.ufit'):
             try:
+                mainwindow.filename = datafile
                 mainwindow.load_session(datafile)
             except Exception, err:
                 QMessageBox.warning(mainwindow,
                                     'Error', 'Loading failed: %s' % err)
+                mainwindow.filename = None
         else:
             mainwindow.dloader.set_template(datafile)
 

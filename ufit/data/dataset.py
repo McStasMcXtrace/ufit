@@ -44,6 +44,7 @@ class Dataset(object):
 
         self.y = self.y_raw / self.norm
         self.dy = self.dy_raw / self.norm
+        self.dy[self.dy==0] = 0.1
 
         # points with mask = False are masked out
         self.mask = ones(len(self.x), bool)
