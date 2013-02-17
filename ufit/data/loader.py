@@ -48,15 +48,34 @@ class Loader(object):
             meta['environment'] = []
         meta['datafilename'] = filename
         datarr = ones((len(coldata), 4))
-        datarr[:,0] = coldata[:,colnames.index(xcol)]
-        datarr[:,1] = coldata[:,colnames.index(ycol)]
+
+        def colindex(col):
+            if isinstance(col, str):
+                try:
+                    return colnames.index(col)
+                except ValueError:
+                    raise UFitError('no such data column: %s' % col)
+            elif 1 <= col <= len(colnames):
+                return col - 1   # 1-based indices
+            else:
+                raise UFitError('data has only %d columns' % len(colnames))
+        datarr[:,0] = coldata[:,colindex(xcol)]
+        datarr[:,1] = coldata[:,colindex(ycol)]
         if dycol is not None:
-            datarr[:,2] = coldata[:,colnames.index(dycol)]
+            datarr[:,2] = coldata[:,colindex(dycol)]
         else:
             datarr[:,2] = sqrt(datarr[:,1])
         if ncol is not None:
-            datarr[:,3] = coldata[:,colnames.index(ncol)]
-        dset = Dataset(meta, datarr, xcol, ycol, ncol, nscale)
+            datarr[:,3] = coldata[:,colindex(ncol)]
+
+        def colname(col):
+            if col is None:
+                return None
+            elif isinstance(col, str):
+                return col
+            return colnames[col - 1]   # 1-based indices
+        dset = Dataset(meta, datarr, colname(xcol), colname(ycol),
+                       colname(ncol), nscale)
         self.sets[n] = dset
         return dset
 
