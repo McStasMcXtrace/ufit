@@ -2,6 +2,7 @@
 
 import inspect
 import operator
+import cPickle as pickle
 from numpy import concatenate
 
 from ufit import param, backends, UFitError, Param, Dataset, Result
@@ -175,6 +176,11 @@ class Model(object):
         if self.python_code:
             return (eval_model, (self.python_code, self.params))
         return (self.__class__, (self.name,) + tuple(self.params))
+
+    def copy(self):
+        if self.python_code:
+            return eval_model(self.python_code, [p.copy() for p in self.params])
+        return pickle.loads(pickle.dumps(self))
 
     def get_pick_points(self):
         """Get a list of point names that should be picked for initial guess."""

@@ -151,7 +151,7 @@ class MultiDataOps(QWidget):
         self.datas = [p.data for p in panels]
         self.monscale.setText(str(int(mean([d.nscale for d in self.datas]))))
         self.onemodel.clear()
-        self.onemodel.addItems(['i%d' % p.index for p in panels])
+        self.onemodel.addItems(['%d' % p.index for p in panels])
 
     @qtsig('')
     def on_rebinBtn_clicked(self):
@@ -226,4 +226,4 @@ class MultiDataOps(QWidget):
         for i, panel in enumerate(self.panels):
             if i == which:
                 continue
-            panel.handle_new_model(model)
+            panel.handle_new_model(model.copy(), keep_paramvalues=False)

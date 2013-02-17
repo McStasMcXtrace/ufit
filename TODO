@@ -6,7 +6,6 @@ Models
 GUI
 ===
 
-* one model for all: stop sharing params
 * add'l parameters
 * keyboard shortcuts in plot
 * export plot as python script

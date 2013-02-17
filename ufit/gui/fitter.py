@@ -8,7 +8,7 @@
 
 """Data fitter panel."""
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
+from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
      QComboBox
@@ -46,7 +46,6 @@ class Fitter(QWidget):
         self.buttonBox.addButton('Fit', QDialogButtonBox.ApplyRole)
 
     def initialize(self, model, data, fit=True, keep_old=True):
-        self.setWindowTitle('Fitting: data %s' % data.name)
         self.picking = None
         self.last_result = None
 
@@ -266,7 +265,7 @@ class FitterMain(QMainWindow):
         self.fitter.initialize(model, data, fit)
         layout.addWidget(self.fitter)
         self.setCentralWidget(layout)
-        self.setWindowTitle(self.fitter.windowTitle())
+        self.setWindowTitle('Fitting: data %s' % data.name)
 
     def replot(self, limits=True, paramdict=None):
         plotter = self.canvas.plotter

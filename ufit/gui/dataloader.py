@@ -156,9 +156,9 @@ class DataLoaderMain(QMainWindow):
         self.dloader = DataLoader(self, self.canvas.plotter, standalone=True)
         self.dloader.initialize()
         self.connect(self.dloader, SIGNAL('closeRequest'), self.close)
-        layout.addWidget(self.fitter)
+        layout.addWidget(self.dloader)
         self.setCentralWidget(layout)
-        self.setWindowTitle(self.fitter.windowTitle())
+        self.setWindowTitle('Data loading')
 
 
 def start():
