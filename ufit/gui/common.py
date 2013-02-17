@@ -11,9 +11,10 @@
 from os import path
 
 from PyQt4 import uic
-from PyQt4.QtCore import QSize, QSettings
+from PyQt4.QtCore import QSize, QSettings, Qt
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget
 
+from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
@@ -41,6 +42,12 @@ class MPLCanvas(FigureCanvas):
         self.setParent(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updateGeometry()
+        # actually get key events
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.mpl_connect('key_press_event', self.key_press)
+
+    def key_press(self, event):
+        key_press_handler(event, self)
 
     def resizeEvent(self, event):
         # reimplemented to add tight_layout()

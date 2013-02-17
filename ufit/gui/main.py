@@ -116,12 +116,16 @@ class UFitMain(QMainWindow):
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         self.toolbar = MPLToolbar(self.canvas, self)
-        layout2.addWidget(self.toolbar)
+        firstaction = self.toolbar.actions()[0]
+        self.toolbar.insertAction(firstaction, self.actionLoad)
+        self.toolbar.insertAction(firstaction, self.actionSave)
+        self.toolbar.insertSeparator(firstaction)
+        self.addToolBar(self.toolbar)
+        #layout2.addWidget(self.toolbar)
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)
 
         # create data loader
-        # XXX more inputs: data name, take model from
         self.dloader = DataLoader(self, self.canvas.plotter)
         self.connect(self.dloader, SIGNAL('newData'), self.handle_new_data)
         self.stacker.addWidget(self.dloader)
@@ -224,6 +228,10 @@ class UFitMain(QMainWindow):
 
     def on_actionConnectData_toggled(self, on):
         self.canvas.plotter.lines = on
+        # XXX replot
+
+    def on_actionDrawSymbols_toggled(self, on):
+        self.canvas.plotter.symbols = on
         # XXX replot
 
     def check_save(self):

@@ -34,6 +34,7 @@ class DataPlotter(object):
         self.marker_cycle = cycle(self.markers)
         self.toolbar = toolbar
         self._limits = None
+        self.symbols = True
         self.lines = False
 
     def draw(self):
@@ -50,7 +51,7 @@ class DataPlotter(object):
     def plot_data(self, data, multi=False):
         """Plot dataset."""
         axes = self.axes
-        marker = self.marker_cycle.next()
+        marker = self.marker_cycle.next() if self.symbols else ''
         ls = '-' if self.lines else ''
         if data.mask.all():
             eb = axes.errorbar(data.x, data.y, data.dy, ls=ls, marker=marker,

@@ -111,6 +111,7 @@
     <addaction name="actionRemoveData"/>
     <addaction name="actionMergeData"/>
     <addaction name="separator"/>
+    <addaction name="actionDrawSymbols"/>
     <addaction name="actionConnectData"/>
    </widget>
    <addaction name="menuFile"/>
@@ -178,6 +179,17 @@
   <action name="actionMergeData">
    <property name="text">
     <string>Merge selected datasets</string>
+   </property>
+  </action>
+  <action name="actionDrawSymbols">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Draw symbols</string>
    </property>
   </action>
  </widget>
