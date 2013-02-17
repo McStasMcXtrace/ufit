@@ -20,9 +20,10 @@ class Gauss(Model):
     """Gaussian peak
 
     Parameters:
-    * pos - Peak center position
-    * ampl - Amplitude at center
-    * fwhm - Full width at half maximum
+
+    * `pos` - Peak center position
+    * `ampl` - Amplitude at center
+    * `fwhm` - Full width at half maximum
     """
     param_names = ['pos', 'ampl', 'fwhm']
 
@@ -49,9 +50,10 @@ class Lorentz(Model):
     """Lorentzian peak
 
     Parameters:
-    * pos - Peak center position
-    * ampl - Amplitude at center
-    * fwhm - Full width at half maximum
+
+    * `pos` - Peak center position
+    * `ampl` - Amplitude at center
+    * `fwhm` - Full width at half maximum
     """
     param_names = ['pos', 'ampl', 'fwhm']
 
@@ -79,10 +81,11 @@ class Voigt(Model):
     A convolution of a Gaussian and a Lorentzian.
 
     Parameters:
-    * pos - Peak center position
-    * ampl - Amplitude at center
-    * fwhm - Full width at half maximum of the Gauss part
-    * shape - Lorentz contribution
+
+    * `pos` - Peak center position
+    * `ampl` - Amplitude at center
+    * `fwhm` - Full width at half maximum of the Gauss part
+    * `shape` - Lorentz contribution
     """
     param_names = ['pos', 'ampl', 'fwhm', 'shape']
 
@@ -114,10 +117,11 @@ class PseudoVoigt(Model):
     A pseudo-convolution of a Gaussian and a Lorentzian.
 
     Parameters:
-    * pos - Peak center position
-    * ampl - Amplitude at center
-    * fwhm - Full width at half maximum
-    * eta - Lorentzicity
+
+    * `pos` - Peak center position
+    * `ampl` - Amplitude at center
+    * `fwhm` - Full width at half maximum
+    * `eta` - Lorentzicity
     """
     param_names = ['pos', 'ampl', 'fwhm', 'eta']
 
@@ -150,11 +154,12 @@ class DHO(Model):
     respecting the Bose factor.
 
     Parameters:
-    * center - Energy zero
-    * pos - omega_0
-    * ampl - Amplitude
-    * gamma - Damping
-    * tt - Temperature in K
+
+    * `center` - Energy zero
+    * `pos` - omega_0
+    * `ampl` - Amplitude
+    * `gamma` - Damping
+    * `tt` - Temperature in K
     """
     param_names = ['center', 'pos', 'ampl', 'gamma', 'tt']
 

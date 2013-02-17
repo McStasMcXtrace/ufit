@@ -19,7 +19,8 @@ class Background(Model):
     """Constant background
 
     Parameters:
-    * bkgd - the background (forced to be nonnegative)
+
+    * `bkgd` - the background (forced to be nonnegative)
     """
     param_names = ['bkgd']
 
@@ -43,8 +44,9 @@ class SlopingBackground(Model):
     """Linearly sloping background
 
     Parameters:
-    * bkgd - constant factor
-    * slope - slope coefficient
+
+    * `bkgd` - constant factor
+    * `slope` - slope coefficient
     """
     param_names = ['bkgd', 'slope']
 
@@ -70,8 +72,9 @@ class CKI_Corr(Model):
     """Correction for constant-k_i energy scans
 
     Parameters:
-    * ki - the ki value in Ang-1
-    * dval - the monochromator d-value in Ang
+
+    * `ki` - the ki value in Ang-1
+    * `dval` - the monochromator d-value in Ang
     """
     param_names = ['ki', 'dval']
 
@@ -91,7 +94,8 @@ class Bose(Model):
     """Bose factor
 
     Parameters:
-    * tt - the temperature in K
+
+    * `tt` - the temperature in K
     """
     param_names = ['tt']
 

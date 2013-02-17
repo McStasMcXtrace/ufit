@@ -12,7 +12,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
      QMessageBox, QInputDialog, QTextCursor
 
-from ufit.models import Background, Gauss, concrete_models, eval_model
+from ufit.models import concrete_models, eval_model
 from ufit.gui.common import loadUi
 
 

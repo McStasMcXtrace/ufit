@@ -20,9 +20,10 @@ __all__ = ['Const', 'StraightLine', 'Parabola',
 class Const(Model):
     """A constant, to be used for modifying other models (e.g. exponentiation)
 
-    For example: Sinc() ** Const('eta')
+    For example: ``Sinc() ** Const('eta')``
 
     Parameters:
+
     * the constant  (named after the model's name)
     """
 
@@ -45,8 +46,9 @@ class StraightLine(Model):
     y = slope * x + y0
 
     Parameters:
-    * slope
-    * y0  - intercept
+
+    * `slope`
+    * `y0`  - intercept
     """
     param_names = ['slope', 'y0']
 
@@ -70,9 +72,10 @@ class Parabola(Model):
     y = stretch * (x - x0)^2 + y0
 
     Parameters:
-    * x0  - x coordinate of vertex
-    * y0  - y coordinate of vertex
-    * stretch - stretch factor
+
+    * `x0`  - x coordinate of vertex
+    * `y0`  - y coordinate of vertex
+    * `stretch` - stretch factor
     """
     param_names = ['x0', 'y0', 'stretch']
 
@@ -97,9 +100,10 @@ class Cosine(Model):
     y = ampl * cos(freq * x + phase)
 
     Parameters:
-    * ampl - amplitude
-    * freq - frequency (omega or k)
-    * phase - phase in radians
+
+    * `ampl` - amplitude
+    * `freq` - frequency (omega or k)
+    * `phase` - phase in radians
     """
     param_names = ['ampl', 'freq', 'phase']
 
@@ -124,9 +128,10 @@ class Sinc(Model):
     y = ampl * sin(freq*(x - center)) / (freq*(x - center))
 
     Parameters:
-    * ampl - amplitude at x = center
-    * freq - frequency of the sine
-    * center - point of maximum amplitude
+
+    * `ampl` - amplitude at x = center
+    * `freq` - frequency of the sine
+    * `center` - point of maximum amplitude
     """
     param_names = ['ampl', 'freq', 'center']
 
@@ -143,9 +148,10 @@ class ExpDecay(Model):
     y = y1 + (y0 - y1) * exp(-x/tau)
 
     Parameters:
-    * y0  - value at x = 0
-    * tau - decay constant: exp(-x/tau)
-    * y1  - value at x -> infinity
+
+    * `y0`  - value at x = 0
+    * `tau` - decay constant: exp(-x/tau)
+    * `y1`  - value at x -> infinity
     """
     param_names = ['y0', 'tau', 'y1']
 
@@ -167,9 +173,10 @@ class PowerLaw(Model):
     """Power law
 
     Parameters:
-    * start - starting point
-    * scale - x value scaling (positive => right side of starting point)
-    * beta  - exponent
+
+    * `start` - starting point
+    * `scale` - x value scaling (positive => right side of starting point)
+    * `beta`  - exponent
     """
     param_names = ['start', 'scale', 'beta']
 
