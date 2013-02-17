@@ -18,27 +18,47 @@ __all__ = ['fixed', 'expr', 'overall', 'datapar', 'limited', 'Param']
 
 
 class fixed(str):
-    """Mark the parameter value as fixed."""
+    """Mark the parameter value as fixed.
+
+    The ``fixed()`` wrapper can also be omitted; any string means that a
+    parameter as a fixed value that can include references to other parameters.
+    """
     def __init__(self, p):
         str.__init__(self, p)
 
 class expr(str):
-    """Mark the parameter value as an expression."""
+    """Mark the parameter value as an expression.
+
+    The ``expr()`` wrapper can also be omitted; any string means that a
+    parameter as a fixed value that can include references to other parameters.
+    """
     def __init__(self, e):
         str.__init__(self, e)
 
 class overall(object):
-    """Mark the parameter as an "overall" (global) parameter in a global fit."""
+    """Mark the parameter as an "overall" (global) parameter in a global fit.
+
+    The argument can be another parameter definition, e.g. ``overall(limited(0,
+    10, 2))``.
+    """
     def __init__(self, v):
         self.v = v
 
 class datapar(object):
-    """Mark the parameter as coming from the data file's metadata."""
+    """Mark the parameter as coming from the data file's metadata.
+
+    ``datapar('foo')`` is equivalent to ``expr('data.foo')``.
+    """
     def __init__(self, v):
         self.v = v
 
 class limited(tuple):
-    """Give parameter limits together with the initial value."""
+    """Give parameter limits together with the initial value.
+
+    Example use::
+
+       Gauss('peak', pos=0, ampl=limited(0, 100, 50), fwhm=1)
+    """
     def __new__(self, min, max, v):
         return (min, max, v)
 

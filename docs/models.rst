@@ -1,6 +1,9 @@
 Available models
 ================
 
+These are the model classes available.  Using :class:`Function` user-written
+Python functions can be used as models too.
+
 .. module:: ufit.models
 
 Generic

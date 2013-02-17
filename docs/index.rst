@@ -1,7 +1,7 @@
 ufit overview
 =============
 
-ufit is a universal (scattering) data fitting package for use both in
+ufit is a universal neutron scattering data fitting package for use both in
 noninteractive scripts, and with a graphical user interface.
 
 It handles complex fitting functions by combining them from pre-defined Pythonic

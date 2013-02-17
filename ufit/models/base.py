@@ -177,8 +177,6 @@ class Model(object):
     def global_fit(self, datas, **kw):
         """Fit the model to multiple datasets, given as a list by *datas*.
 
-        See :ref:`global-fit`.
-
         Any keywords will be passed to the raw fitting routine of the backend.
         """
         return GlobalModel(self, datas).fit(datas, **kw)
@@ -192,10 +190,7 @@ class Model(object):
         DataPlotter(axes).plot_model(self, data, labels, pdict)
 
     def plot_components(self, data, axes=None, labels=True, pdict=None):
-        """Plot subcomponents of the model in the current figure.
-
-        See :ref:`model-components`.
-        """
+        """Plot subcomponents of the model in the current figure."""
         DataPlotter(axes).plot_model_components(self, data, labels, pdict)
 
     def add_params(self, **params):

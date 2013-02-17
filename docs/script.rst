@@ -58,9 +58,13 @@ Constructing models
 
    .. automethod:: global_fit
 
+      See :ref:`global-fit`.
+
    .. automethod:: plot
 
    .. automethod:: plot_components
+
+      See :ref:`model-components`.
 
 .. autofunction:: fixed
 
@@ -159,3 +163,4 @@ Backend selection
 
 .. autofunction:: set_backend
 
+   See :ref:`backends`.
