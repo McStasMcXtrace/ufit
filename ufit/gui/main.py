@@ -25,7 +25,7 @@ from ufit.gui.datalist import DataListModel
 
 
 class DatasetPanel(QTabWidget):
-    def __init__(self, parent, canvas, data, model=None):
+    def __init__(self, parent, canvas, data, model, index):
         QTabWidget.__init__(self, parent)
         self.data = data
         self.dataops = DataOps(self)
@@ -34,7 +34,7 @@ class DatasetPanel(QTabWidget):
         self.model = model or self.mbuilder.default_model(data)
         self._limits = None
         self.picker_widget = None
-        self.index = 0
+        self.index = index
 
         self.canvas = canvas
         self.dataops.initialize(self.data)
@@ -49,13 +49,17 @@ class DatasetPanel(QTabWidget):
         self.addTab(self.dataops, 'Data operations')
         self.addTab(self.mbuilder, 'Modeling')
         self.addTab(self.fitter, 'Fitting')
+        self.setCurrentWidget(self.mbuilder)
+
+        title = self.data.meta.get('title', '')
+        self.htmldesc = '<big><b>%s</b></big>' % self.index + \
+            (title and ' - %s' % title or '') + \
+            (self.data.environment and
+             '<br>%s' % ', '.join(self.data.environment) or '') + \
+            ('<br><small>%s</small>' % '<br>'.join(self.data.sources))
 
     def as_html(self):
-        return '<big><b>%s</b></big> - %s<br>%s<br><small>%s</small>' % \
-            (self.index,
-             self.data.meta.get('title', ''),
-             ', '.join(self.data.environment),
-             '<br>'.join(self.data.sources))
+        return self.htmldesc
 
     def on_mbuilder_newModel(self, model):
         self.handle_new_model(model, update_mbuilder=False)
@@ -201,8 +205,7 @@ class UFitMain(QMainWindow):
         self.canvas.draw()
 
     def handle_new_data(self, data, update=True, model=None):
-        panel = DatasetPanel(self, self.canvas, data, model)
-        panel.index = self.max_index
+        panel = DatasetPanel(self, self.canvas, data, model, self.max_index)
         self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)

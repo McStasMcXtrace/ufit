@@ -8,6 +8,7 @@
 
 """Data loader object."""
 
+from os import path
 from numpy import array, ones, sqrt
 
 from ufit import UFitError
@@ -32,15 +33,17 @@ class Loader(object):
     def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
         try:
             filename = self.template % n
+            default_filedesc = str(n)
         except TypeError:
             filename = self.template
+            default_filedesc = path.basename(self.template)
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)
         if 'filenumber' not in meta:
             meta['filenumber'] = n
         if 'filedesc' not in meta:
-            meta['filedesc'] = str(n)
+            meta['filedesc'] = default_filedesc
         if 'environment' not in meta:
             meta['environment'] = []
         meta['datafilename'] = filename
