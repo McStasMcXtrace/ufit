@@ -120,8 +120,8 @@ class UFitMain(QMainWindow):
         self.toolbar.insertAction(firstaction, self.actionLoad)
         self.toolbar.insertAction(firstaction, self.actionSave)
         self.toolbar.insertSeparator(firstaction)
+        self.toolbar.setObjectName('maintoolbar')
         self.addToolBar(self.toolbar)
-        #layout2.addWidget(self.toolbar)
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)
 
@@ -270,8 +270,9 @@ class UFitMain(QMainWindow):
         info = pickle.load(open(filename, 'rb'))
         self._loading = True
         try:
-            for data, model in info['panels']:
+            for data, model in info['datasets']:
                 self.handle_new_data(data, False, model)
+            self.dloader.datatemplate.setText(info['template'])
         finally:
             self._loading = False
         self.datalistmodel.reset()
@@ -319,7 +320,8 @@ class UFitMain(QMainWindow):
     def save_session_inner(self, filename):
         fp = open(filename, 'wb')
         info = {
-            'panels': [(panel.data, panel.model) for panel in self.panels]
+            'datasets': [(panel.data, panel.model) for panel in self.panels],
+            'template': str(self.dloader.datatemplate.text()),
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
