@@ -35,4 +35,5 @@ concrete_models = [
     Cosine,
     ExpDecay,
     PowerLaw,
+    Sinc,
 ]

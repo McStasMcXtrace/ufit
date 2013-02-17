@@ -8,11 +8,11 @@
 
 """Diverse other models."""
 
-from numpy import cos, exp, pi, log, piecewise, sign
+from numpy import cos, sin, exp, pi, log, piecewise, sign
 
 from ufit.models.base import Model
 
-__all__ = ['Cosine', 'ExpDecay', 'PowerLaw', 'StraightLine', 'Parabola']
+__all__ = ['Cosine', 'ExpDecay', 'PowerLaw', 'StraightLine', 'Parabola', 'Sinc']
 
 
 class Cosine(Model):
@@ -147,3 +147,21 @@ class Parabola(Model):
             self.params[2].name: (p2[1] - vx[1]) / (p2[0] - vx[0])**2,
         }
 
+
+class Sinc(Model):
+    """Sinc function
+
+    y = ampl * sin(freq*(x - center)) / (freq*(x - center))
+
+    Parameters:
+    * ampl - amplitude at x = center
+    * freq - frequency of the sine
+    * center - point of maximum amplitude
+    """
+    param_names = ['ampl', 'freq', 'center']
+
+    def __init__(self, name='', ampl=None, freq=None, center=0):
+        pa, pf, pc = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: piecewise(
+            x - p[pc], [x == p[pc]],
+            [p[pa], lambda v: p[pa] * sin(p[pf]*v) / (p[pf]*v)])
