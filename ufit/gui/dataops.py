@@ -48,6 +48,7 @@ class DataOps(QWidget):
     def on_badResetBtn_clicked(self):
         self.data.mask = ones(len(self.data.x), bool)
         self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_badPointsBtn_clicked(self):
@@ -77,12 +78,14 @@ class DataOps(QWidget):
             limitmax = None
         self.data.fitmin, self.data.fitmax = limitmin, limitmax
         self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('dirty'))
 
     def removeBadPoints(self, points):
         """'Remove' bad data points (just mask them out)."""
         for point in points:
             self.data.mask[self.data.x == point] = False
         self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_rebinBtn_clicked(self):
@@ -93,6 +96,7 @@ class DataOps(QWidget):
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_mulBtn_clicked(self):
@@ -105,6 +109,7 @@ class DataOps(QWidget):
         self.data.dy *= const
         self.data.dy_raw *= const
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_addBtn_clicked(self):
@@ -115,6 +120,7 @@ class DataOps(QWidget):
         self.data.y += const
         self.data.y_raw += const * self.data.norm
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_shiftBtn_clicked(self):
@@ -124,6 +130,7 @@ class DataOps(QWidget):
             return
         self.data.x += const
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_monscaleBtn_clicked(self):
@@ -136,6 +143,7 @@ class DataOps(QWidget):
         self.data.y = self.data.y_raw/self.data.norm
         self.data.dy = sqrt(self.data.y_raw)/self.data.norm
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
 
 class MultiDataOps(QWidget):
@@ -163,6 +171,7 @@ class MultiDataOps(QWidget):
                           data.nscale, name=data.name,
                           sources=data.sources)
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_mulBtn_clicked(self):
@@ -176,6 +185,7 @@ class MultiDataOps(QWidget):
             data.dy *= const
             data.dy_raw *= const
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_addBtn_clicked(self):
@@ -187,6 +197,7 @@ class MultiDataOps(QWidget):
             data.y += const
             data.y_raw += const * data.norm
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_shiftBtn_clicked(self):
@@ -197,6 +208,7 @@ class MultiDataOps(QWidget):
         for data in self.datas:
             data.x += const
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_monscaleBtn_clicked(self):
@@ -210,6 +222,7 @@ class MultiDataOps(QWidget):
             data.y = data.y_raw/data.norm
             data.dy = sqrt(data.y_raw)/data.norm
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_mergeBtn_clicked(self):
@@ -227,3 +240,4 @@ class MultiDataOps(QWidget):
             if i == which:
                 continue
             panel.handle_new_model(model.copy(), keep_paramvalues=False)
+        self.emit(SIGNAL('dirty'))

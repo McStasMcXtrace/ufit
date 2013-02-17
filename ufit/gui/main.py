@@ -42,10 +42,12 @@ class DatasetPanel(QTabWidget):
         self.fitter.initialize(self.model, self.data, fit=False)
         self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.dataops, SIGNAL('replotRequest'), self.replot)
+        self.connect(self.dataops, SIGNAL('dirty'), self.set_dirty)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
         self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
         self.connect(self.fitter, SIGNAL('pickRequest'), self.set_picker)
+        self.connect(self.fitter, SIGNAL('dirty'), self.set_dirty)
         self.addTab(self.dataops, 'Data operations')
         self.addTab(self.mbuilder, 'Modeling')
         self.addTab(self.fitter, 'Fitting')
@@ -61,8 +63,12 @@ class DatasetPanel(QTabWidget):
     def as_html(self):
         return self.htmldesc
 
+    def set_dirty(self):
+        self.emit(SIGNAL('dirty'))
+
     def on_mbuilder_newModel(self, model):
         self.handle_new_model(model, update_mbuilder=False)
+        self.set_dirty()
 
     def handle_new_model(self, model, update_mbuilder=True,
                          keep_paramvalues=True):
@@ -102,7 +108,6 @@ class UFitMain(QMainWindow):
         self._loading = False
         self.current_panel = None
         self.panels = []
-        self.pristine = True  # nothing loaded so far
         self.filename = None
         self.sgroup = SettingGroup('main')
         self.max_index = 1
@@ -134,6 +139,7 @@ class UFitMain(QMainWindow):
         self.multiops = MultiDataOps(self)
         self.connect(self.multiops, SIGNAL('newData'), self.handle_new_data)
         self.connect(self.multiops, SIGNAL('replotRequest'), self.plot_multi)
+        self.connect(self.multiops, SIGNAL('dirty'), self.set_dirty)
         self.stacker.addWidget(self.multiops)
 
         self.datalistmodel = DataListModel(self.panels)
@@ -153,6 +159,9 @@ class UFitMain(QMainWindow):
             self.splitter.restoreState(splitstate)
             vsplitstate = settings.value('vsplitstate').toByteArray()
             self.vsplitter.restoreState(vsplitstate)
+
+    def set_dirty(self):
+        self.setWindowModified(True)
 
     def select_new_panel(self, panel):
         if isinstance(self.current_panel, DatasetPanel):
@@ -181,6 +190,7 @@ class UFitMain(QMainWindow):
         new_panels = [p for i, p in enumerate(self.panels) if i not in indlist]
         self.panels[:] = new_panels
         self.datalistmodel.reset()
+        self.setWindowModified(True)
         self.on_loadBtn_clicked()
 
     def on_datalist_newSelection(self):
@@ -212,11 +222,12 @@ class UFitMain(QMainWindow):
 
     def handle_new_data(self, data, update=True, model=None):
         panel = DatasetPanel(self, self.canvas, data, model, self.max_index)
+        self.connect(panel, SIGNAL('dirty'), self.set_dirty)
         self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
         self.panels.append(panel)
-        self.pristine = False
+        self.setWindowModified(True)
         if not self._loading and update:
             self.datalistmodel.reset()
             self.datalist.setCurrentIndex(
@@ -235,7 +246,7 @@ class UFitMain(QMainWindow):
         # XXX replot
 
     def check_save(self):
-        if self.pristine:  # nothing there to be saved
+        if not self.isWindowModified():  # nothing there to be saved
             return True
         resp = QMessageBox.question(self, 'ufit', 'Save current session?',
             QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
@@ -278,7 +289,8 @@ class UFitMain(QMainWindow):
         self.datalistmodel.reset()
         self.datalist.setCurrentIndex(
             self.datalistmodel.index(len(self.panels)-1, 0))
-        self.setWindowTitle('ufit - %s' % self.filename)
+        self.setWindowModified(False)
+        self.setWindowTitle('ufit - %s[*]' % self.filename)
 
     @qtsig('')
     def on_actionSave_triggered(self):
@@ -296,6 +308,7 @@ class UFitMain(QMainWindow):
         except Exception, err:
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
+        self.setWindowModified(False)
         return True
 
     def save_session_as(self):
@@ -314,7 +327,8 @@ class UFitMain(QMainWindow):
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
         else:
-            self.setWindowTitle('ufit - %s' % self.filename)
+            self.setWindowModified(False)
+            self.setWindowTitle('ufit - %s[*]' % self.filename)
             return True
 
     def save_session_inner(self, filename):

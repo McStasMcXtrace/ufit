@@ -176,6 +176,7 @@ class Fitter(QWidget):
             p.pmin = float(pmin.text()) if pmin.text() else None
             p.pmax = float(pmax.text()) if pmax.text() else None
         self.update_enables()
+        self.emit(SIGNAL('dirty'))
 
     def restore_from_params(self, other_params):
         for p in self.model.params:
@@ -194,6 +195,7 @@ class Fitter(QWidget):
                 ctls[4].lineEdit().setText(p0.expr or '')
             ctls[5].setText(p0.pmin is not None and '%.5g' % p0.pmin or '')
             ctls[6].setText(p0.pmax is not None and '%.5g' % p0.pmax or '')
+        self.emit(SIGNAL('dirty'))
         self.do_plot()
 
     def save_original_params(self):
@@ -229,6 +231,7 @@ class Fitter(QWidget):
                 ctls = self.param_controls[p]
                 if not p.expr:
                     ctls[1].setText('%.5g' % p.value)
+            self.emit(SIGNAL('dirty'))
             self.do_plot()
         self._pick_finished = callback
 
@@ -259,6 +262,7 @@ class Fitter(QWidget):
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
 
         self.emit(SIGNAL('replotRequest'), True, res.paramvalues)
+        self.emit(SIGNAL('dirty'))
 
         self.last_result = res
 
