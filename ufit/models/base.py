@@ -11,13 +11,15 @@ from ufit.plotting import DataPlotter
 __all__ = ['Model', 'CombinedModel', 'Function', 'eval_model']
 
 
-def eval_model(modeldef):
+def eval_model(modeldef, paramdef=None):
     from ufit import models
     d = models.__dict__.copy()
     d.update(param.expr_namespace)
     d.update(param.__dict__)
     model = eval(modeldef, d)
     model.python_code = modeldef
+    if paramdef:
+        model.params = paramdef
     return model
 
 
@@ -171,7 +173,7 @@ class Model(object):
     def __reduce__(self):
         """Pickling support: reconstruct the object from a constructor call."""
         if self.python_code:
-            return (eval_model, (self.python_code,))
+            return (eval_model, (self.python_code, self.params))
         return (self.__class__, (self.name,) + tuple(self.params))
 
     def get_pick_points(self):
@@ -233,9 +235,9 @@ class CombinedModel(Model):
                                   self._a, self._opstr, self._b)
 
     def __reduce__(self):
-        """Pickling support: reconstruct the object from __init__ parameters."""
+        """Pickling support: reconstruct the object from a constructor call."""
         if self.python_code:
-            return (eval_model, (self.python_code,))
+            return (eval_model, (self.python_code, self.params))
         return (self.__class__, (self._a, self._b, self._opstr))
 
     def get_components(self):
