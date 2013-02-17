@@ -30,7 +30,10 @@ class Loader(object):
         return data_formats[self.format]
 
     def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
-        filename = self.template % n
+        try:
+            filename = self.template % n
+        except TypeError:
+            filename = self.template
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)
@@ -55,7 +58,10 @@ class Loader(object):
         return dset
 
     def guess_cols(self, n):
-        filename = self.template % n
+        try:
+            filename = self.template % n
+        except TypeError:
+            filename = self.template
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)

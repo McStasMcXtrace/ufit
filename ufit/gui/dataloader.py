@@ -18,6 +18,7 @@ from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
 from ufit.data import data_formats, Loader
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
+
 numor_re = re.compile(r'\d+')
 
 class DataLoader(QWidget):
@@ -68,11 +69,12 @@ class DataLoader(QWidget):
         dn = path.dirname(fn)
         m = list(numor_re.finditer(bn))
         if not m:
-            QMessageBox.information(self, 'Error', 'No number in file name?!')
-            return
-        b, e = m[-1].span()
-        dtempl = path.join(dn, bn[:b] + '%%0%dd' % (e-b) + bn[e:])
-        numor = int(m[-1].group())
+            dtempl = fn
+            numor = 0
+        else:
+            b, e = m[-1].span()
+            dtempl = path.join(dn, bn[:b] + '%%0%dd' % (e-b) + bn[e:])
+            numor = int(m[-1].group())
         self.datatemplate.setText(dtempl)
         self.loader.template = dtempl
         try:
