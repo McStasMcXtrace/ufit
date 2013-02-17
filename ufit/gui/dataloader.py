@@ -78,7 +78,8 @@ class DataLoader(QWidget):
         self.datatemplate.setText(dtempl)
         self.loader.template = dtempl
         try:
-            cols, xguess, yguess, mguess, nmon = self.loader.guess_cols(numor)
+            cols, xguess, yguess, dyguess, mguess, nmon = \
+                self.loader.guess_cols(numor)
         except Exception, e:
             raise
             QMessageBox.information(self, 'Error',
@@ -101,6 +102,8 @@ class DataLoader(QWidget):
                 self.xcol.setCurrentIndex(i)
             if name == yguess:
                 self.ycol.setCurrentIndex(i)
+            if name == dyguess:
+                self.dycol.setCurrentIndex(i+1)
             if name == mguess:
                 self.moncol.setCurrentIndex(i+1)
         self.monscale.setText(str(nmon or 1))

@@ -68,7 +68,7 @@ class Loader(object):
         fobj = open(filename, 'rb')
         colnames, coldata, meta = \
             self._get_reader(filename, fobj).read_data(filename, fobj)
-        xguess, yguess, mguess = None, None, None
+        xguess, yguess, dyguess, mguess = None, None, None, None
         if colnames[0].lower() in ('h', 'qh'):
             deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
             xguess = colnames[deviations.argmax()]
@@ -91,7 +91,9 @@ class Loader(object):
                     nmon = int(float('%.2g' % coldata[:,i].mean()))
         if yguess is None and len(colnames) > 1:
             yguess = colnames[1]
-        return colnames, xguess, yguess, mguess, nmon
+            if len(colnames) > 2:
+                dyguess = colnames[2]
+        return colnames, xguess, yguess, dyguess, mguess, nmon
 
     def load_numors(self, nstring, binsize, xcol, ycol, dycol=None,
                     ncol=None, nscale=1):
