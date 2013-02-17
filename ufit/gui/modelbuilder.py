@@ -67,9 +67,19 @@ class ModelBuilder(QWidget):
         tc.movePosition(QTextCursor.End)
         tc.insertText('%s%s(%r)' % (prefix, model.__name__, str(modelname)))
 
-    # XXX make a more intelligent model
     def default_model(self, data):
-        return Background(bkgd=0) + Gauss('peak', pos=0, ampl=1, fwhm=1)
+        ymin = data.y.min()
+        ymaxidx = data.y.argmax()
+        ymax = data.y[ymaxidx]
+        xmax = data.x[ymaxidx]
+        overhalf = data.x[data.y > ymax/2.]
+        xwidth = abs((overhalf[0] - overhalf[-1]) / 1.8) or 0.1
+        new_model = eval_model('Background() + Gauss(\'peak\')')
+        new_model.params[0].value = ymin
+        new_model.params[1].value = xmax
+        new_model.params[2].value = ymax-ymin
+        new_model.params[3].value = xwidth
+        return new_model
 
     def initialize(self, data, model):
         self.model = model

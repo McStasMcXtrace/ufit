@@ -11,7 +11,7 @@
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
-     QComboBox
+     QComboBox, QKeySequence, QIcon
 
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 
@@ -42,8 +42,12 @@ class Fitter(QWidget):
         if standalone:
             self.buttonBox.addButton(QDialogButtonBox.Close)
         self.buttonBox.addButton('Initial guess', QDialogButtonBox.HelpRole)
+        self.buttonBox.addButton('Save params', QDialogButtonBox.ResetRole)
+        self.buttonBox.addButton('Restore saved', QDialogButtonBox.ResetRole)
         self.buttonBox.addButton('Replot', QDialogButtonBox.ActionRole)
-        self.buttonBox.addButton('Fit', QDialogButtonBox.ApplyRole)
+        fitbtn = self.buttonBox.addButton('Fit', QDialogButtonBox.ApplyRole)
+        fitbtn.setShortcut(QKeySequence('Ctrl+F'))
+        fitbtn.setIcon(QIcon.fromTheme('dialog-ok'))
 
     def initialize(self, model, data, fit=True, keep_old=True):
         self.picking = None
@@ -154,7 +158,12 @@ class Fitter(QWidget):
         elif role == QDialogButtonBox.HelpRole:
             self.do_pick()
         else:
-            self.restore_from_params(self.original_params)
+            if button.text() == 'Save params':
+                self.save_original_params()
+                self.statusLabel.setText('Current parameter values saved.')
+            else:
+                self.restore_from_params(self.original_params)
+                self.statusLabel.setText('Saved parameter values restored.')
 
     def update_from_controls(self):
         for p, ctls in self.param_controls.iteritems():
@@ -186,6 +195,11 @@ class Fitter(QWidget):
             ctls[5].setText(p0.pmin is not None and '%.5g' % p0.pmin or '')
             ctls[6].setText(p0.pmax is not None and '%.5g' % p0.pmax or '')
         self.do_plot()
+
+    def save_original_params(self):
+        self.original_params = {}
+        for p in self.model.params:
+            self.original_params[p.name] = p.copy()
 
     def on_canvas_pick(self, event):
         if not self.picking:

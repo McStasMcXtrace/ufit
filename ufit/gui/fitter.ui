@@ -44,7 +44,7 @@
         <x>0</x>
         <y>0</y>
         <width>499</width>
-        <height>351</height>
+        <height>378</height>
        </rect>
       </property>
      </widget>
@@ -64,11 +64,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::RestoreDefaults</set>
-     </property>
-    </widget>
+    <widget class="QDialogButtonBox" name="buttonBox"/>
    </item>
   </layout>
  </widget>
