@@ -41,6 +41,7 @@ else:
 
 
 def set_backend(which):
+    """Select a new backend for fitting."""
     global backend
     backend = globals()[which]
     if backend is None:

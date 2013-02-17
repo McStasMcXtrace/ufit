@@ -89,6 +89,11 @@ class Dataset(object):
                               sources=self.sources + other.sources)
 
     def merge(self, binsize, *others):
+        """Merge this dataset with others.
+
+        The X values are redistributed into bins according to the given bin
+        size.
+        """
         if not others:
             return self
         allsets = (self,) + others
@@ -101,8 +106,19 @@ class Dataset(object):
                               name='&'.join(d.name for d in allsets),
                               sources=sources)
 
-    def plot(self, _axes=None):
-        DataPlotter(_axes).plot_data(self)
+    def plot(self, axes=None, symbols=True, lines=False):
+        """Plot the dataset using matplotlib.
+
+        *axes* is a matplotlib Axes object, as returned by :func:`gca()`.  If
+        no axes are given, the current figure is used.
+
+        *symbols* and *lines* control whether the data is plotted using symbols,
+        lines or both.
+        """
+        dp = DataPlotter(axes)
+        dp.symbols = symbols
+        dp.lines = lines
+        dp.plot_data(self)
 
 
 class DataList(dict):

@@ -26,7 +26,7 @@ class DataLoader(QWidget):
     def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
         self.plotter = plotter
-        self.last_data = None
+        self.last_data = []
         self.loader = Loader()
         self.createUI(standalone)
 
@@ -133,7 +133,7 @@ class DataLoader(QWidget):
             QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
             return
         if final:
-            self.last_data = datas[-1]
+            self.last_data = datas
             for data in datas[:-1]:
                 self.emit(SIGNAL('newData'), data, False)
             self.emit(SIGNAL('newData'), datas[-1])

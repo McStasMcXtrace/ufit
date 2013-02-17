@@ -18,20 +18,27 @@ __all__ = ['fixed', 'expr', 'overall', 'datapar', 'limited', 'Param']
 
 
 class fixed(str):
-    pass
+    """Mark the parameter value as fixed."""
+    def __init__(self, p):
+        str.__init__(self, p)
 
 class expr(str):
-    pass
+    """Mark the parameter value as an expression."""
+    def __init__(self, e):
+        str.__init__(self, e)
 
 class overall(object):
+    """Mark the parameter as an "overall" (global) parameter in a global fit."""
     def __init__(self, v):
         self.v = v
 
 class datapar(object):
+    """Mark the parameter as coming from the data file's metadata."""
     def __init__(self, v):
         self.v = v
 
 class limited(tuple):
+    """Give parameter limits together with the initial value."""
     def __new__(self, min, max, v):
         return (min, max, v)
 

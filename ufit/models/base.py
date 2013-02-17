@@ -160,6 +160,10 @@ class Model(object):
         return self._orig_params
 
     def fit(self, data, **kw):
+        """Fit the model to the data.  *data* must be a :class:`Dataset` object.
+
+        Any keywords will be passed to the raw fitting routine of the backend.
+        """
         if self._orig_params is None:
             self._orig_params = [p.copy() for p in self.params]
         # keeping the attribute chain like this allows the backend to
@@ -171,20 +175,44 @@ class Model(object):
         return Result(success, data, self, self.params, msg, chi2)
 
     def global_fit(self, datas, **kw):
+        """Fit the model to multiple datasets, given as a list by *datas*.
+
+        See :ref:`global-fit`.
+
+        Any keywords will be passed to the raw fitting routine of the backend.
+        """
         return GlobalModel(self, datas).fit(datas, **kw)
 
     def reset(self):
         if self._orig_params is not None:
             self.params = [p.copy() for p in self._orig_params]
 
-    def plot(self, data, labels=True, _pdict=None, _axes=None):
-        DataPlotter(_axes).plot_model(self, data, labels, _pdict)
+    def plot(self, data, axes=None, labels=True, pdict=None):
+        """Plot the model and the data in the current figure."""
+        DataPlotter(axes).plot_model(self, data, labels, pdict)
 
-    def plot_components(self, data, labels=True, _pdict=None, _axes=None):
-        DataPlotter(_axes).plot_model_components(self, data, labels, _pdict)
+    def plot_components(self, data, axes=None, labels=True, pdict=None):
+        """Plot subcomponents of the model in the current figure.
 
-    def add_params(self, **p):
-        for pname, initval in p.iteritems():
+        See :ref:`model-components`.
+        """
+        DataPlotter(axes).plot_model_components(self, data, labels, pdict)
+
+    def add_params(self, **params):
+        """Add parameters that referenced by expressions in other parameters.
+
+        For example, in this model ::
+
+           m = Gauss('p1', pos='delta', ampl=5, fwhm=0.5) + \\
+               Gauss('p2', pos='-delta', ampl='p1_ampl', fwhm='p1_fwhm')
+
+        the parameter "delta" is referenced by two parameter expressions, but
+        does not appear as a parameter of any of the model functions.  This
+        parameter must be made known to the model by calling e.g. ::
+
+           m.add_params(delta=0)
+        """
+        for pname, initval in params.iteritems():
             self.params.append(Param.from_init(pname, initval))
 
     def get_components(self):

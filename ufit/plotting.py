@@ -28,7 +28,7 @@ class DataPlotter(object):
 
     def __init__(self, canvas=None, axes=None, toolbar=None):
         if axes is None:
-            axes = pl.figure().gca()
+            axes = pl.gca()
         self.axes = axes
         self.canvas = canvas
         self.marker_cycle = cycle(self.markers)

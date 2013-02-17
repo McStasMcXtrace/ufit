@@ -35,6 +35,25 @@ class Result(object):
         return self.model.fcn(self.paramvalues, self.xx)
 
     def printout(self):
+        """Print out a table of the fit result and the parameter values.
+
+        The chi-square value is also included in the table.  Example output::
+
+           Fit results for 373
+           ---------------------------------------------------------------------
+           bkgd            =     5.5111 +/-    0.21427
+           slope           =    -1.0318 +/-    0.16187
+           inc_pos         =  -0.015615 +/- 0.00066617
+           inc_ampl        =     547.21 +/-     8.0482
+           inc_fwhm        =    0.12656 +/-  0.0012489
+           dho_center      =  -0.015615 +/-          0 (fixed: inc_pos)
+           dho_pos         =    0.41689 +/-  0.0086916
+           dho_ampl        =    0.36347 +/-   0.034156
+           dho_gamma       =    0.22186 +/-   0.025093
+           dho_tt          =         16 +/-          0 (fixed: data.T)
+           chi^2/NDF       =      1.491
+           =====================================================================
+        """
         print 'Fit results for %s' % self.data.name
         if not self.success:
             print 'FIT FAILED: ' + self.message
@@ -46,12 +65,16 @@ class Result(object):
         print '%-15s = %10.4g' % ('chi^2/NDF', self.chisqr)
         print '=' * 80
 
-    def plot(self, **kw):
+    def plot(self, axes=None):
+        """Plot the data and model together in the current figure."""
         plotter = DataPlotter()
-        plotter.plot_data(self.data, **kw)
-        plotter.plot_model(self.model, self.data, **kw)
+        plotter.plot_data(self.data, axes=axes)
+        plotter.plot_model(self.model, self.data, axes=axes)
 
-    def plotfull(self, **kw):
+    def plotfull(self, axes=None):
+        """Plot the data and model, including subcomponents, together in the
+        current figure.
+        """
         plotter = DataPlotter()
-        plotter.plot_data(self.data, **kw)
-        plotter.plot_model_full(self.model, self.data, **kw)
+        plotter.plot_data(self.data, axes=axes)
+        plotter.plot_model_full(self.model, self.data, axes=axes)
