@@ -25,6 +25,8 @@ from ufit.gui.fitter import Fitter
 from ufit.gui.datalist import DataListModel
 
 
+SAVE_VERSION = 1
+
 class DatasetPanel(QTabWidget):
     def __init__(self, parent, canvas, data, model, index):
         QTabWidget.__init__(self, parent)
@@ -348,6 +350,7 @@ class UFitMain(QMainWindow):
         info = {
             'datasets': [(panel.data, panel.model) for panel in self.panels],
             'template': str(self.dloader.datatemplate.text()),
+            'version':  SAVE_VERSION,
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
