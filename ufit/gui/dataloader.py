@@ -84,12 +84,16 @@ class DataLoader(QWidget):
             return
         self.xcol.clear()
         self.ycol.clear()
+        self.dycol.clear()
         self.moncol.clear()
-        self.moncol.addItem('(none)')
+        self.moncol.addItem('none')
         self.moncol.setCurrentIndex(0)
+        self.dycol.addItem('sqrt(Y)')
+        self.dycol.setCurrentIndex(0)
         for i, name in enumerate(cols):
             self.xcol.addItem(name)
             self.ycol.addItem(name)
+            self.dycol.addItem(name)
             self.moncol.addItem(name)
             if name == xguess:
                 self.xcol.setCurrentIndex(i)
@@ -105,9 +109,12 @@ class DataLoader(QWidget):
         prec = self.precision.value()
         xcol = str(self.xcol.currentText())
         ycol = str(self.ycol.currentText())
+        dycol = str(self.dycol.currentText())
         mcol = str(self.moncol.currentText())
-        if mcol == '(none)':
+        if mcol == 'none':
             mcol = None
+        if dycol == 'sqrt(Y)':
+            dycol = None
         try:
             mscale = int(self.monscale.text())
         except Exception:
@@ -115,9 +122,8 @@ class DataLoader(QWidget):
             return
         numors = str(self.numors.text())
         try:
-            # XXX support dycol
             datas = self.loader.load_numors(numors, prec,
-                                            xcol, ycol, None, mcol, mscale)
+                                            xcol, ycol, dycol, mcol, mscale)
         except Exception, e:
             QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
             return
