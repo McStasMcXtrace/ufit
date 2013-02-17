@@ -162,6 +162,8 @@ class Model(object):
     def fit(self, data, **kw):
         if self._orig_params is None:
             self._orig_params = [p.copy() for p in self.params]
+        # keeping the attribute chain like this allows the backend to
+        # be changed on the fly
         success, msg, chi2 = backends.backend.do_fit(data, self.fcn,
                                                      self.params, kw)
         for p in self.params:

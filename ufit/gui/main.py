@@ -14,8 +14,9 @@ import cPickle as pickle
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, QVariant
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
-     QMessageBox, QFileDialog, QDialog
+     QMessageBox, QFileDialog, QDialog, QAction, QActionGroup
 
+from ufit import backends
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi
 from ufit.gui.dataloader import DataLoader
 from ufit.gui.dataops import DataOps, MultiDataOps
@@ -149,6 +150,17 @@ class UFitMain(QMainWindow):
         self.datalist.addAction(self.actionRemoveData)
         self.connect(self.datalist, SIGNAL('newSelection'),
                      self.on_datalist_newSelection)
+
+        self.backend_group = QActionGroup(self)
+        for backend in backends.available:
+            action = QAction(backend.backend_name, self)
+            action.setCheckable(True)
+            if backends.backend.backend_name == backend.backend_name:
+                action.setChecked(True)
+            self.backend_group.addAction(action)
+            self.menuBackend.addAction(action)
+            self.connect(action, SIGNAL('triggered()'),
+                         self.on_backend_action_triggered)
 
         with self.sgroup as settings:
             geometry = settings.value('geometry').toByteArray()
@@ -377,6 +389,10 @@ class UFitMain(QMainWindow):
     def on_actionAbout_triggered(self):
         QMessageBox.information(self, 'About',
                                 'ufit, written by Georg Brandl 2013.')
+
+    @qtsig('')
+    def on_backend_action_triggered(self):
+        backends.set_backend(str(self.sender().text()))
 
 
 def main(args):

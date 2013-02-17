@@ -13,6 +13,7 @@ from ufit import debug, UFitError
 __all__ = ['set_backend', 'backend']
 
 backend = None
+available = []
 
 try:
     from ufit.backends import scipy
@@ -20,6 +21,7 @@ except ImportError:
     scipy = None
 else:
     backend = scipy
+    available.append(scipy)
 
 try:
     from ufit.backends import minuit
@@ -27,6 +29,7 @@ except ImportError:
     minuit = None
 else:
     backend = minuit
+    available.append(minuit)
 
 try:
     from ufit.backends import lmfit
@@ -34,6 +37,8 @@ except ImportError:
     lmfit = None
 else:
     backend = lmfit
+    available.append(lmfit)
+
 
 def set_backend(which):
     global backend

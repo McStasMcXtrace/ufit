@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>278</width>
+    <width>289</width>
     <height>600</height>
    </rect>
   </property>
@@ -88,7 +88,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>278</width>
+     <width>289</width>
      <height>23</height>
     </rect>
    </property>
@@ -120,8 +120,14 @@
     <addaction name="actionDrawSymbols"/>
     <addaction name="actionConnectData"/>
    </widget>
+   <widget class="QMenu" name="menuBackend">
+    <property name="title">
+     <string>&amp;Backend</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuBackend"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionLoad">
