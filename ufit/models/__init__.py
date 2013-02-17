@@ -30,10 +30,11 @@ concrete_models = [
     SlopingBackground,
     CKI_Corr,
     Bose,
+    Const,
     StraightLine,
     Parabola,
     Cosine,
+    Sinc,
     ExpDecay,
     PowerLaw,
-    Sinc,
 ]

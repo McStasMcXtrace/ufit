@@ -12,7 +12,79 @@ from numpy import cos, sin, exp, pi, log, piecewise, sign
 
 from ufit.models.base import Model
 
-__all__ = ['Cosine', 'ExpDecay', 'PowerLaw', 'StraightLine', 'Parabola', 'Sinc']
+__all__ = ['Const', 'StraightLine', 'Parabola',
+           'Cosine', 'Sinc', 'ExpDecay', 'PowerLaw']
+
+
+
+class Const(Model):
+    """A constant, to be used for modifying other models (e.g. exponentiation)
+
+    For example: Sinc() ** Const()
+
+    Parameters:
+    * c - the constant
+    """
+    param_names = ['c']
+
+    def __init__(self, name='', c=None):
+        pc, = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: p[pc] + 0*x
+
+    def is_modifier(self):
+        return True
+
+
+class StraightLine(Model):
+    """Straight line
+
+    y = slope * x + y0
+
+    Parameters:
+    * slope
+    * y0  - intercept
+    """
+    param_names = ['slope', 'y0']
+
+    def __init__(self, name='', slope=1, y0=0):
+        psl, py0 = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: p[psl]*x + p[py0]
+
+    pick_points = ['one point on curve', 'another point on curve']
+
+    def convert_pick(self, b1, b2):
+        slope = (b2[1] - b1[1]) / (b2[0] - b1[0])
+        return {
+            self.params[0].name: slope,
+            self.params[1].name: b1[1] - slope*b1[0],
+        }
+
+
+class Parabola(Model):
+    """Parabola
+
+    y = stretch * (x - x0)^2 + y0
+
+    Parameters:
+    * x0  - x coordinate of vertex
+    * y0  - y coordinate of vertex
+    * stretch - stretch factor
+    """
+    param_names = ['x0', 'y0', 'stretch']
+
+    def __init__(self, name='', x0=0, y0=0, stretch=1):
+        px0, py0, ps = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: p[ps] * (x - p[px0])**2 + p[py0]
+
+    pick_points = ['vertex', 'another point on curve']
+
+    def convert_pick(self, vx, p2):
+        return {
+            self.params[0].name: vx[0],
+            self.params[1].name: vx[1],
+            self.params[2].name: (p2[1] - vx[1]) / (p2[0] - vx[0])**2,
+        }
+
 
 
 class Cosine(Model):
@@ -40,6 +112,25 @@ class Cosine(Model):
             self.params[1].name: freq,                       # frequency
             self.params[2].name: (- freq*pmax[0]) % (2*pi),  # phase
         }
+
+
+class Sinc(Model):
+    """Sinc function
+
+    y = ampl * sin(freq*(x - center)) / (freq*(x - center))
+
+    Parameters:
+    * ampl - amplitude at x = center
+    * freq - frequency of the sine
+    * center - point of maximum amplitude
+    """
+    param_names = ['ampl', 'freq', 'center']
+
+    def __init__(self, name='', ampl=None, freq=None, center=0):
+        pa, pf, pc = self._init_params(name, self.param_names, locals())
+        self.fcn = lambda p, x: piecewise(
+            x - p[pc], [x == p[pc]],
+            [p[pa], lambda v: p[pa] * sin(p[pf]*v) / (p[pf]*v)])
 
 
 class ExpDecay(Model):
@@ -95,73 +186,3 @@ class PowerLaw(Model):
             self.params[1].name: scale,
             self.params[2].name: beta,
         }
-
-
-class StraightLine(Model):
-    """Straight line
-
-    y = slope * x + y0
-
-    Parameters:
-    * slope
-    * y0  - intercept
-    """
-    param_names = ['slope', 'y0']
-
-    def __init__(self, name='', slope=1, y0=0):
-        psl, py0 = self._init_params(name, self.param_names, locals())
-        self.fcn = lambda p, x: p[psl]*x + p[py0]
-
-    pick_points = ['one point on curve', 'another point on curve']
-
-    def convert_pick(self, b1, b2):
-        slope = (b2[1] - b1[1]) / (b2[0] - b1[0])
-        return {
-            self.params[0].name: slope,
-            self.params[1].name: b1[1] - slope*b1[0],
-        }
-
-
-class Parabola(Model):
-    """Parabola
-
-    y = stretch * (x - x0)^2 + y0
-
-    Parameters:
-    * x0  - x coordinate of vertex
-    * y0  - y coordinate of vertex
-    * stretch - stretch factor
-    """
-    param_names = ['x0', 'y0', 'stretch']
-
-    def __init__(self, name='', x0=0, y0=0, stretch=1):
-        px0, py0, ps = self._init_params(name, self.param_names, locals())
-        self.fcn = lambda p, x: p[ps] * (x - p[px0])**2 + p[py0]
-
-    pick_points = ['vertex', 'another point on curve']
-
-    def convert_pick(self, vx, p2):
-        return {
-            self.params[0].name: vx[0],
-            self.params[1].name: vx[1],
-            self.params[2].name: (p2[1] - vx[1]) / (p2[0] - vx[0])**2,
-        }
-
-
-class Sinc(Model):
-    """Sinc function
-
-    y = ampl * sin(freq*(x - center)) / (freq*(x - center))
-
-    Parameters:
-    * ampl - amplitude at x = center
-    * freq - frequency of the sine
-    * center - point of maximum amplitude
-    """
-    param_names = ['ampl', 'freq', 'center']
-
-    def __init__(self, name='', ampl=None, freq=None, center=0):
-        pa, pf, pc = self._init_params(name, self.param_names, locals())
-        self.fcn = lambda p, x: piecewise(
-            x - p[pc], [x == p[pc]],
-            [p[pa], lambda v: p[pa] * sin(p[pf]*v) / (p[pf]*v)])

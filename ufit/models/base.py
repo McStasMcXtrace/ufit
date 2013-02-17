@@ -99,24 +99,59 @@ class Model(object):
                 self.params.append(p)
 
     def __add__(self, other):
-        if not isinstance(other, Model):
+        if isinstance(other, (int, long, float)):
+            other = Constant(other)
+        elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '+')
 
+    def __radd__(self, other):
+        if isinstance(other, (int, long, float)):
+            return CombinedModel(Constant(other), self, '+')
+        return NotImplemented
+
     def __sub__(self, other):
-        if not isinstance(other, Model):
+        if isinstance(other, (int, long, float)):
+            other = Constant(other)
+        elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '-')
 
+    def __rsub__(self, other):
+        if isinstance(other, (int, long, float)):
+            return CombinedModel(Constant(other), self, '-')
+        return NotImplemented
+
     def __mul__(self, other):
-        if not isinstance(other, Model):
+        if isinstance(other, (int, long, float)):
+            other = Constant(other)
+        elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '*')
 
+    def __rmul__(self, other):
+        if isinstance(other, (int, long, float)):
+            return CombinedModel(Constant(other), self, '*')
+        return NotImplemented
+
     def __div__(self, other):
-        if not isinstance(other, Model):
+        if isinstance(other, (int, long, float)):
+            other = Constant(other)
+        elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '/')
+
+    def __rdiv__(self, other):
+        if isinstance(other, (int, long, float)):
+            return CombinedModel(Constant(other), self, '/')
+        return NotImplemented
+
+    def __pow__(self, other):
+        if isinstance(other, (int, long, float)):
+            other = Constant(other)
+        elif not isinstance(other, Model):
+            return NotImplemented
+        return CombinedModel(self, other, '**')
 
     @property
     def original_params(self):
@@ -210,13 +245,15 @@ class CombinedModel(Model):
         '-': 0,
         '*': 1,
         '/': 1,
+        '**': 2,
     }
 
     op_fcn = {
-        '+': operator.add,
-        '-': operator.sub,
-        '*': operator.mul,
-        '/': operator.div,
+        '+':  operator.add,
+        '-':  operator.sub,
+        '*':  operator.mul,
+        '/':  operator.div,
+        '**': operator.pow,
     }
 
     def __init__(self, a, b, opstr):
@@ -313,6 +350,26 @@ class CombinedModel(Model):
         d = self._a.convert_pick(*args[:npp])
         d.update(self._b.convert_pick(*args[npp:]))
         return d
+
+
+class Constant(Model):
+    """Constant function - no parameters.
+
+    Used for math operations between models and numbers.  Not to be confused
+    with the Const model from models.other.
+    """
+    def __init__(self, const):
+        self.const = const
+        self.fcn = lambda p, x: const
+
+    def __reduce__(self):
+        """Pickling support: reconstruct the object from a constructor call."""
+        if self.python_code:
+            return (eval_model, (self.python_code, self.params))
+        return (self.__class__, (self.const,))
+
+    def is_modifier(self):
+        return True
 
 
 class Function(Model):
