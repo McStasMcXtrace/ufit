@@ -10,26 +10,30 @@
 
 from numpy import cos, sin, exp, pi, log, piecewise, sign
 
+from ufit.param import Param
 from ufit.models.base import Model
 
 __all__ = ['Const', 'StraightLine', 'Parabola',
            'Cosine', 'Sinc', 'ExpDecay', 'PowerLaw']
 
 
-
 class Const(Model):
     """A constant, to be used for modifying other models (e.g. exponentiation)
 
-    For example: Sinc() ** Const()
+    For example: Sinc() ** Const('eta')
 
     Parameters:
-    * c - the constant
+    * the constant  (named after the model's name)
     """
-    param_names = ['c']
 
     def __init__(self, name='', c=None):
-        pc, = self._init_params(name, self.param_names, locals())
-        self.fcn = lambda p, x: p[pc] + 0*x
+        # this initialization is a bit different from what _init_params does,
+        # so we don't use it here: the parameter's name will be whatever the
+        # model itself is called
+        self.name = name
+        pname = name or 'c'
+        self.params = [Param.from_init(pname, c or 0)]
+        self.fcn = lambda p, x: p[pname] + 0*x
 
     def is_modifier(self):
         return True
