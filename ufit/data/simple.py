@@ -22,6 +22,10 @@ def check_data(fp):
     return True
 
 
+def good_ycol(c):
+    return False
+
+
 def read_data(filename, fp):
     dtline = fp.readline()
     try:

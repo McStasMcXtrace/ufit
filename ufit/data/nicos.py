@@ -20,6 +20,10 @@ def check_data(fp):
     return dtline.startswith('### NICOS data file')
 
 
+def good_ycol(col):
+    return col.startswith(('ctr', 'det'))
+
+
 def read_data(filename, fp):
     meta = {}
     dtline = fp.readline()

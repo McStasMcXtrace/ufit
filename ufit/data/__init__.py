@@ -9,7 +9,7 @@
 """Data loading and treatment for ufit."""
 
 from ufit import UFitError
-from ufit.data import ill, nicos, simple
+from ufit.data import ill, nicos, simple, trisp
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset
 
@@ -17,6 +17,7 @@ data_formats = {
     'ill': ill,
     'nicos': nicos,
     'simple': simple,
+    'trisp': trisp,
 }
 
 __all__ = ['Dataset', 'sets', 'set_datatemplate', 'set_dataformat',

@@ -85,8 +85,8 @@ class Loader(object):
         except TypeError:
             filename = self.template
         fobj = open(filename, 'rb')
-        colnames, coldata, meta = \
-            self._get_reader(filename, fobj).read_data(filename, fobj)
+        rdr = self._get_reader(filename, fobj)
+        colnames, coldata, meta = rdr.read_data(filename, fobj)
         xguess, yguess, dyguess, mguess = None, None, None, None
         if colnames[0].lower() in ('h', 'qh'):
             deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
@@ -97,7 +97,7 @@ class Loader(object):
         maxmon = 0
         nmon = 0
         for i, colname in enumerate(colnames):
-            if colname.lower().startswith(('ctr', 'cnts', 'det')):
+            if rdr.good_ycol(colname):
                 if coldata[:,i].sum() > maxcts:
                     yguess = colname
                     maxcts = coldata[:,i].sum()

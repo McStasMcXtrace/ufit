@@ -19,6 +19,10 @@ def check_data(fp):
     return dtline.startswith('RRRRRRRRRRRR')
 
 
+def good_ycol(c):
+    return c == 'CNTS'
+
+
 def read_data(filename, fp):
     line = ''
     xcol = None
