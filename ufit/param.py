@@ -158,7 +158,7 @@ def prepare_params(params, meta):
     varynames = []
     for p in params:
         if p.expr:
-            dependent[p.name] = p.expr
+            dependent[p.name] = [p.expr, None]
         else:
             varying.append(p)
             varynames.append(p.name)
@@ -173,13 +173,16 @@ def prepare_params(params, meta):
     while dependent:
         maxit -= 1
         if maxit == 0:
-            raise UFitError('detected unresolved parameter dependencies '
-                            'among %s' % dependent.keys())
-        for p, expr in dependent.items():  # dictionary will change
+            s = '\n'.join('   %s: %s' % (k, v[1]) for (k, v)
+                          in dependent.iteritems())
+            raise UFitError('detected unresolved parameter dependencies:\n' + s)
+        for p, (expr, _) in dependent.items():  # dictionary will change
             try:
                 pd[p] = param_eval(expr, pd)
-            except (NameError, AttributeError):
-                pass
+            except NameError, e:
+                dependent[p][1] = str(e)
+            except AttributeError, e:
+                dependent[p][1] = 'depends on data.' + str(e)
             else:
                 del dependent[p]
                 dep_order.append((p, expr))

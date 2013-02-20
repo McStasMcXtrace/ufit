@@ -7,7 +7,7 @@ import cPickle as pickle
 from numpy import concatenate
 
 from ufit import param, backends, UFitError, Param, Dataset, Result
-from ufit.utils import get_chisqr
+from ufit.utils import get_chisqr, cached_property
 from ufit.plotting import DataPlotter
 
 __all__ = ['Model', 'CombinedModel', 'Function', 'eval_model']
@@ -100,6 +100,13 @@ class Model(object):
                     raise UFitError('Parameter name clash: %s' % p.name)
                 seen.add(p.name)
                 self.params.append(p)
+
+    @cached_property
+    def paramdict(self):
+        return dict((p.name, p) for p in self.params)
+
+    def __getitem__(self, key):
+        return self.paramdict[key]
 
     def __add__(self, other):
         if isinstance(other, (int, long, float)):
