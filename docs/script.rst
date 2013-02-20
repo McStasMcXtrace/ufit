@@ -15,6 +15,8 @@ Loading data
 
 .. autofunction:: read_data
 
+.. autofunction:: read_numors
+
 .. autofunction:: as_data
 
 .. class:: Dataset

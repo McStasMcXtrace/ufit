@@ -21,7 +21,7 @@ data_formats = {
 }
 
 __all__ = ['Dataset', 'sets', 'set_datatemplate', 'set_dataformat',
-           'read_data', 'as_data']
+           'read_data', 'as_data', 'read_numors']
 
 
 # simplified interface for usage in noninteractive scripts
@@ -77,3 +77,31 @@ def read_data(n, xcol, ycol, dycol=None, ncol=None, nscale=1):
 def as_data(x, y, dy, name=''):
     """Quickly construct a :class:`Dataset` object from three numpy arrays."""
     return Dataset.from_arrays(name or 'data', x, y, dy)
+
+def read_numors(nstring, binsize, xcol, ycol, dycol=None, ncol=None, nscale=1):
+    """Read a number of data files.  Returns a list of :class:`Dataset`\s.
+
+    :param nstring: A string that gives file numbers, with the operators given
+        below.
+    :param binsize: Bin size when files need to be merged according to
+        *nstring*.
+
+    Other parameters as in :func:`read_data`.
+
+    *nstring* can contain these operators:
+
+    * ``,`` -- loads multiple files
+    * ``-`` -- loads multiple sequential files
+    * ``+`` -- merges multiple files
+    * ``>`` -- merges multiple sequential files
+
+    For example:
+
+    * ``'10-15,23'`` loads files 10 through 15 and 23 in 7 separate datasets.
+    * ``'10+11,23+24'`` loads two datasets consisting of files 10 and 11 merged
+      into one set, as well as files 23 and 24.
+    * ``'10>15+23'`` merges files 10 through 15 and 23 into one single dataset.
+    * ``'10,11,12+13,14'`` loads four sets.
+    """
+    return global_loader.load_numors(nstring, binsize, xcol, ycol,
+                                     dycol, ncol, nscale)

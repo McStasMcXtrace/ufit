@@ -20,7 +20,7 @@ class Dataset(object):
                  name='', sources=None):
         self.meta = attrdict(meta)
         self.name = name or str(self.meta.filenumber)
-        self.sources = sources or [self.filedesc]
+        self.sources = sources or [getattr(self, 'filedesc', '')]
         self._data = data
 
         self.xcol = self.xaxis = xcol
@@ -70,7 +70,7 @@ class Dataset(object):
     def __getattr__(self, key):
         if key == '__setstate__':
             # pickling support
-            raise AttributeError
+            raise AttributeError(key)
         elif key in self.meta:
             return self.meta[key]
         raise AttributeError('no such data column: %s' % key)
@@ -80,7 +80,7 @@ class Dataset(object):
             return self.__class__(self.meta, self._data[key],
                                   self.xcol, self.ycol, self.ncol, self.nscale,
                                   name=self.name, sources=self.sources)
-        raise KeyError
+        raise KeyError(key)
 
     def __or__(self, other):
         return self.__class__(self.meta, concatenate((self._data, other._data)),
