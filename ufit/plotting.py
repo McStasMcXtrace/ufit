@@ -112,6 +112,12 @@ class DataPlotter(object):
             self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
                            **kw)
 
+    def plot_params(self, params):
+        s = '\n'.join(str(p) for p in params)
+        self.axes.text(0.02, 0.98, s, horizontalalignment='left',
+                       verticalalignment='top', size='x-small',
+                       transform=self.axes.transAxes)
+
 
 def mapping(x, y, runs, minmax=None, mat=False, log=False):
     pl.clf()

@@ -25,7 +25,10 @@ class Result(object):
         self.chisqr = chisqr
         self.paramdict = dict((p.name, p) for p in params)
         self.paramvalues = dict((p.name, p.value) for p in params)
+        # XXX make a property
+        self.residuals = model.fcn(self.paramvalues, data.x) - data.y
 
+    # XXX make lazy
     @property
     def xx(self):
         return linspace(self.data.x[0], self.data.x[-1], 1000)
@@ -65,16 +68,21 @@ class Result(object):
         print '%-15s = %10.4g' % ('chi^2/NDF', self.chisqr)
         print '=' * 80
 
-    def plot(self, axes=None):
+    def plot(self, axes=None, params=True):
         """Plot the data and model together in the current figure."""
-        plotter = DataPlotter()
-        plotter.plot_data(self.data, axes=axes)
-        plotter.plot_model(self.model, self.data, axes=axes)
+        # XXX plot parameters in here
+        plotter = DataPlotter(axes)
+        plotter.plot_data(self.data)
+        plotter.plot_model(self.model, self.data)
+        if params:
+            plotter.plot_params(self.params)
 
-    def plotfull(self, axes=None):
+    def plotfull(self, axes=None, params=True):
         """Plot the data and model, including subcomponents, together in the
         current figure.
         """
-        plotter = DataPlotter()
-        plotter.plot_data(self.data, axes=axes)
-        plotter.plot_model_full(self.model, self.data, axes=axes)
+        plotter = DataPlotter(axes)
+        plotter.plot_data(self.data)
+        plotter.plot_model_full(self.model, self.data)
+        if params:
+            plotter.plot_params(self.params)

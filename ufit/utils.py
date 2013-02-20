@@ -21,4 +21,4 @@ class attrdict(dict):
         try:
             return self[key]
         except KeyError:
-            raise AttributeError
+            raise AttributeError(key)
