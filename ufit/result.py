@@ -31,30 +31,51 @@ class Result(object):
 
     @cached_property
     def paramdict(self):
+        """Returns a dictionary mapping parameter names to parameter objects."""
         return dict((p.name, p) for p in self.params)
 
     @cached_property
     def paramvalues(self):
+        """Returns a dictionary mapping parameter names to values."""
+        return dict((p.name, p.value) for p in self.params)
+
+    @cached_property
+    def paramerrors(self):
+        """Returns a dictionary mapping parameter names to errors."""
         return dict((p.name, p.value) for p in self.params)
 
     @cached_property
     def values(self):
+        """Returns a list with all parameter values."""
         return [p.value for p in self.params]
 
     @cached_property
     def errors(self):
+        """Returns a list with all parameter errors."""
         return [p.error for p in self.params]
 
     @cached_property
+    def results(self):
+        """Returns a list with the parameter values, then the parameter errors
+        and the chi-square value concatenated.
+        """
+        return self.values + self.errors + [self.chisqr]
+
+    @cached_property
     def residuals(self):
+        """Returns the array of residuals."""
         return self.model.fcn(self.paramvalues, self.data.x) - self.data.y
 
     @cached_property
     def xx(self):
-        return linspace(self.data.x[0], self.data.x[-1], 1000)
+        """Returns a fine-spaced array of X values between the minimum and maximum
+        of the original data X values.
+        """
+        return linspace(self.data.x.min(), self.data.x.max(), 1000)
 
     @cached_property
     def yy(self):
+        """Returns the model evaluated at self.xx."""
         return self.model.fcn(self.paramvalues, self.xx)
 
     def printout(self):
@@ -122,7 +143,7 @@ def calc_panel_size(num):
     return num//10 + 1, 10
 
 
-class GlobalResult(list):
+class MultiResult(list):
     def plot(self):
         dims = calc_panel_size(len(self))
         fig, axarray = pl.subplots(dims[1], dims[0])

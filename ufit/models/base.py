@@ -7,7 +7,7 @@ import cPickle as pickle
 from numpy import concatenate
 
 from ufit import param, backends, UFitError, Param, Dataset
-from ufit.result import Result, GlobalResult
+from ufit.result import Result, MultiResult
 from ufit.utils import get_chisqr, cached_property
 from ufit.plotting import DataPlotter
 
@@ -191,6 +191,13 @@ class Model(object):
         Any keywords will be passed to the raw fitting routine of the backend.
         """
         return GlobalModel(self, datas).fit(datas, **kw)
+
+    def multi_fit(self, datas, **kw):
+        results = []
+        for data in datas:
+            self.reset()
+            results.append(self.fit(data, **kw))
+        return MultiResult(results)
 
     def reset(self):
         if self._orig_params is not None:
@@ -518,4 +525,4 @@ class GlobalModel(Model):
             chi2 = get_chisqr(self._model.fcn, data.x, data.y, data.dy, paramlist)
             reslist.append(Result(overall_res.success, data, self._model,
                                   paramlist, overall_res.message, chi2))
-        return GlobalResult(reslist)
+        return MultiResult(reslist)
