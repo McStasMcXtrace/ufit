@@ -10,6 +10,7 @@
 
 from numpy import linspace
 
+from ufit.utils import cached_property
 from ufit.plotting import DataPlotter
 
 __all__ = ['Result']
@@ -23,17 +24,35 @@ class Result(object):
         self.params = params
         self.message = message
         self.chisqr = chisqr
-        self.paramdict = dict((p.name, p) for p in params)
-        self.paramvalues = dict((p.name, p.value) for p in params)
-        # XXX make a property
-        self.residuals = model.fcn(self.paramvalues, data.x) - data.y
 
-    # XXX make lazy
-    @property
+    def __getitem__(self, key):
+        return self.paramdict[key]
+
+    @cached_property
+    def paramdict(self):
+        return dict((p.name, p) for p in self.params)
+
+    @cached_property
+    def paramvalues(self):
+        return dict((p.name, p.value) for p in self.params)
+
+    @cached_property
+    def values(self):
+        return [p.value for p in self.params]
+
+    @cached_property
+    def errors(self):
+        return [p.error for p in self.params]
+
+    @cached_property
+    def residuals(self):
+        return self.model.fcn(self.paramvalues, self.data.x) - self.data.y
+
+    @cached_property
     def xx(self):
         return linspace(self.data.x[0], self.data.x[-1], 1000)
 
-    @property
+    @cached_property
     def yy(self):
         return self.model.fcn(self.paramvalues, self.xx)
 
@@ -69,8 +88,10 @@ class Result(object):
         print '=' * 80
 
     def plot(self, axes=None, params=True):
-        """Plot the data and model together in the current figure."""
-        # XXX plot parameters in here
+        """Plot the data and model together in the current figure.
+
+        If *params* is true, also plot parameter values as text.
+        """
         plotter = DataPlotter(axes)
         plotter.plot_data(self.data)
         plotter.plot_model(self.model, self.data)
@@ -79,7 +100,9 @@ class Result(object):
 
     def plotfull(self, axes=None, params=True):
         """Plot the data and model, including subcomponents, together in the
-        current figure.
+        current figure or the given *axes*.
+
+        If *params* is true, also plot parameter values as text.
         """
         plotter = DataPlotter(axes)
         plotter.plot_data(self.data)

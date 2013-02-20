@@ -13,7 +13,7 @@ from ufit.plotting import DataPlotter
 __all__ = ['Model', 'CombinedModel', 'Function', 'eval_model']
 
 
-data_re = r'\bdata\b'
+data_re = re.compile(r'\bdata\b')
 
 def eval_model(modeldef, paramdef=None):
     from ufit import models
