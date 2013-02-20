@@ -1,5 +1,6 @@
 # ufit base models
 
+import re
 import inspect
 import operator
 import cPickle as pickle
@@ -11,6 +12,8 @@ from ufit.plotting import DataPlotter
 
 __all__ = ['Model', 'CombinedModel', 'Function', 'eval_model']
 
+
+data_re = r'\bdata\b'
 
 def eval_model(modeldef, paramdef=None):
     from ufit import models
@@ -403,10 +406,13 @@ class Function(Model):
     Parameters are extracted from the function's arguments and passed
     positionally.
     """
-    def __init__(self, fcn, name='', **init):
+    def __init__(self, fcn, name=None, **init):
         self._real_fcn = fcn
-        if not name and fcn.__name__ != '<lambda>':
-            name = fcn.__name__
+        if name is None:
+            if fcn.__name__ != '<lambda>':
+                name = fcn.__name__
+            else:
+                name = ''
         pvs = self._init_params(name, inspect.getargspec(fcn)[0][1:], init)
 
         self.fcn = lambda p, x: \
@@ -458,7 +464,7 @@ class GlobalModel(Model):
                     continue
                 for oldname0, p0 in dplist:
                     param.expr = param.expr.replace(oldname0, p0.name)
-                param.expr = param.expr.replace('data.', 'data.d%d.' % i)
+                param.expr = data_re.sub('data.d%d' % i, param.expr)
 
         # global fitting function: call model function once for each dataset
         # with the original data, with the parameter values taken from the
@@ -499,7 +505,7 @@ class GlobalModel(Model):
                     paramlist.append(p)
                 elif p.name.endswith(suffix):
                     clone_param = p.copy(p.name[:-len(suffix)])
-                    clone_param.expr = clone_param._orig_expr
+                    clone_param.expr = p._orig_expr
                     paramlist.append(clone_param)
             chi2 = get_chisqr(self._model.fcn, data.x, data.y, data.dy, paramlist)
             reslist.append(Result(overall_res.success, data, self._model,
