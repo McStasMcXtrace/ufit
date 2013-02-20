@@ -115,7 +115,7 @@ class Dataset(object):
         *symbols* and *lines* control whether the data is plotted using symbols,
         lines or both.
         """
-        dp = DataPlotter(axes)
+        dp = DataPlotter(axes=axes)
         dp.symbols = symbols
         dp.lines = lines
         dp.plot_data(self)

@@ -6,7 +6,8 @@ import operator
 import cPickle as pickle
 from numpy import concatenate
 
-from ufit import param, backends, UFitError, Param, Dataset, Result
+from ufit import param, backends, UFitError, Param, Dataset
+from ufit.result import Result, GlobalResult
 from ufit.utils import get_chisqr, cached_property
 from ufit.plotting import DataPlotter
 
@@ -197,11 +198,11 @@ class Model(object):
 
     def plot(self, data, axes=None, labels=True, pdict=None):
         """Plot the model and the data in the current figure."""
-        DataPlotter(axes).plot_model(self, data, labels, pdict)
+        DataPlotter(axes=axes).plot_model(self, data, labels, pdict)
 
     def plot_components(self, data, axes=None, labels=True, pdict=None):
         """Plot subcomponents of the model in the current figure."""
-        DataPlotter(axes).plot_model_components(self, data, labels, pdict)
+        DataPlotter(axes=axes).plot_model_components(self, data, labels, pdict)
 
     def add_params(self, **params):
         """Add parameters that referenced by expressions in other parameters.
@@ -517,4 +518,4 @@ class GlobalModel(Model):
             chi2 = get_chisqr(self._model.fcn, data.x, data.y, data.dy, paramlist)
             reslist.append(Result(overall_res.success, data, self._model,
                                   paramlist, overall_res.message, chi2))
-        return reslist
+        return GlobalResult(reslist)
