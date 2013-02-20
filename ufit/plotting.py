@@ -112,11 +112,19 @@ class DataPlotter(object):
             self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
                            **kw)
 
-    def plot_params(self, params):
-        s = '\n'.join(str(p) for p in params)
+    def plot_params(self, params, chisqr):
+        s = []
+        for p in params:
+            s.append(u'%-12s = %9.4g ± %9.4g' % (p.name, p.value, p.error))
+            if p.expr:
+                s[-1] += ' (fixed)'
+            if p.overall:
+                s[-1] += ' (global)'
+        s.append(u'%-12s = %9.3f' % (u'chi²/NDF', chisqr))
+        s = '\n'.join(s)
         self.axes.text(0.02, 0.98, s, horizontalalignment='left',
                        verticalalignment='top', size='x-small',
-                       transform=self.axes.transAxes)
+                       transform=self.axes.transAxes, family='Monospace')
 
 
 def mapping(x, y, runs, minmax=None, mat=False, log=False):

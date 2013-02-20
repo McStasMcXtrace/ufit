@@ -75,7 +75,7 @@ class Result(object):
         plotter.plot_data(self.data)
         plotter.plot_model(self.model, self.data)
         if params:
-            plotter.plot_params(self.params)
+            plotter.plot_params(self.params, self.chisqr)
 
     def plotfull(self, axes=None, params=True):
         """Plot the data and model, including subcomponents, together in the
@@ -85,4 +85,4 @@ class Result(object):
         plotter.plot_data(self.data)
         plotter.plot_model_full(self.model, self.data)
         if params:
-            plotter.plot_params(self.params)
+            plotter.plot_params(self.params, self.chisqr)
