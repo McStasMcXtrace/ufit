@@ -25,7 +25,6 @@ def good_ycol(c):
 
 def read_data(filename, fp):
     line = ''
-    xcol = None
     meta = {}
     infofp = open(filename[:-4] + '.log', 'rb')
     # first line in scan info
@@ -39,10 +38,12 @@ def read_data(filename, fp):
         if '-----' in line:
             continue
         parts = line.split()
-        if len(parts) != 2:
-            continue
         try:
-            meta[parts[0]] = float(parts[1])
+            if len(parts) == 2:
+                meta[parts[0]] = float(parts[1])
+            elif len(parts) == 3:  # encoder target, value
+                                   # so take value
+                meta[parts[0]] = float(parts[2])
         except ValueError:
             pass
     names = fp.readline().split()
