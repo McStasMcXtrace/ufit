@@ -8,7 +8,7 @@
 
 """Fit result class."""
 
-from numpy import linspace, ravel
+from numpy import array, linspace, ravel
 from matplotlib import pyplot as pl
 
 from ufit.utils import cached_property
@@ -150,3 +150,29 @@ class MultiResult(list):
         for res, axes in zip(self, ravel(axarray)):
             res.plot(axes=axes)
         pl.tight_layout()
+
+    @cached_property
+    def values(self):
+        """Return a dictionary mapping parameter names to arrays of
+        parameter values, one for each result.
+        """
+        d = dict((p.name, [p.value]) for p in self[0].params)
+        for res in self[1:]:
+            for p in res.params:
+                d[p.name].append(p.value)
+        for k in d:
+            d[k] = array(d[k])
+        return d
+
+    @cached_property
+    def errors(self):
+        """Return a dictionary mapping parameter names to arrays of
+        parameter errors, one for each result.
+        """
+        d = dict((p.name, [p.error]) for p in self[0].params)
+        for res in self[1:]:
+            for p in res.params:
+                d[p.name].append(p.error)
+        for k in d:
+            d[k] = array(d[k])
+        return d

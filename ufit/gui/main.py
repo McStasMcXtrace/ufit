@@ -117,6 +117,8 @@ class UFitMain(QMainWindow):
 
         loadUi(self, 'main.ui')
 
+        # XXX add an annotations tab
+
         # populate plot view
         layout2 = QVBoxLayout()
         layout2.setContentsMargins(0, 0, 0, 0)
