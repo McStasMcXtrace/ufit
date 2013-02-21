@@ -130,3 +130,9 @@ class DataList(dict):
 
     def c(self, r1, r2):
         return reduce(lambda a, b: a|b, self[r1:r2])
+
+
+class DatasetList(list):
+
+    def __getattr__(self, key):
+        return array([getattr(d, key) for d in self])

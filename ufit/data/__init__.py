@@ -11,7 +11,7 @@
 from ufit import UFitError
 from ufit.data import ill, nicos, simple, trisp
 from ufit.data.loader import Loader
-from ufit.data.dataset import Dataset
+from ufit.data.dataset import Dataset, DatasetList
 
 data_formats = {
     'ill': ill,
@@ -20,8 +20,8 @@ data_formats = {
     'trisp': trisp,
 }
 
-__all__ = ['Dataset', 'sets', 'set_datatemplate', 'set_dataformat',
-           'read_data', 'as_data', 'read_numors']
+__all__ = ['Dataset', 'DatasetList', 'sets', 'set_datatemplate',
+           'set_dataformat', 'read_data', 'as_data', 'read_numors']
 
 
 # simplified interface for usage in noninteractive scripts

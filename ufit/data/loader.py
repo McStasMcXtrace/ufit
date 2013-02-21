@@ -12,7 +12,7 @@ from os import path
 from numpy import array, ones, sqrt
 
 from ufit import UFitError
-from ufit.data.dataset import Dataset, DataList
+from ufit.data.dataset import Dataset, DataList, DatasetList
 
 
 class Loader(object):
@@ -152,4 +152,4 @@ class Loader(object):
                             self.load(toint(part2), xcol, ycol, dycol,
                                       ncol, nscale))
                 datasets.append(inner[0].merge(binsize, *inner[1:]))
-        return datasets
+        return DatasetList(datasets)
