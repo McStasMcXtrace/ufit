@@ -44,10 +44,8 @@ class Dataset(object):
 
         self.y = self.y_raw / self.norm
         self.dy = self.dy_raw / self.norm
-        self.dy[self.dy==0] = 0.1
 
-        # points with mask = False are masked out
-        self.mask = ones(len(self.x), bool)
+        self.reset_mask()
         self.fitmin = None
         self.fitmax = None
 
@@ -63,6 +61,11 @@ class Dataset(object):
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
         return cls(meta or {}, array((x, y, dy)).T, xcol, ycol, name=name)
+
+    def reset_mask(self):
+        # points with mask = False are masked out
+        self.mask = ones(len(self.x), bool)
+        self.mask[self.dy==0] = False
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))

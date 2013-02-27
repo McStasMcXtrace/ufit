@@ -46,7 +46,7 @@ class DataOps(QWidget):
 
     @qtsig('')
     def on_badResetBtn_clicked(self):
-        self.data.mask = ones(len(self.data.x), bool)
+        self.data.reset_mask()
         self.emit(SIGNAL('replotRequest'))
         self.emit(SIGNAL('dirty'))
 
