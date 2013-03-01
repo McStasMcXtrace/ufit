@@ -47,9 +47,8 @@ def read_data(filename, fp):
         except ValueError:
             pass
     names = fp.readline().split()
-    # XXX make error message style consistent
     if not names:
-        raise UFitError('No columns in file')
+        raise UFitError('No data columns found in file %r' % filename)
     usecols = range(len(names))
     if names[0] == 'pnt':
         usecols = range(1, len(names))
@@ -61,5 +60,5 @@ def read_data(filename, fp):
     if 'TTA' in meta:
         meta['environment'].append('T = %.3f K' % meta['TTA'])
     if len(arr) == 0:
-        raise UFitError('No data in file')
+        raise UFitError('No data found in file %r' % filename)
     return names, arr, meta

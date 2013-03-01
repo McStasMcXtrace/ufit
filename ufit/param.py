@@ -176,7 +176,7 @@ def prepare_params(params, meta):
         if maxit == 0:
             s = '\n'.join('   %s: %s' % (k, v[1]) for (k, v)
                           in dependent.iteritems())
-            raise UFitError('detected unresolved parameter dependencies:\n' + s)
+            raise UFitError('Detected unresolved parameter dependencies:\n' + s)
         for p, (expr, _) in dependent.items():  # dictionary will change
             try:
                 pd[p] = param_eval(expr, pd)

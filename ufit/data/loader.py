@@ -27,7 +27,7 @@ class Loader(object):
             for n, m in data_formats.iteritems():
                 if m.check_data(fobj):
                     return m
-            raise UFitError('File %s not recognized' % filename)
+            raise UFitError('File %r has no recognized file format' % filename)
         return data_formats[self.format]
 
     def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
@@ -54,11 +54,12 @@ class Loader(object):
                 try:
                     return colnames.index(col)
                 except ValueError:
-                    raise UFitError('no such data column: %s' % col)
+                    raise UFitError('No such data column: %s' % col)
             elif 1 <= col <= len(colnames):
                 return col - 1   # 1-based indices
             else:
-                raise UFitError('data has only %d columns' % len(colnames))
+                raise UFitError('Data has only %d columns (but column %d is '
+                                'requested)' % (len(colnames), col))
         datarr[:,0] = coldata[:,colindex(xcol)]
         datarr[:,1] = coldata[:,colindex(ycol)]
         if dycol is not None:
@@ -128,7 +129,7 @@ class Loader(object):
             try:
                 return int(a)
             except ValueError:
-                raise UFitError('invalid file number: %r' % a)
+                raise UFitError('Invalid file number: %r' % a)
         # operator "precedence": ',' has lowest, then '+',
         # then '-' and '>' (equal)
         parts1 = nstring.split(',')

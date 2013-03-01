@@ -44,7 +44,8 @@ def rebin(data, binsize):
 
     # are there any data points left unused?
     if data_unused.any():
-        raise UFitError('merging data failed (data left over), check algorithm')
+        raise UFitError('Merging data failed (data left over), check merging '
+                        'algorithm for bugs')
 
     # remove any stops without monitor data
     newarray = newarray[new_used]

@@ -57,7 +57,8 @@ def set_dataformat(format):
     * ``'simple'`` - simple whitespace-separated multi-column files
     """
     if format not in data_formats:
-        raise UFitError('Unknown data format %r' % format)
+        raise UFitError('Unknown data format: %r, available formats are %s'
+                        % (format, ', '.join(data_formats)))
     global_loader.format = format
 
 def read_data(n, xcol, ycol, dycol=None, ncol=None, nscale=1):

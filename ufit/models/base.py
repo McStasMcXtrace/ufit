@@ -98,7 +98,8 @@ class Model(object):
         for m in [a, b]:
             for p in m.params:
                 if p.name in seen:
-                    raise UFitError('Parameter name clash: %s' % p.name)
+                    raise UFitError('Parameter name clash: %s - give all model '
+                                    'classes a name to avoid this' % p.name)
                 seen.add(p.name)
                 self.params.append(p)
 

@@ -45,5 +45,5 @@ def set_backend(which):
     global backend
     backend = globals()[which]
     if backend is None:
-        raise UFitError('backend %r not available' % which)
+        raise UFitError('Backend %r is not available' % which)
     debug('ufit using %s backend' % backend.backend_name)

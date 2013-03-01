@@ -76,7 +76,7 @@ def read_data(filename, fp):
         try:
             return float(s)
         except ValueError:
-            return 0.0  # XXX care for string columns?!
+            return 0.0
     cvdict = dict((i, convert_value) for i in range(len(colnames))
                   if colnames[i] != ';')
     colnames = [name for name in colnames if name != ';']
