@@ -8,7 +8,7 @@
 
 """Base dataset class."""
 
-from numpy import array, concatenate, ones
+from numpy import array, concatenate, ones, broadcast_arrays
 
 from ufit.utils import attrdict
 from ufit.data.merge import rebin
@@ -60,7 +60,8 @@ class Dataset(object):
 
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
-        return cls(meta or {}, array((x, y, dy)).T, xcol, ycol, name=name)
+        data = array(broadcast_arrays(x, y, dy)).T
+        return cls(meta or {}, data, xcol, ycol, name=name)
 
     def reset_mask(self):
         # points with mask = False are masked out
