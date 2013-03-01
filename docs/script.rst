@@ -6,8 +6,22 @@ Using ufit as a library
 Full noninteractive usage
 -------------------------
 
+The ``ufit.lab`` module
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. module:: ufit.lab
+
+This module is a combination of ``pylab`` and ``ufit`` imports.  You can do ::
+
+   from ufit.lab import *
+
+at the top of your script and have all pylab (numpy + plotting) and ufit API
+available.
+
 Loading data
 ~~~~~~~~~~~~
+
+.. currentmodule:: ufit
 
 .. autofunction:: set_datatemplate
 
