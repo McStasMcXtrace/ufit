@@ -285,13 +285,13 @@ class FitterMain(QMainWindow):
         self.setCentralWidget(layout)
         self.setWindowTitle('Fitting: data %s' % data.name)
 
-    def replot(self, limits=True, paramdict=None):
+    def replot(self, limits=True, paramvalues=None):
         plotter = self.canvas.plotter
         plotter.reset(limits=limits)
         try:
             plotter.plot_data(self.fitter.data)
             plotter.plot_model_full(self.fitter.model, self.fitter.data,
-                                    paramdict=paramdict)
+                                    paramvalues=paramvalues)
         except Exception, e:
             print 'Error while plotting:', e
         else:

@@ -110,6 +110,27 @@ Working with results
 
       A dictionary mapping parameter names to parameter values only.
 
+   .. attribute:: paramerrors
+
+      A dictionary mapping parameter names to parameter errors only.
+
+   .. attribute:: values
+
+      A list of values for each parameter.
+
+   .. attribute:: errors
+
+      A list of errors for each parameter.
+
+   .. attribute:: results
+
+      A list of values, then errors for each parameter and the chi-squared
+      value.
+
+   .. attribute:: residuals
+
+      An array of the residuals.
+
    .. automethod:: plot
 
    .. automethod:: plotfull

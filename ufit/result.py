@@ -42,7 +42,7 @@ class Result(object):
     @cached_property
     def paramerrors(self):
         """Returns a dictionary mapping parameter names to errors."""
-        return dict((p.name, p.value) for p in self.params)
+        return dict((p.name, p.error) for p in self.params)
 
     @cached_property
     def values(self):
@@ -116,7 +116,7 @@ class Result(object):
         """
         plotter = DataPlotter(axes=axes)
         plotter.plot_data(self.data)
-        plotter.plot_model(self.model, self.data)
+        plotter.plot_model(self.model, self.data, paramvalues=self.paramvalues)
         if params:
             plotter.plot_params(self.params, self.chisqr)
 
@@ -128,7 +128,8 @@ class Result(object):
         """
         plotter = DataPlotter(axes=axes)
         plotter.plot_data(self.data)
-        plotter.plot_model_full(self.model, self.data)
+        plotter.plot_model_full(self.model, self.data,
+                                paramvalues=self.paramvalues)
         if params:
             plotter.plot_params(self.params, self.chisqr)
 
@@ -148,11 +149,11 @@ class MultiResult(list):
         dims = calc_panel_size(len(self))
         fig, axarray = pl.subplots(dims[1], dims[0])
         for res, axes in zip(self, ravel(axarray)):
-            res.plot(axes=axes)
-        pl.tight_layout()
+            res.plotfull(axes=axes)
+        #pl.tight_layout()
 
     @cached_property
-    def values(self):
+    def paramvalues(self):
         """Return a dictionary mapping parameter names to arrays of
         parameter values, one for each result.
         """
@@ -165,7 +166,7 @@ class MultiResult(list):
         return d
 
     @cached_property
-    def errors(self):
+    def paramerrors(self):
         """Return a dictionary mapping parameter names to arrays of
         parameter errors, one for each result.
         """

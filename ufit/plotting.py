@@ -84,31 +84,31 @@ class DataPlotter(object):
             self.toolbar.update()
         return color
 
-    def plot_model_full(self, model, data, labels=True, paramdict=None, **kw):
-        if paramdict is None:
-            paramdict = prepare_params(model.params, data.meta)[3]
+    def plot_model_full(self, model, data, labels=True, paramvalues=None, **kw):
+        if paramvalues is None:
+            paramvalues = prepare_params(model.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
-        yy = model.fcn(paramdict, xx)
+        yy = model.fcn(paramvalues, xx)
         self.axes.plot(xx, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
         for comp in model.get_components():
-            yy = comp.fcn(paramdict, xx)
+            yy = comp.fcn(paramvalues, xx)
             self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
                            **kw)
 
-    def plot_model(self, model, data, labels=True, paramdict=None, **kw):
-        if paramdict is None:
-            paramdict = prepare_params(model.params, data.meta)[3]
+    def plot_model(self, model, data, labels=True, paramvalues=None, **kw):
+        if paramvalues is None:
+            paramvalues = prepare_params(model.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
-        yy = model.fcn(paramdict, xx)
+        yy = model.fcn(paramvalues, xx)
         self.axes.plot(xx, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
 
-    def plot_model_components(self, model, data, labels=True, paramdict=None,
+    def plot_model_components(self, model, data, labels=True, paramvalues=None,
                               **kw):
-        if paramdict is None:
-            paramdict = prepare_params(model.params, data.meta)[3]
+        if paramvalues is None:
+            paramvalues = prepare_params(model.params, data.meta)[3]
         xx = linspace(data.x[0], data.x[-1], 1000)
         for comp in model.get_components():
-            yy = comp.fcn(paramdict, xx)
+            yy = comp.fcn(paramvalues, xx)
             self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
                            **kw)
 

@@ -92,12 +92,13 @@ class DatasetPanel(QTabWidget):
     def save_limits(self):
         self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
 
-    def replot(self, limits=True, paramdict=None):
+    def replot(self, limits=True, paramvalues=None):
         plotter = self.canvas.plotter
         plotter.reset(limits)
         try:
             plotter.plot_data(self.data)
-            plotter.plot_model_full(self.model, self.data, paramdict=paramdict)
+            plotter.plot_model_full(self.model, self.data,
+                                    paramvalues=paramvalues)
         except Exception, e:
             print 'Error while plotting:', e
             return
