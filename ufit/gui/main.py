@@ -11,10 +11,14 @@
 import sys
 from os import path
 import cPickle as pickle
+from cStringIO import StringIO
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, QVariant
+from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, \
+     QVariant, QByteArray, QRectF
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
-     QMessageBox, QFileDialog, QDialog, QAction, QActionGroup
+     QMessageBox, QFileDialog, QDialog, QAction, QActionGroup, QPrinter, \
+     QPrintPreviewWidget, QPainter, QPrintDialog
+from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi
@@ -115,6 +119,9 @@ class UFitMain(QMainWindow):
         self.filename = None
         self.sgroup = SettingGroup('main')
         self.max_index = 1
+        self.printer = QPrinter(QPrinter.HighResolution)
+        self.printer.setOrientation(QPrinter.Landscape)
+        self.print_width = 0
 
         loadUi(self, 'main.ui')
 
@@ -131,6 +138,7 @@ class UFitMain(QMainWindow):
         self.toolbar.insertAction(firstaction, self.actionLoad)
         self.toolbar.insertAction(firstaction, self.actionSave)
         self.toolbar.insertSeparator(firstaction)
+        self.toolbar.insertAction(firstaction, self.actionPrint)
         self.toolbar.setObjectName('maintoolbar')
         self.addToolBar(self.toolbar)
         layout2.addWidget(self.canvas)
@@ -261,6 +269,36 @@ class UFitMain(QMainWindow):
     def on_actionDrawSymbols_toggled(self, on):
         self.canvas.plotter.symbols = on
         # XXX replot
+
+    @qtsig('')
+    def on_actionPrint_triggered(self):
+        sio = StringIO()
+        self.canvas.print_figure(sio, format='svg')
+        svg = QSvgRenderer(QByteArray(sio.getvalue()))
+        sz = svg.defaultSize()
+        aspect = sz.width()/sz.height()
+
+        dlg = QDialog(self)
+        loadUi(dlg, 'printpreview.ui')
+        dlg.width.setValue(self.print_width or 500)
+        ppw = QPrintPreviewWidget(self.printer, dlg)
+        dlg.layout().insertWidget(1, ppw)
+        def render(printer):
+            height = printer.height() * (dlg.width.value()/1000.)
+            width = aspect * height
+            painter = QPainter(printer)
+            svg.render(painter, QRectF(0, 0, width, height))
+        def sliderchanged(newval):
+            ppw.updatePreview()
+        self.connect(ppw, SIGNAL('paintRequested(QPrinter *)'), render)
+        self.connect(dlg.width, SIGNAL('valueChanged(int)'), sliderchanged)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        self.print_width = dlg.width.value()
+        pdlg = QPrintDialog(self.printer, self)
+        if pdlg.exec_() != QDialog.Accepted:
+            return
+        render(self.printer)
 
     def check_save(self):
         if not self.isWindowModified():  # nothing there to be saved

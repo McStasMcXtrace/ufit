@@ -47,7 +47,9 @@
              <string>Load new data</string>
             </property>
             <property name="icon">
-             <iconset theme="list-add"/>
+             <iconset theme="list-add">
+              <normaloff/>
+             </iconset>
             </property>
            </widget>
           </item>
@@ -57,7 +59,9 @@
              <string>Remove selected</string>
             </property>
             <property name="icon">
-             <iconset theme="edit-delete"/>
+             <iconset theme="edit-delete">
+              <normaloff/>
+             </iconset>
             </property>
            </widget>
           </item>
@@ -89,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>289</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -97,6 +101,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionLoadData"/>
+    <addaction name="actionPrint"/>
     <addaction name="separator"/>
     <addaction name="actionLoad"/>
     <addaction name="actionSave"/>
@@ -132,7 +137,9 @@
   </widget>
   <action name="actionLoad">
    <property name="icon">
-    <iconset theme="document-open"/>
+    <iconset theme="document-open">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Load session...</string>
@@ -143,7 +150,9 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset theme="document-save"/>
+    <iconset theme="document-save">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Save session</string>
@@ -154,7 +163,9 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset theme="help-about"/>
+    <iconset theme="help-about">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -162,7 +173,9 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset theme="application-exit">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>&amp;Quit</string>
@@ -173,7 +186,9 @@
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset theme="document-save-as"/>
+    <iconset theme="document-save-as">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>Save session as...</string>
@@ -184,7 +199,9 @@
   </action>
   <action name="actionLoadData">
    <property name="icon">
-    <iconset theme="list-add"/>
+    <iconset theme="list-add">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>Load data</string>
@@ -220,6 +237,14 @@
    </property>
    <property name="text">
     <string>Draw symbols</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="icon">
+    <iconset theme="printer"/>
+   </property>
+   <property name="text">
+    <string>Print plot...</string>
    </property>
   </action>
  </widget>
