@@ -86,26 +86,24 @@ class DataLoader(QWidget):
                                     'Could not read column names: %s' % e)
             return
         self.xcol.clear()
+        self.xcol.addItem('auto')
+        self.xcol.setCurrentIndex(0)
         self.ycol.clear()
+        self.ycol.addItem('auto')
+        self.ycol.setCurrentIndex(0)
         self.dycol.clear()
-        self.moncol.clear()
-        self.moncol.addItem('none')
-        self.moncol.setCurrentIndex(0)
+        self.dycol.addItem('auto')
         self.dycol.addItem('sqrt(Y)')
         self.dycol.setCurrentIndex(0)
+        self.moncol.clear()
+        self.moncol.addItem('auto')
+        self.moncol.addItem('none')
+        self.moncol.setCurrentIndex(0)
         for i, name in enumerate(cols):
             self.xcol.addItem(name)
             self.ycol.addItem(name)
             self.dycol.addItem(name)
             self.moncol.addItem(name)
-            if name == xguess:
-                self.xcol.setCurrentIndex(i)
-            if name == yguess:
-                self.ycol.setCurrentIndex(i)
-            if name == dyguess:
-                self.dycol.setCurrentIndex(i+1)
-            if name == mguess:
-                self.moncol.setCurrentIndex(i+1)
         self.monscale.setText(str(nmon or 1))
         self.numors.setText(str(numor))
         self.open_data()

@@ -9,7 +9,7 @@
 """Load routine for NICOS2 data."""
 
 import time
-from numpy import loadtxt
+from numpy import array, loadtxt
 
 from ufit import UFitError
 
@@ -20,8 +20,25 @@ def check_data(fp):
     return dtline.startswith('### NICOS data file')
 
 
-def good_ycol(col):
-    return col.startswith(('ctr', 'det'))
+def guess_cols(colnames, coldata, meta):
+    xg, yg, mg = None, None, None
+    if colnames[0] == 'h':
+        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
+        xg = colnames[deviations.argmax()]
+    else:
+        xg = colnames[0]
+    maxmon = 0
+    maxcts = 0
+    for i, colname in enumerate(colnames):
+        if colname.startswith('mon'):
+            if coldata[:,i].sum() > maxmon:
+                maxmon = coldata[:,i].sum()
+                mg = colname
+        if colname.startswith(('det', 'ctr')):
+            if coldata[:,i].sum() > maxcts:
+                maxcts = coldata[:,i].sum()
+                yg = colname
+    return xg, yg, None, mg
 
 
 def read_data(filename, fp):

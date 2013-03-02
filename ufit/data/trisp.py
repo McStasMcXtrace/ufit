@@ -8,7 +8,7 @@
 
 """Load routine for TRISP spin-echo data."""
 
-from numpy import loadtxt
+from numpy import array, loadtxt
 
 from ufit import UFitError
 
@@ -17,6 +17,18 @@ def check_data(fp):
     dtline = fp.readline()
     fp.seek(0, 0)
     return dtline.startswith('pnt  ')
+
+
+def guess_cols(colnames, coldata, meta):
+    xg, yg, dyg, mg = None, None, None, None
+    if colnames[0] == 'QH':
+        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
+        xg = colnames[deviations.argmax()]
+    elif colnames[0] == 'TC1' and colnames[1] == 'TC4':
+        xg = 'TC4'
+    else:
+        xg = colnames[0]
+    return xg, 'c1', None, 'mon'
 
 
 def good_ycol(c):

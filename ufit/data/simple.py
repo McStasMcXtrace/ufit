@@ -22,8 +22,8 @@ def check_data(fp):
     return True
 
 
-def good_ycol(c):
-    return False
+def guess_cols(colnames, coldata, meta):
+    return colnames[0], None, None, None
 
 
 def read_data(filename, fp):

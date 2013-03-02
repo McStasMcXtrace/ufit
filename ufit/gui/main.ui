@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>289</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -241,7 +241,9 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset theme="printer"/>
+    <iconset theme="printer">
+     <normaloff/>
+    </iconset>
    </property>
    <property name="text">
     <string>Print plot...</string>

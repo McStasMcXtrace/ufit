@@ -38,8 +38,9 @@ class Loader(object):
             filename = self.template
             default_filedesc = path.basename(self.template)
         fobj = open(filename, 'rb')
-        colnames, coldata, meta = \
-            self._get_reader(filename, fobj).read_data(filename, fobj)
+        rdr = self._get_reader(filename, fobj)
+        colnames, coldata, meta = rdr.read_data(filename, fobj)
+        colguess = rdr.guess_cols(colnames, coldata, meta)
         if 'filenumber' not in meta:
             meta['filenumber'] = n
         if 'filedesc' not in meta:
@@ -60,12 +61,20 @@ class Loader(object):
             else:
                 raise UFitError('Data has only %d columns (but column %d is '
                                 'requested)' % (len(colnames), col))
+        if xcol == 'auto':
+            xcol = colguess[0]
         datarr[:,0] = coldata[:,colindex(xcol)]
+        if ycol == 'auto':
+            ycol = colguess[1]
         datarr[:,1] = coldata[:,colindex(ycol)]
+        if dycol == 'auto':
+            dycol = colguess[2]
         if dycol is not None:
             datarr[:,2] = coldata[:,colindex(dycol)]
         else:
             datarr[:,2] = sqrt(datarr[:,1])
+        if ncol == 'auto':
+            ncol = colguess[3]
         if ncol is not None:
             datarr[:,3] = coldata[:,colindex(ncol)]
 
@@ -88,27 +97,14 @@ class Loader(object):
         fobj = open(filename, 'rb')
         rdr = self._get_reader(filename, fobj)
         colnames, coldata, meta = rdr.read_data(filename, fobj)
-        xguess, yguess, dyguess, mguess = None, None, None, None
-        if colnames[0].lower() in ('h', 'qh'):
-            deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
-            xguess = colnames[deviations.argmax()]
+        xguess, yguess, dyguess, mguess = rdr.guess_cols(colnames, coldata, meta)
+        if mguess is not None:
+            # use average monitor counts for normalization, but
+            # round to 2 significant digits
+            moncol = coldata[:,colnames.index(mguess)]
+            nmon = int(float('%.2g' % moncol.mean()))
         else:
-            xguess = colnames[0]
-        maxcts = 0
-        maxmon = 0
-        nmon = 0
-        for i, colname in enumerate(colnames):
-            if rdr.good_ycol(colname):
-                if coldata[:,i].sum() > maxcts:
-                    yguess = colname
-                    maxcts = coldata[:,i].sum()
-            if colname.startswith('mon') or colname.startswith('M'):
-                if coldata[:,i].sum() > maxmon:
-                    mguess = colname
-                    maxmon = coldata[:,i].sum()
-                    # use average monitor counts for normalization, but
-                    # round to 2 significant digits
-                    nmon = int(float('%.2g' % coldata[:,i].mean()))
+            nmon = 0
         if yguess is None and len(colnames) > 1:
             yguess = colnames[1]
             if len(colnames) > 2:

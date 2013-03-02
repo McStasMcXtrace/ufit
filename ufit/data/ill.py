@@ -8,7 +8,7 @@
 
 """Load routine for ILL TAS data."""
 
-from numpy import loadtxt
+from numpy import array, loadtxt
 
 from ufit import UFitError
 
@@ -19,8 +19,22 @@ def check_data(fp):
     return dtline.startswith('RRRRRRRRRRRR')
 
 
-def good_ycol(c):
-    return c == 'CNTS'
+def guess_cols(colnames, coldata, meta):
+    xg, yg, mg = None, None, None
+    if 'CNTS' in colnames:
+        yg = 'CNTS'
+    if colnames[0] == 'QH':
+        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
+        xg = colnames[deviations.argmax()]
+    else:
+        xg = colnames[0]
+    maxmon = 0
+    for i, colname in enumerate(colnames):
+        if colname.startswith('M') and colname[1:].isdigit():
+            if coldata[:,i].sum() > maxmon:
+                maxmon = coldata[:,i].sum()
+                mg = colname
+    return xg, yg, None, mg
 
 
 def read_data(filename, fp):
