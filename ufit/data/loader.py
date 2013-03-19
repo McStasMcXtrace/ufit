@@ -59,7 +59,7 @@ class Loader(object):
             elif 1 <= col <= len(colnames):
                 return col - 1   # 1-based indices
             else:
-                raise UFitError('Data has only %d columns (but column %d is '
+                raise UFitError('Data has only %d columns (but column %s is '
                                 'requested)' % (len(colnames), col))
         if xcol == 'auto':
             xcol = colguess[0]

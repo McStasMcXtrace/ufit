@@ -34,10 +34,12 @@ def guess_cols(colnames, coldata, meta):
             if coldata[:,i].sum() > maxmon:
                 maxmon = coldata[:,i].sum()
                 mg = colname
-        if colname.startswith(('det', 'ctr')):
+        if colname.startswith(('det', 'ctr', 'psd.total')):
             if coldata[:,i].sum() > maxcts:
                 maxcts = coldata[:,i].sum()
                 yg = colname
+    if yg is None:
+        yg = colnames[1]
     return xg, yg, None, mg
 
 

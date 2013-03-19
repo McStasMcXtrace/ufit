@@ -61,7 +61,7 @@ def set_dataformat(format):
                         % (format, ', '.join(data_formats)))
     global_loader.format = format
 
-def read_data(n, xcol, ycol, dycol=None, ncol=None, nscale=1):
+def read_data(n, xcol='auto', ycol='auto', dycol=None, ncol=None, nscale=1):
     """Read a data file.  Returns a :class:`Dataset` object.
 
     :param xcol: X column name (or 1-based index)
