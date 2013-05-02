@@ -48,6 +48,8 @@ class Loader(object):
         if 'environment' not in meta:
             meta['environment'] = []
         meta['datafilename'] = filename
+        for colname, colvalues in zip(colnames, coldata.T):
+            meta['col_%s' % colname] = colvalues
         datarr = ones((len(coldata), 4))
 
         def colindex(col):

@@ -115,6 +115,8 @@ class DataPlotter(object):
     def plot_params(self, params, chisqr):
         s = []
         for p in params:
+            if p.expr:
+                continue
             s.append(u'%-12s = %9.4g ± %9.4g' % (p.name, p.value, p.error))
             if p.expr:
                 s[-1] += ' (fixed)'
@@ -127,16 +129,16 @@ class DataPlotter(object):
                        transform=self.axes.transAxes, family='Monospace')
 
 
-def mapping(x, y, runs, minmax=None, mat=False, log=False):
+def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True, xscale=1, yscale=1):
     pl.clf()
-    xss = list(flatten(run[x] for run in runs))
-    yss = list(flatten(run[y] for run in runs))
+    xss = array(list(flatten(run['col_'+x] for run in runs)))*xscale
+    yss = array(list(flatten(run['col_'+y] for run in runs)))*yscale
     if log:
         zss = list(flatten(np.log(run.y) for run in runs))
     else:
         zss = list(flatten(run.y for run in runs))
     if minmax is not None:
-        zss = clip(zss, minmax[0]/100000., minmax[1]/100000.)
+        zss = clip(zss, minmax[0], minmax[1])
     xi, yi = mgrid[min(xss):max(xss):100j,
                    min(yss):max(yss):100j]
     zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
@@ -146,3 +148,5 @@ def mapping(x, y, runs, minmax=None, mat=False, log=False):
     else:
         pl.contourf(xi, yi, zi, 20)
     pl.colorbar()
+    if dots:
+        pl.scatter(xss, yss, 0.5)

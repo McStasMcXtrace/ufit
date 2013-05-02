@@ -84,7 +84,7 @@ class Dataset(object):
             return self.__class__(self.meta, self._data[key],
                                   self.xcol, self.ycol, self.ncol, self.nscale,
                                   name=self.name, sources=self.sources)
-        raise KeyError(key)
+        return getattr(self, key)
 
     def __or__(self, other):
         return self.__class__(self.meta, concatenate((self._data, other._data)),
