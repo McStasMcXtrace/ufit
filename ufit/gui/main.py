@@ -17,7 +17,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, \
      QVariant, QByteArray, QRectF
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
      QMessageBox, QFileDialog, QDialog, QAction, QActionGroup, QPrinter, \
-     QPrintPreviewWidget, QPainter, QPrintDialog
+     QPrintPreviewWidget, QPainter, QPrintDialog, QListWidgetItem
 from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends
@@ -42,7 +42,7 @@ class DatasetPanel(QTabWidget):
         self._limits = None
         self.picker_widget = None
         self.index = index
-        #self.nickname = self.data.nickname
+        self.title = ''
 
         self.canvas = canvas
         self.dataops.initialize(self.data, self.model)
@@ -72,6 +72,7 @@ class DatasetPanel(QTabWidget):
     def gen_htmldesc(self):
         title = self.data.meta.get('title', '')
         self.dataops.datatitle.setText(title)
+        self.title = title
         self.htmldesc = '<big><b>%s</b></big>' % self.index + \
             (title and ' - %s' % title or '') + \
             (self.data.environment and
@@ -230,6 +231,25 @@ class UFitMain(QMainWindow):
         self.datalistmodel.reset()
         self.setWindowModified(True)
         self.on_loadBtn_clicked()
+
+    @qtsig('')
+    def on_reorderBtn_clicked(self):
+        dlg = QDialog(self)
+        loadUi(dlg, 'reorder.ui')
+        for i, panel in enumerate(self.panels):
+            QListWidgetItem('%s - %s' % (panel.index, panel.title),
+                            dlg.datalist, i)
+        if dlg.exec_():
+            new_panels = []
+            for i in range(dlg.datalist.count()):
+                new_index = dlg.datalist.item(i).type()
+                panel = self.panels[new_index]
+                panel.index = i+1
+                panel.gen_htmldesc()
+                new_panels.append(panel)
+            self.panels[:] = new_panels
+            self.datalistmodel.reset()
+            self.setWindowModified(True)
 
     def on_datalist_newSelection(self):
         if self._loading:
