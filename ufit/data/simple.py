@@ -23,7 +23,7 @@ def check_data(fp):
 
 
 def guess_cols(colnames, coldata, meta):
-    return colnames[0], None, None, None
+    return colnames[0], colnames[1], None, None
 
 
 def read_data(filename, fp):
