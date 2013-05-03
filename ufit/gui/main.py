@@ -42,6 +42,7 @@ class DatasetPanel(QTabWidget):
         self._limits = None
         self.picker_widget = None
         self.index = index
+        #self.nickname = self.data.nickname
 
         self.canvas = canvas
         self.dataops.initialize(self.data, self.model)
@@ -49,6 +50,7 @@ class DatasetPanel(QTabWidget):
         self.fitter.initialize(self.model, self.data, fit=False)
         self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.dataops, SIGNAL('replotRequest'), self.replot)
+        self.connect(self.dataops, SIGNAL('titleChanged'), self.update_htmldesc)
         self.connect(self.dataops, SIGNAL('dirty'), self.set_dirty)
         self.connect(self.dataops, SIGNAL('newData'), self.handle_new_data)
         self.connect(self.mbuilder, SIGNAL('newModel'),
@@ -61,7 +63,15 @@ class DatasetPanel(QTabWidget):
         self.addTab(self.fitter, 'Fitting')
         self.setCurrentWidget(self.mbuilder)
 
+        self.gen_htmldesc()
+
+    def update_htmldesc(self):
+        self.gen_htmldesc()
+        self.emit(SIGNAL('updateList'))
+
+    def gen_htmldesc(self):
         title = self.data.meta.get('title', '')
+        self.dataops.datatitle.setText(title)
         self.htmldesc = '<big><b>%s</b></big>' % self.index + \
             (title and ' - %s' % title or '') + \
             (self.data.environment and
@@ -253,6 +263,7 @@ class UFitMain(QMainWindow):
         panel = DatasetPanel(self, self.canvas, data, model, self.max_index)
         self.connect(panel, SIGNAL('dirty'), self.set_dirty)
         self.connect(panel, SIGNAL('newData'), self.handle_new_data)
+        self.connect(panel, SIGNAL('updateList'), self.datalistmodel.reset)
         self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)

@@ -156,6 +156,12 @@ class DataOps(QWidget):
         self.emit(SIGNAL('replotRequest'), None)
         self.emit(SIGNAL('dirty'))
 
+    @qtsig('')
+    def on_titleBtn_clicked(self):
+        self.data.meta.title = str(self.datatitle.text())
+        self.emit(SIGNAL('titleChanged'))
+        self.emit(SIGNAL('dirty'))
+
 
 class MultiDataOps(QWidget):
 
