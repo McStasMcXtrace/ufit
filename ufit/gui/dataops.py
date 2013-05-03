@@ -248,4 +248,5 @@ class MultiDataOps(QWidget):
             if i == which:
                 continue
             panel.handle_new_model(model.copy(), keep_paramvalues=False)
+        self.emit(SIGNAL('replotRequest'), None)
         self.emit(SIGNAL('dirty'))
