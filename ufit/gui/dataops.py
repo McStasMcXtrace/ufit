@@ -42,8 +42,11 @@ class DataOps(QWidget):
             return
         if self.picking:
             xdata = event.artist.get_xdata()[event.ind]
+            ydata = event.artist.get_ydata()[event.ind]
             self.picked_points.append(xdata)
             self.pickedlabel.setText('%d picked' % len(self.picked_points))
+            event.canvas.figure.gca().plot([xdata], [ydata], 'ow', ms=8, mec='blue')
+            event.canvas.draw()
 
     @qtsig('')
     def on_badResetBtn_clicked(self):
