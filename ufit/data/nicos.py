@@ -101,7 +101,7 @@ def read_data(filename, fp):
     colnames = [name for name in colnames if name != ';']
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
-    coldata = loadtxt(fp, converters=cvdict, usecols=usecols)
+    coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2)
     cols = dict((name, coldata[:,i]) for (i, name) in enumerate(colnames))
     meta['environment'] = []
     for col in cols:
