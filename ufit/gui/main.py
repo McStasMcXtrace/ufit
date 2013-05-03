@@ -133,8 +133,7 @@ class UFitMain(QMainWindow):
         self.filename = None
         self.sgroup = SettingGroup('main')
         self.max_index = 1
-        self.printer = QPrinter(QPrinter.HighResolution)
-        self.printer.setOrientation(QPrinter.Landscape)
+        self.printer = None  # delay construction; takes half a second
         self.print_width = 0
 
         loadUi(self, 'main.ui')
@@ -293,6 +292,10 @@ class UFitMain(QMainWindow):
         svg = QSvgRenderer(QByteArray(sio.getvalue()))
         sz = svg.defaultSize()
         aspect = sz.width()/sz.height()
+
+        if self.printer is None:
+            self.printer = QPrinter(QPrinter.HighResolution)
+            self.printer.setOrientation(QPrinter.Landscape)
 
         dlg = QDialog(self)
         loadUi(dlg, 'printpreview.ui')
@@ -455,10 +458,10 @@ class UFitMain(QMainWindow):
         backends.set_backend(str(self.sender().text()))
 
 
-def main(args):
+def main(args, t0):
     import time
-    print 'starting up app...'
     t1 = time.time()
+    print 'import finished (%.3f s), starting up app...' % (t1-t0)
     app = QApplication([])
     app.setOrganizationName('ufit')
     app.setApplicationName('gui')
