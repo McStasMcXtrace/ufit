@@ -8,6 +8,8 @@
 
 """Base dataset class."""
 
+import copy
+
 from numpy import array, concatenate, ones, broadcast_arrays
 
 from ufit.utils import attrdict
@@ -48,6 +50,9 @@ class Dataset(object):
         self.reset_mask()
         self.fitmin = None
         self.fitmax = None
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     @property
     def fit_columns(self):

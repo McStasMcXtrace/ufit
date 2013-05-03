@@ -44,12 +44,13 @@ class DatasetPanel(QTabWidget):
         self.index = index
 
         self.canvas = canvas
-        self.dataops.initialize(self.data)
+        self.dataops.initialize(self.data, self.model)
         self.mbuilder.initialize(self.data, self.model)
         self.fitter.initialize(self.model, self.data, fit=False)
         self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.dataops, SIGNAL('replotRequest'), self.replot)
         self.connect(self.dataops, SIGNAL('dirty'), self.set_dirty)
+        self.connect(self.dataops, SIGNAL('newData'), self.handle_new_data)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
         self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
@@ -76,6 +77,9 @@ class DatasetPanel(QTabWidget):
     def on_mbuilder_newModel(self, model):
         self.handle_new_model(model, update_mbuilder=False)
         self.set_dirty()
+
+    def handle_new_data(self, *args):
+        self.emit(SIGNAL('newData'), *args)
 
     def handle_new_model(self, model, update_mbuilder=True,
                          keep_paramvalues=True):
@@ -248,6 +252,7 @@ class UFitMain(QMainWindow):
     def handle_new_data(self, data, update=True, model=None):
         panel = DatasetPanel(self, self.canvas, data, model, self.max_index)
         self.connect(panel, SIGNAL('dirty'), self.set_dirty)
+        self.connect(panel, SIGNAL('newData'), self.handle_new_data)
         self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
@@ -448,7 +453,7 @@ def main(args):
     app.setApplicationName('gui')
     mainwindow = UFitMain()
 
-    if args:
+    if len(args) == 1:
         datafile = path.abspath(args[0])
         if datafile.endswith('.ufit'):
             try:

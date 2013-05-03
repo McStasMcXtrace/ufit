@@ -8,7 +8,7 @@
 
 """Data operations panel."""
 
-from numpy import ones, sqrt, mean
+from numpy import sqrt, mean
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget
@@ -28,8 +28,9 @@ class DataOps(QWidget):
         loadUi(self, 'dataops.ui')
         self.pickedlabel.hide()
 
-    def initialize(self, data):
+    def initialize(self, data, model):
         self.data = data
+        self.model = model
         if self.data.fitmin is not None:
             self.limitmin.setText('%.5g' % self.data.fitmin)
         if self.data.fitmax is not None:
@@ -96,6 +97,13 @@ class DataOps(QWidget):
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
         self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
+
+    @qtsig('')
+    def on_cloneBtn_clicked(self):
+        new_data = self.data.copy()
+        new_model = self.model.copy()
+        self.emit(SIGNAL('newData'), new_data, True, new_model)
         self.emit(SIGNAL('dirty'))
 
     @qtsig('')
