@@ -9,7 +9,7 @@
 """Data loader object."""
 
 from os import path
-from numpy import array, ones, sqrt
+from numpy import ones, sqrt
 
 from ufit import UFitError
 from ufit.data.dataset import Dataset, DataList, DatasetList

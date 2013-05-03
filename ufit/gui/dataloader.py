@@ -52,6 +52,25 @@ class DataLoader(QWidget):
         self.loader.format = str(self.dataformat.currentText())
 
     @qtsig('')
+    def on_numorHelp_clicked(self):
+        QMessageBox.information(self, 'Numor Help', '''\
+The numor string contains file numbers, with the following operators:
+
+, loads multiple files
+- loads multiple sequential files
++ merges multiple files
+> merges multiple sequential files
+
+For example:
+
+* 10-15,23  loads files 10 through 15 and 23 in 7 separate datasets.
+* 10+11,23+24 loads two datasets consisting of files 10 and 11 merged \
+into one set, as well as files 23 and 24.
+* 10>15+23 merges files 10 through 15 and 23 into one single dataset.
+* 10,11,12+13,14 loads four sets.
+''')
+
+    @qtsig('')
     def on_settemplate_clicked(self):
         previous = str(self.datatemplate.text())
         if previous:
