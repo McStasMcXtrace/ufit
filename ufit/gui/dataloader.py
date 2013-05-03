@@ -43,7 +43,7 @@ class DataLoader(QWidget):
         role = self.buttonBox.buttonRole(button)
         if role == QDialogButtonBox.RejectRole:
             self.emit(SIGNAL('closeRequest'))
-        elif role == QDialogButtonBox.NoRole:
+        elif role == QDialogButtonBox.NoRole:  # "preview"
             self.open_data()
         else:  # "open"
             self.open_data(final=True)
@@ -142,6 +142,8 @@ into one set, as well as files 23 and 24.
         except Exception:
             QMessageBox.information(self, 'Error', 'Monitor scale must be integer.')
             return
+        dtempl = self.datatemplate.text()
+        self.loader.template = str(dtempl)
         numors = str(self.numors.text())
         try:
             datas = self.loader.load_numors(numors, prec,
