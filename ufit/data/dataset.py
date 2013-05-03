@@ -112,7 +112,7 @@ class Dataset(object):
         # XXX should we merge meta's?
         return self.__class__(self.meta, new_array,
                               self.xcol, self.ycol, self.ncol, self.nscale,
-                              name='&'.join(d.name for d in allsets),
+                              name='_'.join(d.name for d in allsets),
                               sources=sources)
 
     def plot(self, axes=None, symbols=True, lines=False):

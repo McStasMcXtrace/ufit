@@ -79,7 +79,8 @@ def as_data(x, y, dy, name=''):
     """Quickly construct a :class:`Dataset` object from three numpy arrays."""
     return Dataset.from_arrays(name or 'data', x, y, dy)
 
-def read_numors(nstring, binsize, xcol, ycol, dycol=None, ncol=None, nscale=1):
+def read_numors(nstring, binsize, xcol='auto', ycol='auto',
+                dycol=None, ncol=None, nscale=1):
     """Read a number of data files.  Returns a list of :class:`Dataset`\s.
 
     :param nstring: A string that gives file numbers, with the operators given
