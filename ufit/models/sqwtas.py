@@ -14,6 +14,8 @@ import inspect
 from ufit.rescalc import resmat, calc_MC, load_cfg, load_par
 from ufit.models.base import Model
 
+__all__ = ['ConvolvedScatteringLaw']
+
 
 class ConvolvedScatteringLaw(Model):
     """Model using a scattering law given as a function and a set of resolution
