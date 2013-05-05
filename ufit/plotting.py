@@ -17,7 +17,6 @@ import numpy as np
 from numpy import array, mgrid, clip, linspace, isscalar
 from matplotlib import pyplot as pl
 from matplotlib.cbook import flatten
-from scipy.interpolate import griddata as griddata_sp
 
 from ufit.param import prepare_params
 
@@ -146,6 +145,7 @@ class DataPlotter(object):
 
 
 def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True, xscale=1, yscale=1):
+    from scipy.interpolate import griddata as griddata_sp
     pl.clf()
     xss = array(list(flatten(run['col_'+x] for run in runs)))*xscale
     yss = array(list(flatten(run['col_'+y] for run in runs)))*yscale
