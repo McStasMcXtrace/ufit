@@ -8,6 +8,8 @@
 
 """Data fitter panel."""
 
+import traceback
+
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
@@ -25,13 +27,14 @@ def is_float(x):
 
 class Fitter(QWidget):
 
-    def __init__(self, parent, standalone=False):
+    def __init__(self, parent, standalone=False, fit_kws=None):
         QWidget.__init__(self, parent)
         self.picking = None
         self.last_result = None
         self.model = None
         self.data = None
         self.param_controls = {}
+        self.fit_kws = fit_kws
 
         self.standalone = standalone
         self.createUI(standalone)
@@ -249,8 +252,9 @@ class Fitter(QWidget):
         self.statusLabel.repaint()
         QApplication.processEvents()
         try:
-            res = self.model.fit(self.data)
+            res = self.model.fit(self.data, **self.fit_kws)
         except Exception, e:
+            traceback.print_exc()
             self.statusLabel.setText('Error during fit: %s' % e)
             return
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
@@ -268,14 +272,14 @@ class Fitter(QWidget):
 
 
 class FitterMain(QMainWindow):
-    def __init__(self, model, data, fit=True):
+    def __init__(self, model, data, fit=True, fit_kws=None):
         QMainWindow.__init__(self)
         layout = QSplitter(Qt.Vertical, self)
         self.canvas = MPLCanvas(self)
         self.toolbar = MPLToolbar(self.canvas, self)
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        self.fitter = Fitter(self, standalone=True)
+        self.fitter = Fitter(self, standalone=True, fit_kws=fit_kws)
         self.canvas.mpl_connect('button_press_event',
                                 self.fitter.on_canvas_pick)
         self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
@@ -293,14 +297,15 @@ class FitterMain(QMainWindow):
             plotter.plot_model_full(self.fitter.model, self.fitter.data,
                                     paramvalues=paramvalues)
         except Exception, e:
+            traceback.print_exc()
             print 'Error while plotting:', e
         else:
             plotter.draw()
 
 
-def start(model, data, fit=True):
+def start(model, data, fit=True, **fit_kws):
     app = QApplication([])
-    win = FitterMain(model, data, fit)
+    win = FitterMain(model, data, fit, fit_kws)
     win.show()
     app.exec_()
     return win.fitter.last_result
