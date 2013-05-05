@@ -69,13 +69,17 @@ def read_data(filename, fp):
     meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
                                      meta.get('experiment', ''),
                                      meta.get('filenumber'))
-    names = fp.readline().split()
-    if not names:
+    all_names = fp.readline().split()
+    if not all_names:
         raise UFitError('No data columns found in in file %r' % filename)
-    usecols = range(len(names))
-    if names[0] == 'PNT':
-        usecols = range(1, len(names))
-        names = names[1:]
+    usecols = []
+    names = []
+    for i, name in enumerate(all_names):
+        # XXX have to do flipper handling right
+        if name in ('PNT', 'F1', 'F2'):
+            continue
+        names.append(name)
+        usecols.append(i)
     # Berlin implementation adds "Finished ..." in the last line,
     # pretend that it is a comment
     arr = loadtxt(fp, ndmin=2, usecols=usecols, comments='F')
@@ -84,6 +88,8 @@ def read_data(filename, fp):
     meta['environment'] = []
     if 'TT' in meta:
         meta['environment'].append('T = %.3f K' % meta['TT'])
+    if names[3] == 'EN':
+        meta['hkle'] = arr[:,:4]
     if len(arr) == 0:
         raise UFitError('No data found in file %r' % filename)
     return names, arr, meta

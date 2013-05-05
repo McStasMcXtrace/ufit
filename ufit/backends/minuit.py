@@ -54,7 +54,7 @@ def do_fit(data, fcn, params, add_kw):
         setattr(m, kw, add_kw[kw])
     for p in varying:
         m.values[minuit_map[p.name]] = p.value
-        m.errors[p.name] = p.delta or p.value/100. or 0.01
+        m.errors[minuit_map[p.name]] = p.delta or p.value/100. or 0.01
         if p.pmin is not None or p.pmax is not None:
             m.limits[minuit_map[p.name]] = (p.pmin is None and -1e8 or p.pmin,
                                             p.pmax is None and +1e8 or p.pmax)

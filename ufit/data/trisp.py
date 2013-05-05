@@ -73,4 +73,6 @@ def read_data(filename, fp):
         meta['environment'].append('T = %.3f K' % meta['TTA'])
     if len(arr) == 0:
         raise UFitError('No data found in file %r' % filename)
+    if names[0] == 'QH':
+        meta['hkle'] = arr[:,:4]
     return names, arr, meta

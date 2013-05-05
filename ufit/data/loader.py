@@ -63,6 +63,10 @@ class Loader(object):
             else:
                 raise UFitError('Data has only %d columns (but column %s is '
                                 'requested)' % (len(colnames), col))
+        use_hkl = False
+        if xcol == 'hkl':
+            xcol = 'auto'
+            use_hkl = True
         if xcol == 'auto':
             xcol = colguess[0]
         datarr[:,0] = coldata[:,colindex(xcol)]
@@ -88,6 +92,8 @@ class Loader(object):
             return colnames[col - 1]   # 1-based indices
         dset = Dataset(meta, datarr, colname(xcol), colname(ycol),
                        colname(ncol), nscale)
+        if use_hkl and 'hkle' in dset.meta:  # 3-axis support
+            dset.x = dset.meta['hkle']
         self.sets[n] = dset
         return dset
 
