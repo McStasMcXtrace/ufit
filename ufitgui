@@ -12,6 +12,9 @@ import sys
 import time
 t0 = time.time()
 
+import matplotlib
+matplotlib.use('Qt4Agg')
+
 from ufit.gui.main import main
 
 sys.exit(main(sys.argv[1:], t0))
