@@ -996,7 +996,7 @@ def ellipse_coords(a, b, phi):
     return x, y
 
 
-def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=False):
+def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """Calculates intensity of point in reciprocal space (qh,qk,ql,en) at takes
     into account the spectrometer resolution calculated by resolution class
     resmat (which uses the Popovici algorithm to do so).
@@ -1018,24 +1018,23 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=False):
             b_mat = resmat.b_mat[0:16]
             R0_corrected = resmat.R0_corrected
             resmat._cache[QE] = b_mat, sigma, R0_corrected
-        xp = matrix(zeros((4, NMC)))
+        xp = zeros((4, NMC))
         xp[0,:] = sigma[0]*randn(NMC)
         xp[1,:] = sigma[1]*randn(NMC)
         xp[2,:] = sigma[2]*randn(NMC)
         xp[3,:] = sigma[3]*randn(NMC)
         XMC = reshape(b_mat[0:16], (4, 4)).transpose() * xp
+        XMC = XMC.getA()  # make an array from the matrix
 
-        qh = XMC[0,:] + QE[0]
-        qk = XMC[1,:] + QE[1]
-        ql = XMC[2,:] + QE[2]
-        w  = XMC[3,:] + QE[3]
+        qh = XMC[0] + QE[0]
+        qk = XMC[1] + QE[1]
+        ql = XMC[2] + QE[2]
+        w  = XMC[3] + QE[3]
 
-        s = zeros(NMC)
-        for i in range(NMC):
-            # QE is provided to sqw function in case center of resolution
-            # is needed for further calculations
-            s[i] = sqw(qh[0,i], qk[0,i], ql[0,i], w[0,i], QE, sigma, *fit_par)
-        intensity[j] = R0_corrected * s.mean()
+        # QE is provided to sqw function in case center of resolution
+        # is needed for further calculations
+        mc_intens = sqw(qh, qk, ql, w, QE, sigma, *fit_par)
+        intensity[j] = R0_corrected * mc_intens.mean()
         j += 1
 
     return intensity

@@ -25,9 +25,9 @@ class ConvolvedScatteringLaw(Model):
 
        sqw(h, k, l, E, QE0, Sigma, par0, par1, ...)
 
-    h,k,l,E is the Monte-Carlo point, QE0 is the center of the ellipse, Sigma
-    are the ellipse widths around the center.  A constant background is always
-    included as a parameter named "bkgd".
+    h,k,l,E are arrays of the Monte-Carlo point coordinates, QE0 is the center
+    of the ellipse, Sigma are the ellipse widths around the center.  A constant
+    background is always included as a parameter named "bkgd".
 
     *instfiles* must be ('instr.cfg', 'instr.par').
     """
