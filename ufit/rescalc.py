@@ -1024,9 +1024,7 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     into account the spectrometer resolution calculated by resolution class
     resmat (which uses the Popovici algorithm to do so).
     """
-    intensity = zeros(len(x))
-    j = 0
-
+    results = []
     for QE in x:
         QE = tuple(QE)
         if QE in resmat._cache and use_caching:
@@ -1042,12 +1040,9 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
             b_mat = resmat.b_mat[0:16]
             R0_corrected = resmat.R0_corrected
             resmat._cache[QE] = b_mat, sigma, R0_corrected
-        intensity[j] = pool.apply(single_mc, (NMC, sqw, fit_par, QE, b_mat,
-                                              sigma, R0_corrected))
-#        intensity[j] = single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected)
-        j += 1
-
-    return intensity
+        results.append(pool.apply_async(single_mc, (NMC, sqw, fit_par, QE, b_mat,
+                                                    sigma, R0_corrected)))
+    return array([res.get() for res in results])
 
 
 def demosqw(qh, qk, ql, en, QE, sigma, scaling):
