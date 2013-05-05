@@ -14,12 +14,23 @@ import matplotlib
 matplotlib.rc('font', family='Helvetica')
 
 import numpy as np
-from numpy import array, mgrid, clip, linspace
+from numpy import array, mgrid, clip, linspace, isscalar
 from matplotlib import pyplot as pl
 from matplotlib.cbook import flatten
 from scipy.interpolate import griddata as griddata_sp
 
 from ufit.param import prepare_params
+
+
+def multi_linspace(start, stop, steps):
+    """linspace variant that handles arrays:
+
+    multi_linspace([0,5], [1,10], 3) gives [[0,5],[0.5,7.5],[1,10]].
+    """
+    if isscalar(start):
+        return linspace(start, stop, steps)
+    return array([linspace(start[i], stop[i], steps)
+                  for i in range(len(start))]).T
 
 
 class DataPlotter(object):
@@ -54,15 +65,15 @@ class DataPlotter(object):
         marker = self.marker_cycle.next() if self.symbols else ''
         ls = '-' if self.lines else ''
         if data.mask.all():
-            eb = axes.errorbar(data.x, data.y, data.dy, ls=ls, marker=marker,
+            eb = axes.errorbar(data.x_plot, data.y, data.dy, ls=ls, marker=marker,
                                ms=8, label=data.name, picker=5)
             color = eb[0].get_color()
         else:
             mask = data.mask
-            eb = axes.errorbar(data.x[mask], data.y[mask], data.dy[mask], ls=ls,
+            eb = axes.errorbar(data.x_plot[mask], data.y[mask], data.dy[mask], ls=ls,
                                marker=marker, ms=8, label=data.name, picker=5)
             color = eb[0].get_color()
-            axes.errorbar(data.x[~mask], data.y[~mask], data.dy[~mask], ls='',
+            axes.errorbar(data.x_plot[~mask], data.y[~mask], data.dy[~mask], ls='',
                           marker=marker, ms=8, picker=5, mfc='white', mec=color,
                           label='')
         if not multi:
@@ -87,29 +98,34 @@ class DataPlotter(object):
     def plot_model_full(self, model, data, labels=True, paramvalues=None, **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = linspace(data.x[0], data.x[-1], 1000)
+        xx = multi_linspace(data.x[0], data.x[-1], model.nsamples or len(data.x))
+        xxp = linspace(data.x_plot[0], data.x_plot[-1], model.nsamples or len(data.x))
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xx, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
+        self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
         for comp in model.get_components():
+            if comp is model:
+                continue
             yy = comp.fcn(paramvalues, xx)
-            self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
+            self.axes.plot(xxp, yy, '-.', label=labels and comp.name or '',
                            **kw)
 
     def plot_model(self, model, data, labels=True, paramvalues=None, **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = linspace(data.x[0], data.x[-1], 1000)
+        xx = multi_linspace(data.x[0], data.x[-1], model.nsamples or len(data.x))
+        xxp = linspace(data.x_plot[0], data.x_plot[-1], model.nsamples or len(data.x))
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xx, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
+        self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
 
     def plot_model_components(self, model, data, labels=True, paramvalues=None,
                               **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = linspace(data.x[0], data.x[-1], 1000)
+        xx = multi_linspace(data.x[0], data.x[-1], model.nsamples or len(data.x))
+        xxp = linspace(data.x_plot[0], data.x_plot[-1], model.nsamples or len(data.x))
         for comp in model.get_components():
             yy = comp.fcn(paramvalues, xx)
-            self.axes.plot(xx, yy, '-.', label=labels and comp.name or '',
+            self.axes.plot(xxp, yy, '-.', label=labels and comp.name or '',
                            **kw)
 
     def plot_params(self, params, chisqr):
