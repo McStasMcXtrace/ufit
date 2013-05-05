@@ -12,11 +12,13 @@ neutrons.instruments.tas.tasres from the neutrons Python package, compiled by
 Marc Janoschek.
 """
 
+import multiprocessing
+
 from numpy import pi, radians, degrees, sin, cos, tan, arcsin, arccos, \
      arctan2, abs, sqrt, real, matrix, diag, cross, dot, array, arange, \
      zeros, concatenate, reshape, delete, exp
-from numpy.linalg import inv, det, eig, norm
 from numpy.random import randn
+from numpy.linalg import inv, det, eig, norm
 
 
 class unitcell(object):
@@ -995,6 +997,27 @@ def ellipse_coords(a, b, phi):
     x = th
     return x, y
 
+def single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected):
+    xp = zeros((4, NMC))
+    xp[0,:] = sigma[0]*randn(NMC)
+    xp[1,:] = sigma[1]*randn(NMC)
+    xp[2,:] = sigma[2]*randn(NMC)
+    xp[3,:] = sigma[3]*randn(NMC)
+    XMC = reshape(b_mat[0:16], (4, 4)).transpose() * xp
+    XMC = XMC.getA()  # make an array from the matrix
+
+    qh = XMC[0] + QE[0]
+    qk = XMC[1] + QE[1]
+    ql = XMC[2] + QE[2]
+    w  = XMC[3] + QE[3]
+
+    # QE is provided to sqw function in case center of resolution
+    # is needed for further calculations
+    mc_intens = sqw(qh, qk, ql, w, QE, sigma, *fit_par)
+    return R0_corrected * mc_intens.mean()
+
+
+pool = multiprocessing.Pool(2)
 
 def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """Calculates intensity of point in reciprocal space (qh,qk,ql,en) at takes
@@ -1003,6 +1026,7 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """
     intensity = zeros(len(x))
     j = 0
+
     for QE in x:
         QE = tuple(QE)
         if QE in resmat._cache and use_caching:
@@ -1018,23 +1042,9 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
             b_mat = resmat.b_mat[0:16]
             R0_corrected = resmat.R0_corrected
             resmat._cache[QE] = b_mat, sigma, R0_corrected
-        xp = zeros((4, NMC))
-        xp[0,:] = sigma[0]*randn(NMC)
-        xp[1,:] = sigma[1]*randn(NMC)
-        xp[2,:] = sigma[2]*randn(NMC)
-        xp[3,:] = sigma[3]*randn(NMC)
-        XMC = reshape(b_mat[0:16], (4, 4)).transpose() * xp
-        XMC = XMC.getA()  # make an array from the matrix
-
-        qh = XMC[0] + QE[0]
-        qk = XMC[1] + QE[1]
-        ql = XMC[2] + QE[2]
-        w  = XMC[3] + QE[3]
-
-        # QE is provided to sqw function in case center of resolution
-        # is needed for further calculations
-        mc_intens = sqw(qh, qk, ql, w, QE, sigma, *fit_par)
-        intensity[j] = R0_corrected * mc_intens.mean()
+        intensity[j] = pool.apply(single_mc, (NMC, sqw, fit_par, QE, b_mat,
+                                              sigma, R0_corrected))
+#        intensity[j] = single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected)
         j += 1
 
     return intensity
