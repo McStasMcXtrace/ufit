@@ -112,4 +112,6 @@ def read_data(filename, fp):
         meta['environment'].append('T = %.3f K' % meta['sT'])
     if 'B' in cols:
         meta['environment'].append('B = %.3f K' % meta['B'])
+    if colnames[3] == 'E':
+        meta['hkle'] = coldata[:,:4]
     return colnames, coldata, meta
