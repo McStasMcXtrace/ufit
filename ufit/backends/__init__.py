@@ -39,6 +39,14 @@ else:
     backend = lmfit
     available.append(lmfit)
 
+try:
+    from ufit.backends import unifit
+except ImportError:
+    raise
+    unifit = None
+else:
+    available.append(unifit)
+
 
 def set_backend(which):
     """Select a new backend for fitting."""
