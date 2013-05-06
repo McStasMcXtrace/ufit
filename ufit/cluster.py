@@ -18,7 +18,6 @@ import threading
 import cPickle as pickle
 from os import path
 from time import time
-from itertools import cycle
 
 import paramiko
 
@@ -31,62 +30,76 @@ def init_cluster():
         clusterlist.append(line.strip().split('@'))
     fp.close()
 
+
 class ClusterError(Exception):
     pass
 
+
 class Watcher(threading.Thread):
-    def __init__(self, client, cid, queue, jobnum):
+    def __init__(self, client, code, funcname, args, clientqueue, resultqueue, jobnum):
         self.client = client
-        self.cid = cid
-        self.queue = queue
+        self.code = code
+        self.args = args
+        self.funcname = funcname
+        self.clientqueue = clientqueue
+        self.resultqueue = resultqueue
         self.jobnum = jobnum
         threading.Thread.__init__(self)
 
     def run(self):
-        print '[C] executing command on client', self.cid
-        result = ClusterError('command execution failed')
         try:
+            sid = md5.new(str(time()) + str(self.args)).hexdigest()
+            print '[C] starting session on', self.client._host
+            code_footer = '''\nif __name__ == "__main__":
+            import cPickle as pickle
+            args = pickle.loads(%r)
+            print pickle.dumps(%s(*args))
+            ''' % (pickle.dumps(self.args), self.funcname)
+
+            codeio = StringIO.StringIO(self.code + code_footer)
+            sftp = self.client.open_sftp()
+            sftp.putfo(codeio, '/tmp/ufit_cluster_%s.py' % sid)
+
             stdin, stdout, stderr = \
                 self.client.exec_command('python /tmp/ufit_cluster_%s.py; '
-                                         'rm /tmp/ufit_cluster_%s.py' % (self.cid, self.cid))
+                                         'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
             try:
                 result = pickle.load(stdout)
             except Exception:
                 result = ClusterError(stderr.read())
-            print '[C] done on client %s: %r' % (self.cid, result)
+            print '[C] done on client %s: %r' % (sid, result)
+        except Exception, err:
+            result = ClusterError(str(err))
         finally:
-            self.queue.put((self.jobnum, result))
-            self.client.close()
+            self.resultqueue.put((self.jobnum, result))
+            self.clientqueue.put(self.client)
 
 def run_cluster(code, funcname, argumentslist):
-    hosts = cycle(clusterlist)
-    queue = Queue.Queue()
+    clients = []
+    clientqueue = Queue.Queue()
+    for user, host in clusterlist:
+        client = paramiko.SSHClient()
+        client._host = host
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(host, username=user, key_filename=keyname,
+                       look_for_keys=False)
+        clients.append(client)
+        clientqueue.put(client)
+    resultqueue = Queue.Queue()
     njobs = len(argumentslist)
     retval = [None] * njobs
     returns = 0
     for i, args in enumerate(argumentslist):
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        user, host = hosts.next()
-        cid = md5.new(host + str(time()) + str(args)).hexdigest()
-        print '[C] starting session on', host
-        client.connect(host, username=user, key_filename=keyname,
-                       look_for_keys=False)
-        code_footer = '''\nif __name__ == "__main__":
-        import cPickle as pickle
-        args = pickle.loads(%r)
-        print pickle.dumps(%s(*args))
-        ''' % (pickle.dumps(args), funcname)
-        codeio = StringIO.StringIO(code + code_footer)
-        sftp = client.open_sftp()
-        sftp.putfo(codeio, '/tmp/ufit_cluster_%s.py' % cid)
-        Watcher(client, cid, queue, i).start()
+        client = clientqueue.get()
+        Watcher(client, code, funcname, args, clientqueue, resultqueue, i).start()
     while returns < njobs:
-        jobnum, result = queue.get()
+        jobnum, result = resultqueue.get()
         if isinstance(result, Exception):
             raise result
         retval[jobnum] = result
         returns += 1
+    for cl in clients:
+        cl.close()
     return retval
 
 init_cluster()
