@@ -35,51 +35,41 @@ class ClusterError(Exception):
     pass
 
 
-class Watcher(threading.Thread):
-    def __init__(self, client, code, funcname, args, clientqueue, resultqueue, jobnum):
-        self.client = client
-        self.code = code
-        self.args = args
-        self.funcname = funcname
-        self.clientqueue = clientqueue
-        self.resultqueue = resultqueue
-        self.jobnum = jobnum
-        threading.Thread.__init__(self)
+def job_runner(client, code, funcname, args, clientqueue, resultqueue, jobnum):
+    try:
+        sid = md5.new(str(time()) + str(args)).hexdigest()
+        print '[C] starting job on', client._host
+        code_footer = '''\nif __name__ == "__main__":
+        import cPickle as pickle
+        args = pickle.loads(%r)
+        print pickle.dumps(%s(*args))
+        ''' % (pickle.dumps(args), funcname)
 
-    def run(self):
+        codeio = StringIO.StringIO(code + code_footer)
+        sftp = client.open_sftp()
+        sftp.putfo(codeio, '/tmp/ufit_cluster_%s.py' % sid)
+
+        stdin, stdout, stderr = \
+            client.exec_command('python /tmp/ufit_cluster_%s.py; '
+                                     'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
         try:
-            sid = md5.new(str(time()) + str(self.args)).hexdigest()
-            print '[C] starting session on', self.client._host
-            code_footer = '''\nif __name__ == "__main__":
-            import cPickle as pickle
-            args = pickle.loads(%r)
-            print pickle.dumps(%s(*args))
-            ''' % (pickle.dumps(self.args), self.funcname)
+            result = pickle.load(stdout)
+        except Exception:
+            result = ClusterError(stderr.read())
+        print '[C] done on %s: %r' % (client._host, result)
+    except Exception, err:
+        result = ClusterError(str(err))
+    finally:
+        resultqueue.put((jobnum, result))
+        clientqueue.put(client)
 
-            codeio = StringIO.StringIO(self.code + code_footer)
-            sftp = self.client.open_sftp()
-            sftp.putfo(codeio, '/tmp/ufit_cluster_%s.py' % sid)
-
-            stdin, stdout, stderr = \
-                self.client.exec_command('python /tmp/ufit_cluster_%s.py; '
-                                         'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
-            try:
-                result = pickle.load(stdout)
-            except Exception:
-                result = ClusterError(stderr.read())
-            print '[C] done on client %s: %r' % (sid, result)
-        except Exception, err:
-            result = ClusterError(str(err))
-        finally:
-            self.resultqueue.put((self.jobnum, result))
-            self.clientqueue.put(self.client)
 
 def run_cluster(code, funcname, argumentslist):
     clients = []
     clientqueue = Queue.Queue()
-    for user, host in clusterlist:
+    for i, (user, host) in enumerate(clusterlist):
         client = paramiko.SSHClient()
-        client._host = host
+        client._host = '%s[%d]' % (host, i)
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(host, username=user, key_filename=keyname,
                        look_for_keys=False)
@@ -91,7 +81,8 @@ def run_cluster(code, funcname, argumentslist):
     returns = 0
     for i, args in enumerate(argumentslist):
         client = clientqueue.get()
-        Watcher(client, code, funcname, args, clientqueue, resultqueue, i).start()
+        threading.Thread(target=job_runner,
+            args=(client, code, funcname, args, clientqueue, resultqueue, i)).start()
     while returns < njobs:
         jobnum, result = resultqueue.get()
         if isinstance(result, Exception):
