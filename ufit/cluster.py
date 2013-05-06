@@ -13,7 +13,6 @@ SSH transport.
 
 import md5
 import Queue
-import StringIO
 import threading
 import cPickle as pickle
 from os import path
@@ -46,9 +45,10 @@ def client_runner(client, task_queue, result_queue, code, funcname):
             print pickle.dumps(%s(*args))
             ''' % (pickle.dumps(args), funcname)
 
-            codeio = StringIO.StringIO(code + code_footer)
             sftp = client.open_sftp()
-            sftp.putfo(codeio, '/tmp/ufit_cluster_%s.py' % sid)
+            fobj = sftp.file('/tmp/ufit_cluster_%s.py' % sid, 'wb')
+            fobj.write(code + code_footer)
+            fobj.close()
 
             stdin, stdout, stderr = \
                 client.exec_command('python /tmp/ufit_cluster_%s.py; '
@@ -84,6 +84,7 @@ def run_cluster(code, funcname, argumentslist):
     for job in enumerate(argumentslist):
         task_queue.put(job)
     while returns < njobs:
+        # XXX check if any client is still running
         jobnum, result = result_queue.get()
         if isinstance(result, Exception):
             raise result
