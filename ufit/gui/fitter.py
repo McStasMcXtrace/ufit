@@ -27,7 +27,7 @@ def is_float(x):
 
 class Fitter(QWidget):
 
-    def __init__(self, parent, standalone=False, fit_kws=None):
+    def __init__(self, parent, standalone=False, fit_kws={}):
         QWidget.__init__(self, parent)
         self.picking = None
         self.last_result = None
@@ -272,7 +272,7 @@ class Fitter(QWidget):
 
 
 class FitterMain(QMainWindow):
-    def __init__(self, model, data, fit=True, fit_kws=None):
+    def __init__(self, model, data, fit=True, fit_kws={}):
         QMainWindow.__init__(self)
         layout = QSplitter(Qt.Vertical, self)
         self.canvas = MPLCanvas(self)
