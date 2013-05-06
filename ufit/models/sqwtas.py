@@ -11,7 +11,7 @@
 import time
 import inspect
 
-from ufit.rescalc import resmat, calc_MC, load_cfg, load_par
+from ufit.rescalc import resmat, calc_MC, calc_MC_cluster, load_cfg, load_par
 from ufit.models.base import Model
 
 __all__ = ['ConvolvedScatteringLaw']
@@ -25,6 +25,9 @@ class ConvolvedScatteringLaw(Model):
 
        sqw(h, k, l, E, QE0, Sigma, par0, par1, ...)
 
+    If the function is given as a string, it it taken as ``module:function``.
+    The calculation is then clustered using SSH and ufit.cluster.
+
     h,k,l,E are arrays of the Monte-Carlo point coordinates, QE0 is the center
     of the ellipse, Sigma are the ellipse widths around the center.  A constant
     background is always included as a parameter named "bkgd".
@@ -33,19 +36,34 @@ class ConvolvedScatteringLaw(Model):
     """
     nsamples = 0  # as many as there are datapoints
 
-    def __init__(self, sqw, instfiles, N=2000, name=None, **init):
-        self.name = name or sqw.__name__
+    def __init__(self, sqw, instfiles, N=2000, name=None, cluster=False, **init):
         self._N = N
-        self._sqw = sqw
+        self._cluster = False
+        if isinstance(sqw, str):
+            modname, funcname = sqw.split(':')
+            mod = __import__(modname)
+            code = open(mod.__file__.rstrip('c')).read()
+            self._sqwfunc = funcname
+            self._sqwcode = code
+            self._sqw = getattr(mod, funcname)
+            self.name = funcname
+            self._cluster = cluster
+        else:  # cannot cluster
+            self._sqw = sqw
+            self.name = name or sqw.__name__
         self._pvs = self._init_params(name,
-                                      ['bkgd'] + inspect.getargspec(sqw)[0][6:], init)
+            ['bkgd'] + inspect.getargspec(self._sqw)[0][6:], init)
         self._resmat = resmat(load_cfg(instfiles[0]), load_par(instfiles[1]))
 
     def fcn(self, p, x):
         parvalues = [p[pv] for pv in self._pvs]
         t1 = time.time()
         print 'Sqw: values = ', parvalues
-        res = calc_MC(x, parvalues[1:], self._sqw, self._resmat, self._N)
+        if self._cluster:
+            res = calc_MC_cluster(x, parvalues[1:], self._sqwcode, self._sqwfunc,
+                                  self._resmat, self._N)
+        else:
+            res = calc_MC(x, parvalues[1:], self._sqw, self._resmat, self._N)
         res += parvalues[0]  # background
         t2 = time.time()
         print 'Sqw: iteration = %.3f sec' % (t2-t1)

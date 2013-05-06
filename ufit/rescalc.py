@@ -1021,8 +1021,7 @@ def single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected):
     mc_intens = sqw(qh, qk, ql, w, QE, sigma, *fit_par)
     return R0_corrected * mc_intens.mean()
 
-
-pool = multiprocessing.Pool(2)
+pool = multiprocessing.Pool(1)
 
 def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """Calculates intensity of point in reciprocal space (qh,qk,ql,en) at takes
@@ -1040,6 +1039,7 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
                 print 'Scattering triangle will not close for point: ' \
                     'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
                 print 'Attention: Intensity is therefore equal to zero at this point!'
+                # XXX will return a shorter list
                 continue
             sigma = resmat.calcSigma()
             b_mat = resmat.b_mat[0:16]
@@ -1051,6 +1051,53 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
                                                     sigma, R0_corrected)))
     return array([res.get() for res in results])
     #return array(results)
+
+single_mc_cluster_code = '''
+from numpy import zeros, reshape
+from numpy.random import randn
+def single_mc(NMC, fit_par, QE, b_mat, sigma, R0_corrected):
+    xp = zeros((4, NMC))
+    xp[0,:] = sigma[0]*randn(NMC)
+    xp[1,:] = sigma[1]*randn(NMC)
+    xp[2,:] = sigma[2]*randn(NMC)
+    xp[3,:] = sigma[3]*randn(NMC)
+    XMC = reshape(b_mat[0:16], (4, 4)).transpose() * xp
+    XMC = XMC.getA()  # make an array from the matrix
+
+    qh = XMC[0] + QE[0]
+    qk = XMC[1] + QE[1]
+    ql = XMC[2] + QE[2]
+    w  = XMC[3] + QE[3]
+
+    # QE is provided to sqw function in case center of resolution
+    # is needed for further calculations
+    mc_intens = __sqw(qh, qk, ql, w, QE, sigma, *fit_par)
+    return R0_corrected * mc_intens.mean()
+'''
+
+def calc_MC_cluster(x, fit_par, sqwcode, sqwfunc, resmat, NMC, use_caching=True):
+    """Version of calc_MC with clustering support."""
+    from ufit import cluster
+    args = []
+    for QE in x:
+        QE = tuple(QE)
+        if QE in resmat._cache and use_caching:
+            b_mat, sigma, R0_corrected = resmat._cache[QE]
+        else:
+            resmat.calcResEllipsoid(*QE)
+            if resmat.ERROR:
+                print 'Scattering triangle will not close for point: ' \
+                    'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
+                print 'Attention: Intensity is therefore equal to zero at this point!'
+                # XXX will return a shorter list
+                continue
+            sigma = resmat.calcSigma()
+            b_mat = resmat.b_mat[0:16]
+            R0_corrected = resmat.R0_corrected
+            resmat._cache[QE] = b_mat, sigma, R0_corrected
+        args.append((NMC, fit_par, QE, b_mat, sigma, R0_corrected))
+    code = sqwcode + '\n__sqw = %s\n' % sqwfunc + single_mc_cluster_code
+    return array(cluster.run_cluster(code, 'single_mc', args))
 
 
 def demosqw(qh, qk, ql, en, QE, sigma, scaling):
