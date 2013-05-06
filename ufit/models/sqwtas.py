@@ -34,10 +34,9 @@ class ConvolvedScatteringLaw(Model):
 
     *instfiles* must be ('instr.cfg', 'instr.par').
     """
-    nsamples = 0  # as many as there are datapoints
+    nsamples = -4  # as many as there are datapoints
 
-    def __init__(self, sqw, instfiles, N=2000, name=None, cluster=False, **init):
-        self._N = N
+    def __init__(self, sqw, instfiles, NMC=2000, name=None, cluster=False, **init):
         self._cluster = False
         if isinstance(sqw, str):
             modname, funcname = sqw.split(':')
@@ -51,8 +50,9 @@ class ConvolvedScatteringLaw(Model):
         else:  # cannot cluster
             self._sqw = sqw
             self.name = name or sqw.__name__
+        init['NMC'] = str(NMC)  # str() makes it a fixed parameter
         self._pvs = self._init_params(name,
-            ['bkgd'] + inspect.getargspec(self._sqw)[0][6:], init)
+            ['NMC', 'bkgd'] + inspect.getargspec(self._sqw)[0][6:], init)
         self._resmat = resmat(load_cfg(instfiles[0]), load_par(instfiles[1]))
 
     def fcn(self, p, x):
@@ -60,11 +60,11 @@ class ConvolvedScatteringLaw(Model):
         t1 = time.time()
         print 'Sqw: values = ', parvalues
         if self._cluster:
-            res = calc_MC_cluster(x, parvalues[1:], self._sqwcode, self._sqwfunc,
-                                  self._resmat, self._N)
+            res = calc_MC_cluster(x, parvalues[2:], self._sqwcode, self._sqwfunc,
+                                  self._resmat, parvalues[0])
         else:
-            res = calc_MC(x, parvalues[1:], self._sqw, self._resmat, self._N)
-        res += parvalues[0]  # background
+            res = calc_MC(x, parvalues[2:], self._sqw, self._resmat, parvalues[0])
+        res += parvalues[1]  # background
         t2 = time.time()
         print 'Sqw: iteration = %.3f sec' % (t2-t1)
         return res
