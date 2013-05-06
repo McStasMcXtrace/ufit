@@ -33,7 +33,7 @@ class ConvolvedScatteringLaw(Model):
     """
     nsamples = 0  # as many as there are datapoints
 
-    def __init__(self, sqw, instfiles, N=500, name=None, **init):
+    def __init__(self, sqw, instfiles, N=2000, name=None, **init):
         self.name = name or sqw.__name__
         self._N = N
         self._sqw = sqw
@@ -43,10 +43,10 @@ class ConvolvedScatteringLaw(Model):
 
     def fcn(self, p, x):
         parvalues = [p[pv] for pv in self._pvs]
-        #t1 = time.time()
-        #print 'Sqw: values = ', parvalues
+        t1 = time.time()
+        print 'Sqw: values = ', parvalues
         res = calc_MC(x, parvalues[1:], self._sqw, self._resmat, self._N)
         res += parvalues[0]  # background
-        #t2 = time.time()
-        #print 'Sqw: iteration = %.3f sec' % (t2-t1)
+        t2 = time.time()
+        print 'Sqw: iteration = %.3f sec' % (t2-t1)
         return res

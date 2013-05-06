@@ -129,6 +129,8 @@ class Loader(object):
         * ``+`` - merge single files
         * ``>`` - merge sequential files
         """
+        if not isinstance(binsize, (int, float)):
+            raise UFitError('binsize argument must be a number')
         def toint(a):
             try:
                 return int(a)

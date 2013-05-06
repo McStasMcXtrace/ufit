@@ -38,7 +38,7 @@ def do_fit(data, fcn, params, add_kw):
     warned = False
     for p in varying:
         initpars.append(p.value)
-        initdp.append(p.delta or p.value/1. or 0.01)
+        initdp.append(p.delta or p.value/10. or 0.01)
         if (p.pmin is not None or p.pmax is not None) and not warned:
             print 'Sorry, unifit backend cannot handle parameter bounds.'
             warned = True
@@ -180,7 +180,7 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
     if mode == 'print':
         print('=> performing fit! (max %i iterations)' % niter)
         print('=> start value for residual variance = %10.3f' % (sbest/len(y)))
-        print('=> using least-squares algorithem!')
+        print('=> using least-squares algorithm!')
         print('Iteration  Time(s)  Residual Variance')
         print('=====================================')
 

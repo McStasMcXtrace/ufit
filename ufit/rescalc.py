@@ -1010,6 +1010,11 @@ def single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected):
     qk = XMC[1] + QE[1]
     ql = XMC[2] + QE[2]
     w  = XMC[3] + QE[3]
+    #from numpy import ones
+    #qh = QE[0]*ones(NMC)
+    #qk = QE[1]*ones(NMC)
+    #ql = QE[2]*ones(NMC)
+    #w  = QE[3]*ones(NMC)
 
     # QE is provided to sqw function in case center of resolution
     # is needed for further calculations
@@ -1040,9 +1045,12 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
             b_mat = resmat.b_mat[0:16]
             R0_corrected = resmat.R0_corrected
             resmat._cache[QE] = b_mat, sigma, R0_corrected
+        #results.append(single_mc(NMC, sqw, fit_par, QE, b_mat,
+        #                                            sigma, R0_corrected))
         results.append(pool.apply_async(single_mc, (NMC, sqw, fit_par, QE, b_mat,
                                                     sigma, R0_corrected)))
     return array([res.get() for res in results])
+    #return array(results)
 
 
 def demosqw(qh, qk, ql, en, QE, sigma, scaling):

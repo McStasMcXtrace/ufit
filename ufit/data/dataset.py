@@ -66,8 +66,16 @@ class Dataset(object):
 
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
+        multix = False
+        if len(x.shape) > 1:
+            multix = True
+            xorig = x
+            x = x[:,0]
         data = array(broadcast_arrays(x, y, dy)).T
-        return cls(meta or {}, data, xcol, ycol, name=name)
+        ret = cls(meta or {}, data, xcol, ycol, name=name)
+        if multix:
+            ret.x = xorig
+        return ret
 
     def reset_mask(self):
         # points with mask = False are masked out
