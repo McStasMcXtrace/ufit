@@ -1030,7 +1030,7 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """
     global pool
     if pool is None:
-        pool = multiprocessing.Pool(2)
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
     results = []
     for QE in x:
         QE = tuple(QE)
