@@ -94,11 +94,16 @@ class DataPlotter(object):
             self.toolbar.update()
         return color
 
+    def _get_samples(self, model, data):
+        if model.nsamples < 0:
+            return len(data.x) * (-model.nsamples)
+        return model.nsamples
+
     def plot_model_full(self, model, data, labels=True, paramvalues=None, **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = multi_linspace(data.x[0], data.x[-1], model.nsamples or len(data.x))
-        xxp = linspace(data.x_plot[0], data.x_plot[-1], model.nsamples or len(data.x))
+        xx = multi_linspace(data.x[0], data.x[-1], self._get_samples(model, data))
+        xxp = linspace(data.x_plot[0], data.x_plot[-1], self._get_samples(model, data))
         yy = model.fcn(paramvalues, xx)
         self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
         for comp in model.get_components():
@@ -111,8 +116,8 @@ class DataPlotter(object):
     def plot_model(self, model, data, labels=True, paramvalues=None, **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = multi_linspace(data.x[0], data.x[-1], model.nsamples or len(data.x))
-        xxp = linspace(data.x_plot[0], data.x_plot[-1], model.nsamples or len(data.x))
+        xx = multi_linspace(data.x[0], data.x[-1], self._get_samples(model, data))
+        xxp = linspace(data.x_plot[0], data.x_plot[-1], self._get_samples(model, data))
         yy = model.fcn(paramvalues, xx)
         self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
 
@@ -120,8 +125,8 @@ class DataPlotter(object):
                               **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = multi_linspace(data.x[0], data.x[-1], model.nsamples or len(data.x))
-        xxp = linspace(data.x_plot[0], data.x_plot[-1], model.nsamples or len(data.x))
+        xx = multi_linspace(data.x[0], data.x[-1], self._get_samples(model, data))
+        xxp = linspace(data.x_plot[0], data.x_plot[-1], self._get_samples(model, data))
         for comp in model.get_components():
             yy = comp.fcn(paramvalues, xx)
             self.axes.plot(xxp, yy, '-.', label=labels and comp.name or '',
