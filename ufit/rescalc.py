@@ -1021,13 +1021,16 @@ def single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected):
     mc_intens = sqw(qh, qk, ql, w, QE, sigma, *fit_par)
     return R0_corrected * mc_intens.mean()
 
-pool = multiprocessing.Pool(2)
+pool = None
 
 def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """Calculates intensity of point in reciprocal space (qh,qk,ql,en) at takes
     into account the spectrometer resolution calculated by resolution class
     resmat (which uses the Popovici algorithm to do so).
     """
+    global pool
+    if pool is None:
+        pool = multiprocessing.Pool(2)
     results = []
     for QE in x:
         QE = tuple(QE)

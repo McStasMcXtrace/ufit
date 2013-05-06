@@ -31,74 +31,66 @@ def init_cluster():
     fp.close()
 
 
-class ClusterError(Exception):
-    pass
-
-
-class Watcher(threading.Thread):
-    def __init__(self, client, code, funcname, args, clientqueue, resultqueue, jobnum):
-        self.client = client
-        self.code = code
-        self.args = args
-        self.funcname = funcname
-        self.clientqueue = clientqueue
-        self.resultqueue = resultqueue
-        self.jobnum = jobnum
-        threading.Thread.__init__(self)
-
-    def run(self):
+def client_runner(client, task_queue, result_queue, code, funcname):
+    while True:
+        jobnum, args = task_queue.get()
+        if jobnum == -1:
+            print '[C] exiting runner for %s' % client._host
+            return
         try:
-            sid = md5.new(str(time()) + str(self.args)).hexdigest()
-            print '[C] starting session on', self.client._host
+            sid = md5.new(str(time()) + str(args)).hexdigest()
+            print '[C] starting session on %s, job %s' % (client._host, sid)
             code_footer = '''\nif __name__ == "__main__":
             import cPickle as pickle
             args = pickle.loads(%r)
             print pickle.dumps(%s(*args))
-            ''' % (pickle.dumps(self.args), self.funcname)
+            ''' % (pickle.dumps(args), funcname)
 
-            codeio = StringIO.StringIO(self.code + code_footer)
-            sftp = self.client.open_sftp()
+            codeio = StringIO.StringIO(code + code_footer)
+            sftp = client.open_sftp()
             sftp.putfo(codeio, '/tmp/ufit_cluster_%s.py' % sid)
 
             stdin, stdout, stderr = \
-                self.client.exec_command('python /tmp/ufit_cluster_%s.py; '
-                                         'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
-            try:
-                result = pickle.load(stdout)
-            except Exception:
-                result = ClusterError(stderr.read())
-            print '[C] done on client %s: %r' % (sid, result)
+                client.exec_command('python /tmp/ufit_cluster_%s.py; '
+                                    'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
+            result = pickle.load(stdout)
+            print '[C] done on job %s: %r' % (sid, result)
+            result_queue.put((jobnum, result))
         except Exception, err:
-            result = ClusterError(str(err))
-        finally:
-            self.resultqueue.put((self.jobnum, result))
-            self.clientqueue.put(self.client)
+            print '[C] no result on %s, requeuing: %r' % (client._host, err)
+            task_queue.put((jobnum, args))
+            return
+
 
 def run_cluster(code, funcname, argumentslist):
     clients = []
-    clientqueue = Queue.Queue()
-    for user, host in clusterlist:
+    runners = []
+    task_queue = Queue.Queue()
+    result_queue = Queue.Queue()
+    for i, (user, host) in enumerate(clusterlist):
         client = paramiko.SSHClient()
-        client._host = host
+        client._host = '%s[%d]' % (host, i)
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(host, username=user, key_filename=keyname,
                        look_for_keys=False)
         clients.append(client)
-        clientqueue.put(client)
-    resultqueue = Queue.Queue()
+        runner = threading.Thread(target=client_runner,
+            args=(client, task_queue, result_queue, code, funcname))
+        runners.append(runner)
+        runner.start()
     njobs = len(argumentslist)
     retval = [None] * njobs
     returns = 0
-    for i, args in enumerate(argumentslist):
-        client = clientqueue.get()
-        Watcher(client, code, funcname, args, clientqueue, resultqueue, i).start()
+    for job in enumerate(argumentslist):
+        task_queue.put(job)
     while returns < njobs:
-        jobnum, result = resultqueue.get()
+        jobnum, result = result_queue.get()
         if isinstance(result, Exception):
             raise result
         retval[jobnum] = result
         returns += 1
     for cl in clients:
+        task_queue.put((-1, None))  # end!
         cl.close()
     return retval
 
