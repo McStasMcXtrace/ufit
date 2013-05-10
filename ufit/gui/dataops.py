@@ -38,6 +38,9 @@ class DataOps(QWidget):
         if self.data.fitmax is not None:
             self.limitmax.setText('%.5g' % self.data.fitmax)
         self.monscale.setText(str(self.data.nscale))
+        # XXX fix this mess (title, name, environment, sources, ...)
+        self.datatitle.setText(self.data.meta.get('title', ''))
+        self.nameEdit.setText(self.data.name or '')
 
     def on_canvas_pick(self, event):
         if not hasattr(event, 'artist'):
@@ -156,6 +159,7 @@ class DataOps(QWidget):
         self.data.norm = self.data.norm_raw / const
         self.data.y = self.data.y_raw/self.data.norm
         self.data.dy = sqrt(self.data.y_raw)/self.data.norm
+        self.data.yaxis = self.data.ycol + ' / %s %s' % (const, self.data.ncol)
         self.emit(SIGNAL('replotRequest'), None)
         self.emit(SIGNAL('dirty'))
 
@@ -164,6 +168,13 @@ class DataOps(QWidget):
         self.data.meta.title = str(self.datatitle.text())
         self.emit(SIGNAL('titleChanged'))
         self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_nameBtn_clicked(self):
+        self.data.name = str(self.nameEdit.text())
+        self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), None)
 
 
 class MultiDataOps(QWidget):
