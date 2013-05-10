@@ -149,7 +149,8 @@ into one set, as well as files 23 and 24.
         else:
             self.plotter.reset()
             for data in datas:
-                self.plotter.plot_data(data)
+                self.plotter.plot_data(data, multi=True)
+            self.plotter.plot_finish()
             self.plotter.draw()
 
     def initialize(self):

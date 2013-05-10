@@ -276,6 +276,7 @@ class UFitMain(QMainWindow):
             c = self.canvas.plotter.plot_data(p.data, multi=True)
             self.canvas.plotter.plot_model(p.model, p.data, labels=False,
                                            color=c)
+        self.canvas.plotter.plot_finish()
         self.canvas.draw()
 
     def handle_new_data(self, data, update=True, model=None):

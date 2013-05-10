@@ -80,11 +80,18 @@ class DataPlotter(object):
                 axes.axvline(data.fitmin, ls='-', color='gray')
             if data.fitmax is not None:
                 axes.axvline(data.fitmax, ls='-', color='grey')
-        axes.set_title('%s\n%s' % (data.meta.get('title', ''),
-                                   data.meta.get('info', '')),
-                       size='medium')
-        axes.set_xlabel(data.xaxis)
-        axes.set_ylabel(data.yaxis)
+            axes.set_title('%s\n%s' % (data.meta.get('title', ''),
+                                       data.meta.get('info', '')),
+                           size='medium')
+            self.plot_finish(data.xaxis, data.yaxis)
+        return color
+
+    def plot_finish(self, xlabel=None, ylabel=None):
+        axes = self.axes
+        if xlabel is not None:
+            axes.set_xlabel(xlabel)
+        if ylabel is not None:
+            axes.set_ylabel(ylabel)
         axes.legend(prop={'size': 'small'})
         axes.grid(True)
         if self._limits:
@@ -92,7 +99,6 @@ class DataPlotter(object):
             axes.set_ylim(*self._limits[1])
         if self.toolbar:
             self.toolbar.update()
-        return color
 
     def _get_samples(self, model, data):
         if model.nsamples < 0:
