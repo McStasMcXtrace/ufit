@@ -8,7 +8,6 @@
 
 """Data loader panel."""
 
-import re
 from os import path
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
@@ -16,10 +15,9 @@ from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
      QMainWindow, QSplitter, QApplication
 
 from ufit.data import data_formats, Loader
+from ufit.utils import extract_template
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
-
-numor_re = re.compile(r'\d+')
 
 class DataLoader(QWidget):
 
@@ -84,23 +82,14 @@ into one set, as well as files 23 and 24.
         self.set_template(fn)
 
     def set_template(self, fn):
-        bn = path.basename(fn)
-        dn = path.dirname(fn)
-        m = list(numor_re.finditer(bn))
-        if not m:
-            dtempl = fn
-            numor = 0
-        else:
-            b, e = m[-1].span()
-            dtempl = path.join(dn, bn[:b] + '%%0%dd' % (e-b) + bn[e:])
-            numor = int(m[-1].group())
+        dtempl, numor = extract_template(fn)
         self.datatemplate.setText(dtempl)
         self.loader.template = dtempl
         try:
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            raise
+            #raise
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return

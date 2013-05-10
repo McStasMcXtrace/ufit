@@ -8,6 +8,9 @@
 
 """Utility functions and classes."""
 
+import re
+from os import path
+
 
 def get_chisqr(fcn, x, y, dy, params):
     paramvalues = dict((p.name, p.value) for p in params)
@@ -54,3 +57,19 @@ class cached_property(object):
             value = self.func(obj)
             obj.__dict__[self.__name__] = value
         return value
+
+
+numor_re = re.compile(r'\d+')
+
+def extract_template(fn):
+    bn = path.basename(fn)
+    dn = path.dirname(fn)
+    m = list(numor_re.finditer(bn))
+    if not m:
+        dtempl = fn
+        numor = 0
+    else:
+        b, e = m[-1].span()
+        dtempl = path.join(dn, bn[:b] + '%%0%dd' % (e-b) + bn[e:])
+        numor = int(m[-1].group())
+    return dtempl, numor
