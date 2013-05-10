@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>486</width>
-    <height>474</height>
+    <height>485</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,20 @@
      <property name="verticalSpacing">
       <number>10</number>
      </property>
+     <item row="12" column="1">
+      <widget class="QPushButton" name="globalfitBtn">
+       <property name="text">
+        <string>Global fit</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="3">
+      <widget class="QPushButton" name="mappingBtn">
+       <property name="text">
+        <string>Make mapping</string>
+       </property>
+      </widget>
+     </item>
      <item row="9" column="1" colspan="2">
       <widget class="QComboBox" name="onemodel"/>
      </item>
@@ -92,13 +106,6 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="3">
-      <widget class="QPushButton" name="globalfitBtn">
-       <property name="text">
-        <string>Start</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label">
        <property name="sizePolicy">
@@ -109,13 +116,6 @@
        </property>
        <property name="text">
         <string>Add a constant:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Global fit:</string>
        </property>
       </widget>
      </item>
@@ -241,6 +241,13 @@
        </property>
       </widget>
      </item>
+     <item row="10" column="0" colspan="4">
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -269,7 +276,6 @@
   <tabstop>shiftBtn</tabstop>
   <tabstop>monscale</tabstop>
   <tabstop>monscaleBtn</tabstop>
-  <tabstop>globalfitBtn</tabstop>
  </tabstops>
  <resources/>
  <connections/>

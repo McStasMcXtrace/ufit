@@ -11,9 +11,10 @@
 from numpy import sqrt, mean
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QWidget
+from PyQt4.QtGui import QWidget, QDialog, QMainWindow
 
 from ufit.gui.common import loadUi
+from ufit.gui.mapping import MappingWindow
 from ufit.data.merge import rebin
 
 
@@ -45,7 +46,8 @@ class DataOps(QWidget):
             ydata = event.artist.get_ydata()[event.ind]
             self.picked_points.append(xdata)
             self.pickedlabel.setText('%d picked' % len(self.picked_points))
-            event.canvas.figure.gca().plot([xdata], [ydata], 'ow', ms=8, mec='blue')
+            event.canvas.figure.gca().plot([xdata], [ydata], 'ow', ms=8,
+                                           mec='blue')
             event.canvas.draw()
 
     @qtsig('')
@@ -259,3 +261,9 @@ class MultiDataOps(QWidget):
             panel.handle_new_model(model.copy(), keep_paramvalues=False)
         self.emit(SIGNAL('replotRequest'), None)
         self.emit(SIGNAL('dirty'))
+
+    @qtsig('')
+    def on_mappingBtn_clicked(self):
+        wnd = MappingWindow(self)
+        wnd.set_datas([panel.data for panel in self.panels])
+        wnd.show()
