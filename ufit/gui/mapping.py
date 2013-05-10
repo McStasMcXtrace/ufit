@@ -61,6 +61,9 @@ class MappingWindow(QMainWindow):
         plot_mapping(xaxis, yaxis, self.datas,
                      minmax=(zmin, zmax),
                      yscale=yscale,
+                     usemask=self.usemaskBox.isChecked(),
+                     interpolate=self.stepBox.value(),
+                     mat=not self.contourBox.isChecked(),
                      log=self.logBox.isChecked(),
                      dots=self.dotsBox.isChecked(),
                      figure=self.canvas.figure)

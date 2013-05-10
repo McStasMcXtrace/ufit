@@ -162,21 +162,30 @@ class DataPlotter(object):
 
 
 def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
-            xscale=1, yscale=1, interpolate=100, figure=None):
+            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None):
     from scipy.interpolate import griddata as griddata_sp
     if figure is None:
         figure = pl.gcf()
     figure.clf()
     axes = figure.gca()
-    xss = array(list(flatten(run['col_'+x] for run in runs))) * xscale
-    yss = array(list(flatten(run['col_'+y] for run in runs))) * yscale
-    if log:
-        zss = list(flatten(np.log(run.y) for run in runs))
+    if usemask:
+        xss = array(list(flatten(run['col_'+x][run.mask] for run in runs))) * xscale
+        yss = array(list(flatten(run['col_'+y][run.mask] for run in runs))) * yscale
+        if log:
+            zss = list(flatten(np.log10(run.y)[run.mask] for run in runs))
+        else:
+            zss = list(flatten(run.y[run.mask] for run in runs))
     else:
-        zss = list(flatten(run.y for run in runs))
+        # XXX duplication
+        xss = array(list(flatten(run['col_'+x] for run in runs))) * xscale
+        yss = array(list(flatten(run['col_'+y] for run in runs))) * yscale
+        if log:
+            zss = list(flatten(np.log10(run.y) for run in runs))
+        else:
+            zss = list(flatten(run.y for run in runs))
     if minmax is not None:
         if log:
-            minmax = map(np.log, minmax)
+            minmax = map(np.log10, minmax)
         zss = clip(zss, minmax[0], minmax[1])
     interpolate = interpolate * 1j
     xi, yi = mgrid[min(xss):max(xss):interpolate,
@@ -187,6 +196,8 @@ def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
                          extent=(xi[0][0], xi[-1][-1], yi[-1][-1], yi[0][0]))
     else:
         im = axes.contourf(xi, yi, zi, 20)
+    axes.set_xlabel(x)
+    axes.set_ylabel(y)
     figure.colorbar(im)
     if dots:
         axes.scatter(xss, yss, 0.5)
