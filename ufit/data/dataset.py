@@ -23,6 +23,10 @@ class Dataset(object):
         self.meta = attrdict(meta)
         self.name = name or str(self.meta.filenumber)
         self.sources = sources or [getattr(self, 'filedesc', '')]
+        if 'title' not in meta:
+            self.meta.title = self.name
+        if 'environment' not in meta:
+            self.meta.environment = ''
         self._data = data
 
         self.xcol = self.xaxis = xcol
@@ -72,8 +76,6 @@ class Dataset(object):
             xorig = x
             x = x[:,0]
         data = array(broadcast_arrays(x, y, dy)).T
-        if not meta:
-            meta = {'environment': '', 'title': ''}
         ret = cls(meta or {}, data, xcol, ycol, name=name)
         if multix:
             ret.x = xorig
