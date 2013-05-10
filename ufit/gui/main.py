@@ -123,6 +123,11 @@ class DatasetPanel(QTabWidget):
             return
         self.canvas.draw()
 
+    def export_python(self, fp):
+        fp.write('from ufit.lab import *\n')
+        self.data.export_python(fp)
+        self.model.export_python(fp)
+
 
 class UFitMain(QMainWindow):
     def __init__(self):
@@ -305,6 +310,38 @@ class UFitMain(QMainWindow):
     def on_actionDrawSymbols_toggled(self, on):
         self.canvas.plotter.symbols = on
         # XXX replot
+
+    @qtsig('')
+    def on_actionExportASCII_triggered(self):
+        if self.filename:
+            initialdir = path.dirname(self.filename)
+        else:
+            initialdir = ''
+        filename = QFileDialog.getSaveFileName(
+            self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
+        if filename == '':
+            return False
+        expfilename = unicode(filename).encode(sys.getfilesystemencoding())
+        with open(expfilename, 'wb') as fp:
+            self.current_panel.data.export_ascii(fp)
+
+    @qtsig('')
+    def on_actionExportParams_triggered(self):
+        QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
+
+    @qtsig('')
+    def on_actionExportPython_triggered(self):
+        if self.filename:
+            initialdir = path.dirname(self.filename)
+        else:
+            initialdir = ''
+        filename = QFileDialog.getSaveFileName(
+            self, 'Select export file name', initialdir, 'Python files (*.py)')
+        if filename == '':
+            return False
+        expfilename = unicode(filename).encode(sys.getfilesystemencoding())
+        with open(expfilename, 'wb') as fp:
+            self.current_panel.export_python(fp)
 
     @qtsig('')
     def on_actionPrint_triggered(self):

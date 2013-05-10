@@ -10,7 +10,7 @@
 
 import copy
 
-from numpy import array, concatenate, ones, broadcast_arrays
+from numpy import array, concatenate, ones, broadcast_arrays, savetxt
 
 from ufit.utils import attrdict
 from ufit.data.merge import rebin
@@ -141,6 +141,9 @@ class Dataset(object):
         dp.symbols = symbols
         dp.lines = lines
         dp.plot_data(self)
+
+    def export_ascii(self, fp):
+        savetxt(fp, array([self.x, self.y, self.dy]).T)
 
 
 class DataList(dict):

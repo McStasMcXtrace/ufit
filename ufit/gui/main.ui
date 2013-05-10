@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>289</width>
+    <width>364</width>
     <height>600</height>
    </rect>
   </property>
@@ -46,11 +46,6 @@
             <property name="text">
              <string>Load new data</string>
             </property>
-            <property name="icon">
-             <iconset theme="list-add">
-              <normaloff/>
-             </iconset>
-            </property>
            </widget>
           </item>
           <item>
@@ -64,11 +59,6 @@
            <widget class="QPushButton" name="removeBtn">
             <property name="text">
              <string>Remove selected</string>
-            </property>
-            <property name="icon">
-             <iconset theme="edit-delete">
-              <normaloff/>
-             </iconset>
             </property>
            </widget>
           </item>
@@ -99,8 +89,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>289</width>
-     <height>21</height>
+     <width>364</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -109,6 +99,10 @@
     </property>
     <addaction name="actionLoadData"/>
     <addaction name="actionPrint"/>
+    <addaction name="separator"/>
+    <addaction name="actionExportASCII"/>
+    <addaction name="actionExportParams"/>
+    <addaction name="actionExportPython"/>
     <addaction name="separator"/>
     <addaction name="actionLoad"/>
     <addaction name="actionSave"/>
@@ -254,6 +248,21 @@
    </property>
    <property name="text">
     <string>Print plot...</string>
+   </property>
+  </action>
+  <action name="actionExportASCII">
+   <property name="text">
+    <string>Export data as ASCII...</string>
+   </property>
+  </action>
+  <action name="actionExportPython">
+   <property name="text">
+    <string>Export as Python...</string>
+   </property>
+  </action>
+  <action name="actionExportParams">
+   <property name="text">
+    <string>Export parameters as ASCII...</string>
    </property>
   </action>
  </widget>
