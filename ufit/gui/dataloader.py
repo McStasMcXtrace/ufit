@@ -17,6 +17,7 @@ from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
 from ufit.data import data_formats, Loader
 from ufit.utils import extract_template
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
+from ufit.gui.browse import BrowseWindow
 
 
 class DataLoader(QWidget):
@@ -67,6 +68,12 @@ into one set, as well as files 23 and 24.
 * 10>15+23 merges files 10 through 15 and 23 into one single dataset.
 * 10,11,12+13,14 loads four sets.
 ''')
+
+    @qtsig('')
+    def on_browseBtn_clicked(self):
+        bwin = BrowseWindow(self)
+        bwin.set_template(str(self.datatemplate.text()))
+        bwin.show()
 
     @qtsig('')
     def on_settemplate_clicked(self):

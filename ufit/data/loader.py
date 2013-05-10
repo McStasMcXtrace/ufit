@@ -83,6 +83,8 @@ class Loader(object):
             ncol = colguess[3]
         if ncol is not None:
             datarr[:,3] = coldata[:,colindex(ncol)]
+            if nscale == -1:
+                nscale = int(float('%.2g' % datarr[:,3].mean()))
 
         def colname(col):
             if col is None:

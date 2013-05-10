@@ -7,9 +7,12 @@ GUI
 ===
 
 * add'l parameters
-* export plot as python script
+* export plot as python script / ipython notebook
+* sqwtas
+* mappings + 2dgauss fit?
 
 Bugs
 ====
 
+* str() -> unicode()
 * fix initial guess Y axis chaos
