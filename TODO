@@ -7,9 +7,12 @@ GUI
 ===
 
 * add'l parameters
-* export plot as python script / ipython notebook
+* export plot as python script / ipython notebook (?)
 * sqwtas
 * 2dgauss fit for mappings?
+* export parameters as ascii
+* save mappings in file
+* subtract datas
 
 Bugs
 ====
