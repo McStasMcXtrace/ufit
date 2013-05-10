@@ -155,25 +155,32 @@ class DataPlotter(object):
                        transform=self.axes.transAxes, family='Monospace')
 
 
-def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True, xscale=1, yscale=1):
+def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
+            xscale=1, yscale=1, interpolate=100, figure=None):
     from scipy.interpolate import griddata as griddata_sp
-    pl.clf()
-    xss = array(list(flatten(run['col_'+x] for run in runs)))*xscale
-    yss = array(list(flatten(run['col_'+y] for run in runs)))*yscale
+    if figure is None:
+        figure = pl.gcf()
+    figure.clf()
+    axes = figure.gca()
+    xss = array(list(flatten(run['col_'+x] for run in runs))) * xscale
+    yss = array(list(flatten(run['col_'+y] for run in runs))) * yscale
     if log:
         zss = list(flatten(np.log(run.y) for run in runs))
     else:
         zss = list(flatten(run.y for run in runs))
     if minmax is not None:
+        if log:
+            minmax = map(np.log, minmax)
         zss = clip(zss, minmax[0], minmax[1])
-    xi, yi = mgrid[min(xss):max(xss):100j,
-                   min(yss):max(yss):100j]
+    interpolate = interpolate * 1j
+    xi, yi = mgrid[min(xss):max(xss):interpolate,
+                   min(yss):max(yss):interpolate]
     zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
     if mat:
-        pl.imshow(zi.T, origin='lower', aspect='auto',
-                  extent=(xi[0][0], xi[-1][-1], yi[-1][-1], yi[0][0]))
+        im = axes.imshow(zi.T, origin='lower', aspect='auto',
+                         extent=(xi[0][0], xi[-1][-1], yi[-1][-1], yi[0][0]))
     else:
-        pl.contourf(xi, yi, zi, 20)
-    pl.colorbar()
+        im = axes.contourf(xi, yi, zi, 20)
+    figure.colorbar(im)
     if dots:
-        pl.scatter(xss, yss, 0.5)
+        axes.scatter(xss, yss, 0.5)
