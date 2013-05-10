@@ -26,7 +26,7 @@ def find_ui_files():
 
 setup(
     name = 'ufit',
-    version = '0.99.4',
+    version = '0.99.5',
     license = 'GPL',
     author = 'Georg Brandl',
     author_email = 'georg.brandl@frm2.tum.de',
