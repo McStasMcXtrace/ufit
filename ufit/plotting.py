@@ -108,8 +108,10 @@ class DataPlotter(object):
     def plot_model_full(self, model, data, labels=True, paramvalues=None, **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = multi_linspace(data.x[0], data.x[-1], self._get_samples(model, data))
-        xxp = linspace(data.x_plot[0], data.x_plot[-1], self._get_samples(model, data))
+        nsamples = self._get_samples(model, data)
+        imin, imax = data.x_plot.argmin(), data.x_plot.argmax()
+        xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
+        xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
         self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
         for comp in model.get_components():
@@ -122,8 +124,10 @@ class DataPlotter(object):
     def plot_model(self, model, data, labels=True, paramvalues=None, **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = multi_linspace(data.x[0], data.x[-1], self._get_samples(model, data))
-        xxp = linspace(data.x_plot[0], data.x_plot[-1], self._get_samples(model, data))
+        nsamples = self._get_samples(model, data)
+        imin, imax = data.x_plot.argmin(), data.x_plot.argmax()
+        xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
+        xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
         self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
 
@@ -131,8 +135,10 @@ class DataPlotter(object):
                               **kw):
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
-        xx = multi_linspace(data.x[0], data.x[-1], self._get_samples(model, data))
-        xxp = linspace(data.x_plot[0], data.x_plot[-1], self._get_samples(model, data))
+        nsamples = self._get_samples(model, data)
+        imin, imax = data.x_plot.argmin(), data.x_plot.argmax()
+        xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
+        xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         for comp in model.get_components():
             yy = comp.fcn(paramvalues, xx)
             self.axes.plot(xxp, yy, '-.', label=labels and comp.name or '',

@@ -20,7 +20,7 @@
       <item>
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Z limits;</string>
+         <string>Z limits:</string>
         </property>
        </widget>
       </item>

@@ -16,20 +16,21 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <property name="horizontalSpacing">
-      <number>5</number>
-     </property>
-     <property name="verticalSpacing">
-      <number>10</number>
-     </property>
-     <item row="12" column="1">
+     <item row="13" column="1">
       <widget class="QPushButton" name="globalfitBtn">
        <property name="text">
         <string>Global fit</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="3">
+     <item row="11" column="0" colspan="4">
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="3">
       <widget class="QPushButton" name="mappingBtn">
        <property name="text">
         <string>Make mapping</string>
@@ -241,10 +242,17 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0" colspan="4">
-      <widget class="Line" name="line_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+     <item row="10" column="3">
+      <widget class="QPushButton" name="paramsetBtn">
+       <property name="text">
+        <string>Do it</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0" colspan="2">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Create dataset from parameter(s):</string>
        </property>
       </widget>
      </item>
@@ -276,6 +284,13 @@
   <tabstop>shiftBtn</tabstop>
   <tabstop>monscale</tabstop>
   <tabstop>monscaleBtn</tabstop>
+  <tabstop>mergeprecision</tabstop>
+  <tabstop>mergeBtn</tabstop>
+  <tabstop>onemodel</tabstop>
+  <tabstop>onemodelBtn</tabstop>
+  <tabstop>paramsetBtn</tabstop>
+  <tabstop>globalfitBtn</tabstop>
+  <tabstop>mappingBtn</tabstop>
  </tabstops>
  <resources/>
  <connections/>

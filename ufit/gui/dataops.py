@@ -8,7 +8,7 @@
 
 """Data operations panel."""
 
-from numpy import sqrt, mean
+from numpy import sqrt, mean, array
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QMainWindow
@@ -16,6 +16,7 @@ from PyQt4.QtGui import QWidget, QDialog, QMainWindow
 from ufit.gui.common import loadUi
 from ufit.gui.mapping import MappingWindow
 from ufit.data.merge import rebin
+from ufit.data.dataset import Dataset
 
 
 class DataOps(QWidget):
@@ -263,7 +264,70 @@ class MultiDataOps(QWidget):
         self.emit(SIGNAL('dirty'))
 
     @qtsig('')
+    def on_paramsetBtn_clicked(self):
+        dlg = ParamSetDialog(self, self.panels)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        self.emit(SIGNAL('newData'), dlg.new_data)
+
+    @qtsig('')
     def on_mappingBtn_clicked(self):
         wnd = MappingWindow(self)
         wnd.set_datas([panel.data for panel in self.panels])
         wnd.show()
+
+
+class ParamSetDialog(QDialog):
+    def __init__(self, parent, panels):
+        QDialog.__init__(self, parent)
+        loadUi(self, 'paramset.ui')
+        self.new_data = None
+        self.panels = panels
+
+        allvalues = set()
+        for panel in panels:
+            if not panel.model or not panel.data:
+                return
+            values = set([p.name + ' (parameter)' for p in panel.model.params] +
+                         [mname + ' (from data)' for mname in panel.data.meta if
+                          not mname.startswith('col_')])
+            if not allvalues:
+                allvalues = values
+            else:
+                allvalues &= values
+
+        allvalues = sorted(allvalues)
+        self.xvalueBox.addItems(allvalues)
+        self.yvalueBox.addItems(allvalues)
+
+    def exec_(self):
+        res = QDialog.exec_(self)
+        if res != QDialog.Accepted:
+            return res
+        xx, yy, dy = [], [], []
+        xp = yp = False
+        xv = str(self.xvalueBox.currentText())
+        if xv.endswith(' (parameter)'):
+            xp = True
+        xv = xv[:-12]
+        yv = str(self.yvalueBox.currentText())
+        if yv.endswith(' (parameter)'):
+            yp = True
+        yv = yv[:-12]
+
+        for panel in self.panels:
+            if xp:
+                xx.append(panel.model.paramdict[xv].value)
+            else:
+                xx.append(panel.data.meta[xv])
+            if yp:
+                yy.append(panel.model.paramdict[yv].value)
+                dy.append(panel.model.paramdict[yv].error)
+            else:
+                yy.append(panel.data.meta[yv])
+                dy.append(1)
+        xx, yy, dy = map(array, [xx, yy, dy])
+
+        self.new_data = Dataset.from_arrays(str(self.nameBox.text()),
+                                            xx, yy, dy, xcol=xv, ycol=yv)
+        return res

@@ -72,6 +72,8 @@ class Dataset(object):
             xorig = x
             x = x[:,0]
         data = array(broadcast_arrays(x, y, dy)).T
+        if not meta:
+            meta = {'environment': ''}
         ret = cls(meta or {}, data, xcol, ycol, name=name)
         if multix:
             ret.x = xorig
