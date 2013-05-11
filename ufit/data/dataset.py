@@ -95,6 +95,10 @@ class Dataset(object):
             raise AttributeError(key)
         elif key in self.meta:
             return self.meta[key]
+        elif key == 'x_plot':
+            # backwards compatibility
+            self.x_plot = self.x
+            return self.x
         raise AttributeError('no such data column: %s' % key)
 
     def __getitem__(self, key):
