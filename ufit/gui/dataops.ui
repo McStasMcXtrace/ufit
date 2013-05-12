@@ -339,6 +339,12 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>titleEdit</tabstop>
+  <tabstop>titleBtn</tabstop>
+  <tabstop>nameEdit</tabstop>
+  <tabstop>nameBtn</tabstop>
+  <tabstop>cloneBtn</tabstop>
+  <tabstop>precisionEdit</tabstop>
   <tabstop>rebinBtn</tabstop>
   <tabstop>addConstEdit</tabstop>
   <tabstop>addBtn</tabstop>
@@ -348,6 +354,7 @@
   <tabstop>shiftBtn</tabstop>
   <tabstop>monscaleEdit</tabstop>
   <tabstop>monscaleBtn</tabstop>
+  <tabstop>subtractBtn</tabstop>
   <tabstop>badPointsBtn</tabstop>
   <tabstop>badResetBtn</tabstop>
   <tabstop>limitminEdit</tabstop>

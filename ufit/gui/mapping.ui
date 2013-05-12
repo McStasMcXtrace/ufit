@@ -220,11 +220,24 @@
      <x>0</x>
      <y>0</y>
      <width>877</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>xaxisBox</tabstop>
+  <tabstop>yaxisBox</tabstop>
+  <tabstop>dotsBox</tabstop>
+  <tabstop>scaleEdit</tabstop>
+  <tabstop>usemaskBox</tabstop>
+  <tabstop>stepBox</tabstop>
+  <tabstop>contourBox</tabstop>
+  <tabstop>zminEdit</tabstop>
+  <tabstop>zmaxEdit</tabstop>
+  <tabstop>logBox</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

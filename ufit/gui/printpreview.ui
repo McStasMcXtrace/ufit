@@ -50,6 +50,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>width</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

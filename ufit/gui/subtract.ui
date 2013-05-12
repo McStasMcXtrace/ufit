@@ -61,6 +61,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>setList</tabstop>
+  <tabstop>destructBox</tabstop>
+  <tabstop>precisionEdit</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

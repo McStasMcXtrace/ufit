@@ -287,7 +287,9 @@
   <tabstop>dycolBox</tabstop>
   <tabstop>moncolBox</tabstop>
   <tabstop>monscaleEdit</tabstop>
+  <tabstop>numorsEdit</tabstop>
   <tabstop>numorHelpBtn</tabstop>
+  <tabstop>precisionEdit</tabstop>
   <tabstop>browseBtn</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>

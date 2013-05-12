@@ -262,6 +262,7 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>precisionEdit</tabstop>
   <tabstop>rebinBtn</tabstop>
   <tabstop>addConstEdit</tabstop>
   <tabstop>addBtn</tabstop>
@@ -271,6 +272,7 @@
   <tabstop>shiftBtn</tabstop>
   <tabstop>monscaleEdit</tabstop>
   <tabstop>monscaleBtn</tabstop>
+  <tabstop>mergeEdit</tabstop>
   <tabstop>mergeBtn</tabstop>
   <tabstop>onemodelBox</tabstop>
   <tabstop>onemodelBtn</tabstop>

@@ -44,6 +44,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>precisionEdit</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
