@@ -352,7 +352,7 @@ class UFitMain(QMainWindow):
         self.canvas.print_figure(sio, format='svg')
         svg = QSvgRenderer(QByteArray(sio.getvalue()))
         sz = svg.defaultSize()
-        aspect = sz.width()/sz.height()
+        aspect = sz.width()/float(sz.height())
 
         if self.printer is None:
             self.printer = QPrinter(QPrinter.HighResolution)
@@ -418,7 +418,7 @@ class UFitMain(QMainWindow):
         try:
             for data, model in info['datasets']:
                 self.handle_new_data(data, False, model)
-            self.dloader.datatemplate.setText(info['template'])
+            self.dloader.templateEdit.setText(info['template'])
         finally:
             self._loading = False
         self.datalistmodel.reset()
@@ -470,7 +470,7 @@ class UFitMain(QMainWindow):
         fp = open(filename, 'wb')
         info = {
             'datasets': [(panel.data, panel.model) for panel in self.panels],
-            'template': str(self.dloader.datatemplate.text()),
+            'template': str(self.dloader.templateEdit.text()),
             'version':  SAVE_VERSION,
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
