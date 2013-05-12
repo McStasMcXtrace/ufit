@@ -35,7 +35,7 @@ class DatasetPanel(QTabWidget):
     def __init__(self, parent, canvas, data, model, index):
         QTabWidget.__init__(self, parent)
         self.data = data
-        self.dataops = DataOps(self)
+        self.dataops = DataOps(self, parent.panels)
         self.mbuilder = ModelBuilder(self)
         self.fitter = Fitter(self)
         self.model = model or self.mbuilder.default_model(data)
@@ -331,6 +331,8 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
+        QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
+        return
         if self.filename:
             initialdir = path.dirname(self.filename)
         else:

@@ -8,10 +8,10 @@
 
 """Data operations panel."""
 
-from numpy import sqrt, mean, array
+from numpy import sqrt, mean, array, ones
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QWidget, QDialog, QMainWindow
+from PyQt4.QtGui import QWidget, QDialog, QListWidgetItem, QMessageBox
 
 from ufit.gui.common import loadUi
 from ufit.gui.mapping import MappingWindow
@@ -21,11 +21,12 @@ from ufit.data.dataset import Dataset
 
 class DataOps(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent, panellist):
         QWidget.__init__(self, parent)
         self.data = None
         self.picking = None
         self.picked_points = []
+        self.panellist = panellist
 
         loadUi(self, 'dataops.ui')
         self.pickedlabel.hide()
@@ -176,6 +177,56 @@ class DataOps(QWidget):
         self.emit(SIGNAL('dirty'))
         self.emit(SIGNAL('replotRequest'), None)
 
+    @qtsig('')
+    def on_subtractBtn_clicked(self):
+        dlg = QDialog(self)
+        loadUi(dlg, 'subtract.ui')
+        for i, p in enumerate(self.panellist):
+            QListWidgetItem('%d' % p.index, dlg.setList, i)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        items = dlg.setList.selectedItems()
+        if not items:
+            return
+        try:
+            prec = float(dlg.precisionEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error', 'Please enter a valid precision.')
+            return
+        bkgd_data = self.panellist[items[0].type()].data
+        if not dlg.destructBox.isChecked():
+            new_data = self.data.copy()
+        else:
+            new_data = self.data
+        new_data.name = new_data.name + '-' + bkgd_data.name
+        new_data.sources.extend(bkgd_data.sources)
+
+        # Subtraction algorithm works as follows: for each point in the
+        # background, the points in the original data with an X value within
+        # the selected precision are looked up, and the Y value is subtracted.
+        # An array of indices is kept so that from every original data point
+        # background is subtracted at most once.
+
+        # indices of data points not corrected
+        ind_unused = ones(len(new_data.x), dtype=bool)
+        for xb, yb, dyb, nb in bkgd_data._data:
+            ind = ind_unused & (new_data.x >= xb - prec) & (new_data.x <= xb + prec)
+            scale = new_data.norm_raw[ind]/nb
+            new_data.y_raw[ind] -= scale * yb
+            new_data.dy_raw[ind] = sqrt(new_data.dy_raw[ind]**2 + (scale * dyb)**2)
+            ind_unused &= ~ind
+        new_data.y = new_data.y_raw / new_data.norm
+        new_data.dy = new_data.dy_raw / new_data.norm
+        # mask out points from which no background has been subtracted
+        new_data.mask &= ~ind_unused
+
+        if not dlg.destructBox.isChecked():
+            new_model = self.model.copy()
+            self.emit(SIGNAL('newData'), new_data, True, new_model)
+        else:
+            self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
+
 
 class MultiDataOps(QWidget):
 
@@ -286,6 +337,10 @@ class MultiDataOps(QWidget):
         wnd = MappingWindow(self)
         wnd.set_datas([panel.data for panel in self.panels])
         wnd.show()
+
+    @qtsig('')
+    def on_globalfitBtn_clicked(self):
+        QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
 
 
 class ParamSetDialog(QDialog):

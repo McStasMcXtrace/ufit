@@ -7,6 +7,7 @@ from ufit import UFitError
 
 def rebin(data, binsize):
     """Simple rebinning of (x, y, dy, n) data."""
+    # XXX make it work with hkle 4-d x data
 
     x, y, dy, n = data.T
 
