@@ -32,6 +32,7 @@ class BrowseWindow(QMainWindow):
         self.toolbar.setObjectName('browsetoolbar')
         self.addToolBar(self.toolbar)
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas)
         self.plotframe.setLayout(layout)
         self.sgroup = SettingGroup('browse')
