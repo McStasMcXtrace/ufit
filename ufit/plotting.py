@@ -193,7 +193,8 @@ def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
     zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
     if mat:
         im = axes.imshow(zi.T, origin='lower', aspect='auto',
-                         extent=(xi[0][0], xi[-1][-1], yi[-1][-1], yi[0][0]))
+                         extent=(xi[0][0]/xscale, xi[-1][-1]/xscale,
+                                 yi[-1][-1]/yscale, yi[0][0]/yscale))
     else:
         im = axes.contourf(xi, yi, zi, 20)
     axes.set_xlabel(x)
