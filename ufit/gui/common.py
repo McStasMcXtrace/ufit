@@ -12,8 +12,8 @@ import sys
 from os import path
 
 from PyQt4 import uic
-from PyQt4.QtCore import QSize, QSettings, Qt
-from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget
+from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
+from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon
 
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
@@ -22,6 +22,8 @@ try:
     from matplotlib.backend_bases import key_press_handler
 except ImportError:
     key_press_handler = None
+from matplotlib.backends import backend_qt4
+backend_qt4.figureoptions = None  # disable toolbar button that doesn't work
 
 from ufit.plotting import DataPlotter
 
@@ -76,7 +78,31 @@ class MPLCanvas(FigureCanvas):
         self.update()
         QWidget.resizeEvent(self, event)
 
-MPLToolbar = NavigationToolbar2QT
+
+class MPLToolbar(NavigationToolbar2QT):
+
+    icon_name_map = {
+        'home.png':         'home.png',
+        'back.png':         'arrow-180.png',
+        'forward.png':      'arrow.png',
+        'move.png':         'arrow-move.png',
+        'zoom_to_rect.png': 'selection-resize.png',
+        'filesave.png':     'document-pdf.png',
+        'printer.png':      'printer.png',
+    }
+
+    toolitems = list(NavigationToolbar2QT.toolitems)
+    del toolitems[7]  # subplot adjust
+    toolitems.append(('Print', 'Print the figure', 'printer',
+                      'print_callback'))
+
+    def _icon(self, name):
+        if name in self.icon_name_map:
+            return QIcon(':/' + self.icon_name_map[name])
+        return QIcon()
+
+    def print_callback(self):
+        self.emit(SIGNAL('printRequested'))
 
 
 class SmallLineEdit(QLineEdit):

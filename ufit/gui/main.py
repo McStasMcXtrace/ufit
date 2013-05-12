@@ -154,12 +154,9 @@ class UFitMain(QMainWindow):
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         self.toolbar = MPLToolbar(self.canvas, self)
-        firstaction = self.toolbar.actions()[0]
-        self.toolbar.insertAction(firstaction, self.actionLoad)
-        self.toolbar.insertAction(firstaction, self.actionSave)
-        self.toolbar.insertSeparator(firstaction)
-        self.toolbar.insertAction(firstaction, self.actionPrint)
-        self.toolbar.setObjectName('maintoolbar')
+        self.toolbar.setObjectName('mainplottoolbar')
+        self.connect(self.toolbar, SIGNAL('printRequested'),
+                     self.on_actionPrint_triggered)
         self.addToolBar(self.toolbar)
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)

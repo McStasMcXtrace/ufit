@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>printer.png</file>
     <file>arrow-join.png</file>
     <file>document--plus.png</file>
     <file>document-export.png</file>
@@ -10,6 +11,11 @@
     <file>folder-open.png</file>
     <file>disk-black.png</file>
     <file>arrow-switch.png</file>
-    <file>printer.png</file>
+    <file>home.png</file>
+    <file>arrow-180.png</file>
+    <file>arrow.png</file>
+    <file>selection-resize.png</file>
+    <file>arrow-move.png</file>
+    <file>document-pdf.png</file>
   </qresource>
 </RCC>
