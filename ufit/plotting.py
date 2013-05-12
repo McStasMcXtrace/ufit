@@ -12,6 +12,7 @@ from itertools import cycle
 
 import matplotlib
 matplotlib.rc('font', family='Helvetica')
+matplotlib.rc('savefig', format='pdf')
 
 import numpy as np
 from numpy import array, mgrid, clip, linspace, isscalar

@@ -13,7 +13,8 @@ from os import path
 
 from PyQt4 import uic
 from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
-from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon
+from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
+     QMessageBox
 
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
@@ -103,6 +104,28 @@ class MPLToolbar(NavigationToolbar2QT):
 
     def print_callback(self):
         self.emit(SIGNAL('printRequested'))
+
+    def save_figure(self, *args):
+        filetypes = self.canvas.get_supported_filetypes_grouped()
+        sorted_filetypes = sorted(filetypes.items())
+
+        start = self.canvas.get_default_filename()
+        filters = []
+        for name, exts in sorted_filetypes:
+            if 'eps' in exts or 'emf' in exts or 'jpg' in exts or \
+                'pgf' in exts or 'raw' in exts:
+                continue
+            exts_list = " ".join(['*.%s' % ext for ext in exts])
+            filter = '%s (%s)' % (name, exts_list)
+            filters.append(filter)
+        filters = ';;'.join(filters)
+        fname = QFileDialog.getSaveFileName(self, 'Choose a filename to save to',
+                                            start, filters)
+        if fname:
+            try:
+                self.canvas.print_figure(unicode(fname))
+            except Exception as e:
+                QMessageBox.critical(self, 'Error saving file', str(e))
 
 
 class SmallLineEdit(QLineEdit):
