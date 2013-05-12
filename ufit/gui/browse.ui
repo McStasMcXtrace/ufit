@@ -55,6 +55,10 @@
             <property name="text">
              <string>Change directory...</string>
             </property>
+            <property name="icon">
+             <iconset resource="../../resource/gui.qrc">
+              <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -63,9 +67,8 @@
              <string>Load</string>
             </property>
             <property name="icon">
-             <iconset theme="list-add">
-              <normaloff/>
-             </iconset>
+             <iconset resource="../../resource/gui.qrc">
+              <normaloff>:/document--plus.png</normaloff>:/document--plus.png</iconset>
             </property>
            </widget>
           </item>
@@ -101,6 +104,8 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../resource/gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

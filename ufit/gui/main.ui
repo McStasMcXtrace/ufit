@@ -46,6 +46,10 @@
             <property name="text">
              <string>Load new data</string>
             </property>
+            <property name="icon">
+             <iconset resource="../../resource/gui.qrc">
+              <normaloff>:/document--plus.png</normaloff>:/document--plus.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -53,12 +57,20 @@
             <property name="text">
              <string>Reorder</string>
             </property>
+            <property name="icon">
+             <iconset resource="../../resource/gui.qrc">
+              <normaloff>:/arrow-switch.png</normaloff>:/arrow-switch.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="removeBtn">
             <property name="text">
              <string>Remove selected</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resource/gui.qrc">
+              <normaloff>:/cross.png</normaloff>:/cross.png</iconset>
             </property>
            </widget>
           </item>
@@ -138,9 +150,8 @@
   </widget>
   <action name="actionLoad">
    <property name="icon">
-    <iconset theme="document-open">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Load session...</string>
@@ -151,9 +162,8 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset theme="document-save">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/disk-black.png</normaloff>:/disk-black.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Save session</string>
@@ -164,9 +174,8 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset theme="help-about">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/question-white.png</normaloff>:/question-white.png</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -174,9 +183,8 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset theme="application-exit">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/cross-button.png</normaloff>:/cross-button.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Quit</string>
@@ -187,9 +195,8 @@
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset theme="document-save-as">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/disks-black.png</normaloff>:/disks-black.png</iconset>
    </property>
    <property name="text">
     <string>Save session as...</string>
@@ -200,9 +207,8 @@
   </action>
   <action name="actionLoadData">
    <property name="icon">
-    <iconset theme="list-add">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/document--plus.png</normaloff>:/document--plus.png</iconset>
    </property>
    <property name="text">
     <string>Load data</string>
@@ -220,11 +226,19 @@
    </property>
   </action>
   <action name="actionRemoveData">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/cross.png</normaloff>:/cross.png</iconset>
+   </property>
    <property name="text">
     <string>Remove selected dataset(s)</string>
    </property>
   </action>
   <action name="actionMergeData">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/arrow-join.png</normaloff>:/arrow-join.png</iconset>
+   </property>
    <property name="text">
     <string>Merge selected datasets</string>
    </property>
@@ -242,15 +256,18 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset theme="printer">
-     <normaloff/>
-    </iconset>
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/printer.png</normaloff>:/printer.png</iconset>
    </property>
    <property name="text">
     <string>Print plot...</string>
    </property>
   </action>
   <action name="actionExportASCII">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/document-export.png</normaloff>:/document-export.png</iconset>
+   </property>
    <property name="text">
     <string>Export data as ASCII...</string>
    </property>
@@ -273,6 +290,8 @@
    <header>ufit.gui.datalist</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../resource/gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

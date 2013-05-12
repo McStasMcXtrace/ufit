@@ -1,0 +1,15 @@
+<RCC>
+  <qresource>
+    <file>arrow-join.png</file>
+    <file>document--plus.png</file>
+    <file>document-export.png</file>
+    <file>cross-button.png</file>
+    <file>disks-black.png</file>
+    <file>question-white.png</file>
+    <file>cross.png</file>
+    <file>folder-open.png</file>
+    <file>disk-black.png</file>
+    <file>arrow-switch.png</file>
+    <file>printer.png</file>
+  </qresource>
+</RCC>

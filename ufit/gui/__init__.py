@@ -12,3 +12,5 @@ __all__ = ['start_fitter', 'start_loader']
 
 from ufit.gui.fitter import start as start_fitter
 from ufit.gui.dataloader import start as start_loader
+
+import ufit.gui.resource  # register icon resources
