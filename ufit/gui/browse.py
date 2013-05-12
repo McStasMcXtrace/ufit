@@ -56,9 +56,8 @@ class BrowseWindow(QMainWindow):
             loadwin.emit(SIGNAL('newData'), data, False)
         loadwin.emit(SIGNAL('newData'), datas[-1])
 
-    def set_template(self, template):
-        self.setWindowTitle('ufit browser - %s' % template)
-        root = path.dirname(template)
+    def set_directory(self, root):
+        self.setWindowTitle('ufit browser - %s' % root)
         files = os.listdir(root)
         for fn in sorted(files):
             fn = path.join(root, fn)

@@ -8,6 +8,7 @@
 
 """Common GUI elements."""
 
+import sys
 from os import path
 
 from PyQt4 import uic
@@ -28,6 +29,12 @@ uipath = path.dirname(__file__)
 
 def loadUi(widget, uiname, subdir=''):
     uic.loadUi(path.join(uipath, subdir, uiname), widget)
+
+def path_to_str(qstring):
+    return unicode(qstring).encode(sys.getfilesystemencoding())
+
+def str_to_path(string):
+    return string.decode(sys.getfilesystemencoding())
 
 
 class MPLCanvas(FigureCanvas):

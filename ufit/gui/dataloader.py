@@ -16,7 +16,8 @@ from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
 
 from ufit.data import data_formats, Loader
 from ufit.utils import extract_template
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
+from ufit.gui.common import loadUi, path_to_str, str_to_path, \
+     MPLCanvas, MPLToolbar
 from ufit.gui.browse import BrowseWindow
 
 
@@ -72,25 +73,26 @@ into one set, as well as files 23 and 24.
     @qtsig('')
     def on_browseBtn_clicked(self):
         bwin = BrowseWindow(self)
-        bwin.set_template(str(self.templateEdit.text()))
+        templ = path_to_str(self.templateEdit.text())
+        bwin.set_directory(path.dirname(templ))
         bwin.show()
 
     @qtsig('')
     def on_settemplateBtn_clicked(self):
-        previous = str(self.templateEdit.text())
+        previous = path_to_str(self.templateEdit.text())
         if previous:
             startdir = path.dirname(previous)
         else:
             startdir = '.'
-        fn = str(QFileDialog.getOpenFileName(self, 'Choose a file', startdir,
-                                             'All files (*)'))
+        fn = path_to_str(QFileDialog.getOpenFileName(self, 'Choose a file', startdir,
+                                                     'All files (*)'))
         if not fn:
             return
         self.set_template(fn)
 
     def set_template(self, fn):
         dtempl, numor = extract_template(fn)
-        self.templateEdit.setText(dtempl)
+        self.templateEdit.setText(str_to_path(dtempl))
         self.loader.template = dtempl
         try:
             cols, xguess, yguess, dyguess, mguess, nmon = \
@@ -142,8 +144,8 @@ into one set, as well as files 23 and 24.
         except Exception:
             QMessageBox.information(self, 'Error', 'Monitor scale must be integer.')
             return
-        dtempl = self.templateEdit.text()
-        self.loader.template = str(dtempl)
+        dtempl = path_to_str(self.templateEdit.text())
+        self.loader.template = dtempl
         numors = str(self.numorsEdit.text())
         try:
             datas = self.loader.load_numors(numors, prec,

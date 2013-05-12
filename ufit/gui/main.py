@@ -21,7 +21,8 @@ from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
 from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends
-from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi
+from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
+     path_to_str
 from ufit.gui.dataloader import DataLoader
 from ufit.gui.dataops import DataOps, MultiDataOps
 from ufit.gui.modelbuilder import ModelBuilder
@@ -71,7 +72,7 @@ class DatasetPanel(QTabWidget):
 
     def gen_htmldesc(self):
         title = self.data.meta.get('title', '')
-        self.dataops.datatitle.setText(title)
+        self.dataops.titleEdit.setText(title)
         self.title = title
         self.htmldesc = '<big><b>%s</b></big>' % self.index + \
             (title and ' - %s' % title or '') + \
@@ -321,7 +322,7 @@ class UFitMain(QMainWindow):
             self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
         if filename == '':
             return False
-        expfilename = unicode(filename).encode(sys.getfilesystemencoding())
+        expfilename = path_to_str(filename)
         with open(expfilename, 'wb') as fp:
             self.current_panel.data.export_ascii(fp)
 
@@ -341,7 +342,7 @@ class UFitMain(QMainWindow):
             self, 'Select export file name', initialdir, 'Python files (*.py)')
         if filename == '':
             return False
-        expfilename = unicode(filename).encode(sys.getfilesystemencoding())
+        expfilename = path_to_str(filename)
         with open(expfilename, 'wb') as fp:
             self.current_panel.export_python(fp)
 
@@ -402,7 +403,7 @@ class UFitMain(QMainWindow):
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return
-        self.filename = unicode(filename).encode(sys.getfilesystemencoding())
+        self.filename = path_to_str(filename)
         try:
             self.load_session(self.filename)
         except Exception, err:
@@ -454,7 +455,7 @@ class UFitMain(QMainWindow):
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return False
-        self.filename = unicode(filename).encode(sys.getfilesystemencoding())
+        self.filename = path_to_str(filename)
         try:
             self.save_session_inner(self.filename)
         except Exception, err:
