@@ -8,7 +8,6 @@
 
 """Main window for the standalone GUI."""
 
-import sys
 from os import path
 import cPickle as pickle
 from cStringIO import StringIO
@@ -24,7 +23,8 @@ from ufit import backends
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
      path_to_str
 from ufit.gui.dataloader import DataLoader
-from ufit.gui.dataops import DataOps, MultiDataOps
+from ufit.gui.dataops import DataOps
+from ufit.gui.multiops import MultiDataOps
 from ufit.gui.modelbuilder import ModelBuilder
 from ufit.gui.fitter import Fitter
 from ufit.gui.datalist import DataListModel
