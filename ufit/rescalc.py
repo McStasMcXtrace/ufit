@@ -1042,23 +1042,23 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
                 print 'Scattering triangle will not close for point: ' \
                     'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
                 print 'Attention: Intensity is therefore equal to zero at this point!'
-                # XXX will return a shorter list
+                results.append(pool.apply_async(lambda: 0))
                 continue
             sigma = resmat.calcSigma()
             b_mat = resmat.b_mat[0:16]
             R0_corrected = resmat.R0_corrected
             resmat._cache[QE] = b_mat, sigma, R0_corrected
-        #results.append(single_mc(NMC, sqw, fit_par, QE, b_mat,
-        #                                            sigma, R0_corrected))
         results.append(pool.apply_async(single_mc, (NMC, sqw, fit_par, QE, b_mat,
                                                     sigma, R0_corrected)))
     return array([res.get() for res in results])
-    #return array(results)
 
 single_mc_cluster_code = '''
 from numpy import zeros, reshape
 from numpy.random import randn
 def single_mc(NMC, fit_par, QE, b_mat, sigma, R0_corrected):
+    if NMC == 0:
+        return 0.
+
     xp = zeros((4, NMC))
     xp[0,:] = sigma[0]*randn(NMC)
     xp[1,:] = sigma[1]*randn(NMC)
@@ -1092,7 +1092,7 @@ def calc_MC_cluster(x, fit_par, sqwcode, sqwfunc, resmat, NMC, use_caching=True)
                 print 'Scattering triangle will not close for point: ' \
                     'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
                 print 'Attention: Intensity is therefore equal to zero at this point!'
-                # XXX will return a shorter list
+                args.append((0, [], None, None, None, None))
                 continue
             sigma = resmat.calcSigma()
             b_mat = resmat.b_mat[0:16]
@@ -1101,44 +1101,6 @@ def calc_MC_cluster(x, fit_par, sqwcode, sqwfunc, resmat, NMC, use_caching=True)
         args.append((NMC, fit_par, QE, b_mat, sigma, R0_corrected))
     code = sqwcode + '\n__sqw = %s\n' % sqwfunc + single_mc_cluster_code
     return array(cluster.run_cluster(code, 'single_mc', args))
-
-
-def demosqw(qh, qk, ql, en, QE, sigma, scaling):
-    """Simplest possible simulation of nuclear Bragg peak intensity plus
-    1-branch isotropic phonon dispersion to see something "realistic" in the
-    demo's virtual detector.
-    """
-    # get small q
-    qqh = divmod(qh, 1)[1]
-    if qqh > 0.5:
-        qqh -= 1
-    qqk = divmod(qk, 1)[1]
-    if qqk > 0.5:
-        qqk -= 1
-    qql = divmod(ql, 1)[1]
-    if qql > 0.5:
-        qql -= 1
-    qch = divmod(QE[0], 1)[1]
-    if qch > 0.5:
-        qch -= 1
-    qck = divmod(QE[1], 1)[1]
-    if qck > 0.5:
-        qck -= 1
-    qcl = divmod(QE[2], 1)[1]
-    if qcl > 0.5:
-        qcl -= 1
-    # Bragg intensity (will not work with MC integration, use center points and
-    # width given by resolution calculation, but we take the MC energy to get
-    # some randomness)
-    Ibr = 10000 * exp(-(qch**2/sigma[0]**2 + qck**2/sigma[1]**2 +
-                        qcl**2/sigma[2]**2 + en**2/sigma[3]**2))
-    # Phonon intensity (assume isotropic dispersion with Lorentz lineshape)
-    q = sqrt(qqh**2 + qqk**2 + qql**2)
-    omega = 10 * sin(q * pi)
-    gamma = 0.05
-    Iph = 10 / max(abs(en), 0.1) * gamma * (
-        1 / ((en - omega)**2 + gamma**2) + 1 / ((en + omega)**2 + gamma**2))
-    return 1e6 * scaling * (Ibr + Iph)
 
 
 def load_par(filename):
