@@ -97,6 +97,10 @@ class MPLToolbar(NavigationToolbar2QT):
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
 
+    def _init_toolbar(self):
+        NavigationToolbar2QT._init_toolbar(self)
+        self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
     def _icon(self, name):
         if name in self.icon_name_map:
             return QIcon(':/' + self.icon_name_map[name])
