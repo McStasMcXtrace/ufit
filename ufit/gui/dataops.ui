@@ -44,7 +44,7 @@
       </widget>
      </item>
      <item row="8" column="1" colspan="2">
-      <widget class="QLineEdit" name="monscale">
+      <widget class="QLineEdit" name="monscaleEdit">
        <property name="text">
         <string>10000</string>
        </property>
@@ -65,7 +65,7 @@
       </widget>
      </item>
      <item row="7" column="1" colspan="2">
-      <widget class="QLineEdit" name="shift_constant">
+      <widget class="QLineEdit" name="shiftConstEdit">
        <property name="text">
         <string>0</string>
        </property>
@@ -74,7 +74,7 @@
      <item row="13" column="1" colspan="2">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLineEdit" name="limitmin"/>
+        <widget class="QLineEdit" name="limitminEdit"/>
        </item>
        <item>
         <widget class="QLabel" name="label_5">
@@ -84,7 +84,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="limitmax"/>
+        <widget class="QLineEdit" name="limitmaxEdit"/>
        </item>
       </layout>
      </item>
@@ -109,7 +109,7 @@
       </widget>
      </item>
      <item row="6" column="1" colspan="2">
-      <widget class="QLineEdit" name="mul_constant">
+      <widget class="QLineEdit" name="scaleConstEdit">
        <property name="text">
         <string>1</string>
        </property>
@@ -193,14 +193,14 @@
       </widget>
      </item>
      <item row="5" column="1" colspan="2">
-      <widget class="QLineEdit" name="add_constant">
+      <widget class="QLineEdit" name="addConstEdit">
        <property name="text">
         <string>0</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1" colspan="2">
-      <widget class="QLineEdit" name="datatitle"/>
+      <widget class="QLineEdit" name="titleEdit"/>
      </item>
      <item row="5" column="3">
       <widget class="QPushButton" name="addBtn">
@@ -294,7 +294,7 @@
       </widget>
      </item>
      <item row="11" column="3">
-      <widget class="QLabel" name="pickedlabel">
+      <widget class="QLabel" name="pickedLbl">
        <property name="text">
         <string>0 picked</string>
        </property>
@@ -315,7 +315,11 @@
       </widget>
      </item>
      <item row="4" column="1" colspan="2">
-      <widget class="QLineEdit" name="precision"/>
+      <widget class="QLineEdit" name="precisionEdit">
+       <property name="text">
+        <string>0.001</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -336,18 +340,18 @@
  </widget>
  <tabstops>
   <tabstop>rebinBtn</tabstop>
-  <tabstop>add_constant</tabstop>
+  <tabstop>addConstEdit</tabstop>
   <tabstop>addBtn</tabstop>
-  <tabstop>mul_constant</tabstop>
+  <tabstop>scaleConstEdit</tabstop>
   <tabstop>mulBtn</tabstop>
-  <tabstop>shift_constant</tabstop>
+  <tabstop>shiftConstEdit</tabstop>
   <tabstop>shiftBtn</tabstop>
-  <tabstop>monscale</tabstop>
+  <tabstop>monscaleEdit</tabstop>
   <tabstop>monscaleBtn</tabstop>
   <tabstop>badPointsBtn</tabstop>
   <tabstop>badResetBtn</tabstop>
-  <tabstop>limitmin</tabstop>
-  <tabstop>limitmax</tabstop>
+  <tabstop>limitminEdit</tabstop>
+  <tabstop>limitmaxEdit</tabstop>
   <tabstop>limitsBtn</tabstop>
  </tabstops>
  <resources/>

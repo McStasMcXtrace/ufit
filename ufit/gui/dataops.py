@@ -29,18 +29,18 @@ class DataOps(QWidget):
         self.panellist = panellist
 
         loadUi(self, 'dataops.ui')
-        self.pickedlabel.hide()
+        self.pickedLbl.hide()
 
     def initialize(self, data, model):
         self.data = data
         self.model = model
         if self.data.fitmin is not None:
-            self.limitmin.setText('%.5g' % self.data.fitmin)
+            self.limitminEdit.setText('%.5g' % self.data.fitmin)
         if self.data.fitmax is not None:
-            self.limitmax.setText('%.5g' % self.data.fitmax)
-        self.monscale.setText(str(self.data.nscale))
+            self.limitmaxEdit.setText('%.5g' % self.data.fitmax)
+        self.monscaleEdit.setText(str(self.data.nscale))
         # XXX fix this mess (title, name, environment, sources, ...)
-        self.datatitle.setText(self.data.meta.get('title', ''))
+        self.titleEdit.setText(self.data.meta.get('title', ''))
         self.nameEdit.setText(self.data.name or '')
 
     def on_canvas_pick(self, event):
@@ -50,7 +50,7 @@ class DataOps(QWidget):
             xdata = event.artist.get_xdata()[event.ind]
             ydata = event.artist.get_ydata()[event.ind]
             self.picked_points.append(xdata)
-            self.pickedlabel.setText('%d picked' % len(self.picked_points))
+            self.pickedLbl.setText('%d picked' % len(self.picked_points))
             event.canvas.figure.gca().plot([xdata], [ydata], 'ow', ms=8,
                                            mec='blue')
             event.canvas.draw()
@@ -65,7 +65,7 @@ class DataOps(QWidget):
     def on_badPointsBtn_clicked(self):
         if self.picking == 'bad':
             self.badPointsBtn.setText('Start')
-            self.pickedlabel.hide()
+            self.pickedLbl.hide()
             self.picking = None
             self.removeBadPoints(self.picked_points)
         elif not self.picking:
@@ -74,17 +74,17 @@ class DataOps(QWidget):
             self.emit(SIGNAL('pickRequest'), self)
             self.picking = 'bad'
             self.picked_points = []
-            self.pickedlabel.setText('0 picked')
-            self.pickedlabel.show()
+            self.pickedLbl.setText('0 picked')
+            self.pickedLbl.show()
 
     @qtsig('')
     def on_limitsBtn_clicked(self):
         try:
-            limitmin = float(self.limitmin.text())
+            limitmin = float(self.limitminEdit.text())
         except ValueError:
             limitmin = None
         try:
-            limitmax = float(self.limitmax.text())
+            limitmax = float(self.limitmaxEdit.text())
         except ValueError:
             limitmax = None
         self.data.fitmin, self.data.fitmax = limitmin, limitmax
@@ -100,7 +100,11 @@ class DataOps(QWidget):
 
     @qtsig('')
     def on_rebinBtn_clicked(self):
-        binsize = self.precision.value()
+        try:
+            binsize = float(self.precisionEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
+            return
         new_array = rebin(self.data._data, binsize)
         self.data.__init__(self.data.meta, new_array,
                            self.data.xcol, self.data.ycol, self.data.ncol,
@@ -119,7 +123,7 @@ class DataOps(QWidget):
     @qtsig('')
     def on_mulBtn_clicked(self):
         try:
-            const = float(self.mul_constant.text())
+            const = float(self.scaleConstEdit.text())
         except ValueError:
             return
         self.data.y *= const
@@ -132,7 +136,7 @@ class DataOps(QWidget):
     @qtsig('')
     def on_addBtn_clicked(self):
         try:
-            const = float(self.add_constant.text())
+            const = float(self.addConstEdit.text())
         except ValueError:
             return
         self.data.y += const
@@ -143,7 +147,7 @@ class DataOps(QWidget):
     @qtsig('')
     def on_shiftBtn_clicked(self):
         try:
-            const = float(self.shift_constant.text())
+            const = float(self.shiftConstEdit.text())
         except ValueError:
             return
         self.data.x += const
@@ -153,7 +157,7 @@ class DataOps(QWidget):
     @qtsig('')
     def on_monscaleBtn_clicked(self):
         try:
-            const = int(self.monscale.text())
+            const = int(self.monscaleEdit.text())
         except ValueError:
             return
         self.data.nscale = const
@@ -166,7 +170,7 @@ class DataOps(QWidget):
 
     @qtsig('')
     def on_titleBtn_clicked(self):
-        self.data.meta.title = str(self.datatitle.text())
+        self.data.meta.title = str(self.titleEdit.text())
         self.emit(SIGNAL('titleChanged'))
         self.emit(SIGNAL('dirty'))
         self.emit(SIGNAL('replotRequest'), None)
@@ -239,13 +243,17 @@ class MultiDataOps(QWidget):
     def initialize(self, panels):
         self.panels = panels
         self.datas = [p.data for p in panels]
-        self.monscale.setText(str(int(mean([d.nscale for d in self.datas]))))
-        self.onemodel.clear()
-        self.onemodel.addItems(['%d' % p.index for p in panels])
+        self.monscaleEdit.setText(str(int(mean([d.nscale for d in self.datas]))))
+        self.onemodelBox.clear()
+        self.onemodelBox.addItems(['%d' % p.index for p in panels])
 
     @qtsig('')
     def on_rebinBtn_clicked(self):
-        binsize = self.precision.value()
+        try:
+            binsize = float(self.precisionEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
+            return
         for data in self.datas:
             new_array = rebin(data._data, binsize)
             data.__init__(data.meta, new_array,
@@ -258,7 +266,7 @@ class MultiDataOps(QWidget):
     @qtsig('')
     def on_mulBtn_clicked(self):
         try:
-            const = float(self.mul_constant.text())
+            const = float(self.scaleConstEdit.text())
         except ValueError:
             return
         for data in self.datas:
@@ -272,7 +280,7 @@ class MultiDataOps(QWidget):
     @qtsig('')
     def on_addBtn_clicked(self):
         try:
-            const = float(self.add_constant.text())
+            const = float(self.addConstEdit.text())
         except ValueError:
             return
         for data in self.datas:
@@ -284,7 +292,7 @@ class MultiDataOps(QWidget):
     @qtsig('')
     def on_shiftBtn_clicked(self):
         try:
-            const = float(self.shift_constant.text())
+            const = float(self.shiftConstEdit.text())
         except ValueError:
             return
         for data in self.datas:
@@ -295,7 +303,7 @@ class MultiDataOps(QWidget):
     @qtsig('')
     def on_monscaleBtn_clicked(self):
         try:
-            const = int(self.monscale.text())
+            const = int(self.monscaleEdit.text())
         except ValueError:
             return
         for data in self.datas:
@@ -308,13 +316,17 @@ class MultiDataOps(QWidget):
 
     @qtsig('')
     def on_mergeBtn_clicked(self):
-        precision = self.mergeprecision.value()
+        try:
+            precision = float(self.mergeEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
+            return
         new_data = self.datas[0].merge(precision, *self.datas[1:])
         self.emit(SIGNAL('newData'), new_data)
 
     @qtsig('')
     def on_onemodelBtn_clicked(self):
-        which = self.onemodel.currentIndex()
+        which = self.onemodelBox.currentIndex()
         if which < 0:
             return
         model = self.panels[which].model

@@ -72,7 +72,7 @@
          </widget>
         </item>
         <item>
-         <widget class="DataListView" name="datalist">
+         <widget class="DataListView" name="dataList">
           <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
           </property>
@@ -90,7 +90,7 @@
      <x>0</x>
      <y>0</y>
      <width>364</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

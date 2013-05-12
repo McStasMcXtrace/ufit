@@ -176,12 +176,12 @@ class UFitMain(QMainWindow):
         self.stacker.addWidget(self.multiops)
 
         self.datalistmodel = DataListModel(self.panels)
-        self.datalist.setModel(self.datalistmodel)
+        self.dataList.setModel(self.datalistmodel)
         self.datalistmodel.reset()
-        self.datalist.addAction(self.actionMergeData)
-        self.datalist.addAction(self.actionRemoveData)
-        self.connect(self.datalist, SIGNAL('newSelection'),
-                     self.on_datalist_newSelection)
+        self.dataList.addAction(self.actionMergeData)
+        self.dataList.addAction(self.actionRemoveData)
+        self.connect(self.dataList, SIGNAL('newSelection'),
+                     self.on_dataList_newSelection)
 
         self.backend_group = QActionGroup(self)
         for backend in backends.available:
@@ -220,11 +220,11 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_loadBtn_clicked(self):
         self.select_new_panel(self.dloader)
-        self.datalist.setCurrentIndex(QModelIndex())
+        self.dataList.setCurrentIndex(QModelIndex())
 
     @qtsig('')
     def on_removeBtn_clicked(self):
-        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
         if not indlist:
             return
         if QMessageBox.question(self, 'ufit',
@@ -243,11 +243,11 @@ class UFitMain(QMainWindow):
         loadUi(dlg, 'reorder.ui')
         for i, panel in enumerate(self.panels):
             QListWidgetItem('%s - %s' % (panel.index, panel.title),
-                            dlg.datalist, i)
+                            dlg.dataList, i)
         if dlg.exec_():
             new_panels = []
-            for i in range(dlg.datalist.count()):
-                new_index = dlg.datalist.item(i).type()
+            for i in range(dlg.dataList.count()):
+                new_index = dlg.dataList.item(i).type()
                 panel = self.panels[new_index]
                 panel.index = i+1
                 panel.gen_htmldesc()
@@ -256,10 +256,10 @@ class UFitMain(QMainWindow):
             self.datalistmodel.reset()
             self.setWindowModified(True)
 
-    def on_datalist_newSelection(self):
+    def on_dataList_newSelection(self):
         if self._loading:
             return
-        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
         if len(indlist) == 0:
             self.on_loadBtn_clicked()
         elif len(indlist) == 1:
@@ -275,7 +275,7 @@ class UFitMain(QMainWindow):
     def plot_multi(self, *ignored):
         # XXX better title
         self.canvas.plotter.reset()
-        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
         panels = [self.panels[i] for i in indlist]
         for p in panels:
             c = self.canvas.plotter.plot_data(p.data, multi=True)
@@ -296,7 +296,7 @@ class UFitMain(QMainWindow):
         self.setWindowModified(True)
         if not self._loading and update:
             self.datalistmodel.reset()
-            self.datalist.setCurrentIndex(
+            self.dataList.setCurrentIndex(
                 self.datalistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
@@ -421,7 +421,7 @@ class UFitMain(QMainWindow):
         finally:
             self._loading = False
         self.datalistmodel.reset()
-        self.datalist.setCurrentIndex(
+        self.dataList.setCurrentIndex(
             self.datalistmodel.index(len(self.panels)-1, 0))
         self.setWindowModified(False)
         self.setWindowTitle('ufit - %s[*]' % self.filename)
@@ -480,13 +480,16 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        indlist = [ind.row() for ind in self.datalist.selectedIndexes()]
+        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
         if len(indlist) < 2:
             return
         dlg = QDialog(self)
         loadUi(dlg, 'rebin.ui')
         if dlg.exec_():
-            precision = dlg.precision.value()
+            try:
+                precision = float(dlg.precisionEdit.text())
+            except ValueError:
+                return
             datalist = [p.data for i, p in enumerate(self.panels)
                         if i in indlist]
             new_data = datalist[0].merge(precision, *datalist[1:])

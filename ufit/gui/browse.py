@@ -48,7 +48,7 @@ class BrowseWindow(QMainWindow):
 
     @qtsig('')
     def on_loadBtn_clicked(self):
-        datas = [self._data[item.type()] for item in self.datalist.selectedItems()]
+        datas = [self._data[item.type()] for item in self.dataList.selectedItems()]
         if not datas:
             return
         loadwin = self.parent()
@@ -72,10 +72,10 @@ class BrowseWindow(QMainWindow):
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s' % (n, res.xcol,
                                                   res.meta.get('title', '?')),
-                                self.datalist, n)
+                                self.dataList, n)
 
-    def on_datalist_itemSelectionChanged(self):
-        numors = [item.type() for item in self.datalist.selectedItems()]
+    def on_dataList_itemSelectionChanged(self):
+        numors = [item.type() for item in self.dataList.selectedItems()]
         if not numors:
             return
         plotter = self.canvas.plotter

@@ -28,7 +28,7 @@ class ModelBuilder(QWidget):
         loadUi(self, 'modelbuilder.ui')
         self.model_dict = {}
         for model in concrete_models:
-            QListWidgetItem(model.__name__, self.premodels)
+            QListWidgetItem(model.__name__, self.premodelsList)
             self.model_dict[model.__name__] = model
         self.buttonBox.addButton('Check', QDialogButtonBox.NoRole)
         self.buttonBox.addButton(QDialogButtonBox.Apply)
@@ -36,22 +36,22 @@ class ModelBuilder(QWidget):
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
         if role == QDialogButtonBox.ResetRole:
-            self.modeldef.setText('')
+            self.modeldefEdit.setText('')
         elif role == QDialogButtonBox.NoRole:
             self.eval_model()
         else:  # "apply"
             self.eval_model(final=True)
 
-    def on_premodels_currentItemChanged(self, current, previous):
+    def on_premodelsList_currentItemChanged(self, current, previous):
         model = self.model_dict[str(current.text())]
-        self.modelinfo.setText(model.__doc__)
+        self.modelinfoLbl.setText(model.__doc__)
 
-    def on_premodels_itemDoubleClicked(self, item):
-        self.on_addmodel_clicked()
+    def on_premodelsList_itemDoubleClicked(self, item):
+        self.on_addmodelBtn_clicked()
 
     @qtsig('')
-    def on_addmodel_clicked(self):
-        modelitem = self.premodels.currentItem()
+    def on_addmodelBtn_clicked(self):
+        modelitem = self.premodelsList.currentItem()
         if not modelitem:
             return
         model = self.model_dict[str(modelitem.text())]
@@ -59,11 +59,11 @@ class ModelBuilder(QWidget):
                                          'for the model part:')[0]
         if not modelname:
             return
-        currentmodel = str(self.modeldef.toPlainText())
+        currentmodel = str(self.modeldefEdit.toPlainText())
         prefix = ''
         if currentmodel:
             prefix = ' + '
-        tc = self.modeldef.textCursor()
+        tc = self.modeldefEdit.textCursor()
         tc.movePosition(QTextCursor.End)
         tc.insertText('%s%s(%r)' % (prefix, model.__name__, str(modelname)))
 
@@ -84,10 +84,10 @@ class ModelBuilder(QWidget):
     def initialize(self, data, model):
         self.model = model
         self.data = data
-        self.modeldef.setText(model.get_description())
+        self.modeldefEdit.setText(model.get_description())
 
     def eval_model(self, final=False):
-        modeldef = str(self.modeldef.toPlainText()).replace('\n', ' ')
+        modeldef = str(self.modeldefEdit.toPlainText()).replace('\n', ' ')
         if not modeldef:
             QMessageBox.information(self, 'Error', 'No model defined.')
             return
@@ -102,4 +102,4 @@ class ModelBuilder(QWidget):
             self.emit(SIGNAL('newModel'), model)
             self.emit(SIGNAL('closeRequest'))
         else:
-            self.statusLabel.setText('Model definition is good.')
+            self.statusLbl.setText('Model definition is good.')

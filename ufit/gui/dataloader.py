@@ -31,9 +31,9 @@ class DataLoader(QWidget):
 
     def createUI(self, standalone):
         loadUi(self, 'dataloader.ui')
-        self.dataformat.addItem('auto')
+        self.dataformatBox.addItem('auto')
         for fmt in data_formats:
-            self.dataformat.addItem(fmt)
+            self.dataformatBox.addItem(fmt)
 
         self.buttonBox.addButton(QDialogButtonBox.Open)
         self.buttonBox.addButton('Preview', QDialogButtonBox.NoRole)
@@ -47,11 +47,11 @@ class DataLoader(QWidget):
         else:  # "open"
             self.open_data(final=True)
 
-    def on_dataformat_currentIndexChanged(self, i):
-        self.loader.format = str(self.dataformat.currentText())
+    def on_dataformatBox_currentIndexChanged(self, i):
+        self.loader.format = str(self.dataformatBox.currentText())
 
     @qtsig('')
-    def on_numorHelp_clicked(self):
+    def on_numorHelpBtn_clicked(self):
         QMessageBox.information(self, 'Numor Help', '''\
 The numor string contains file numbers, with the following operators:
 
@@ -72,12 +72,12 @@ into one set, as well as files 23 and 24.
     @qtsig('')
     def on_browseBtn_clicked(self):
         bwin = BrowseWindow(self)
-        bwin.set_template(str(self.datatemplate.text()))
+        bwin.set_template(str(self.templateEdit.text()))
         bwin.show()
 
     @qtsig('')
-    def on_settemplate_clicked(self):
-        previous = str(self.datatemplate.text())
+    def on_settemplateBtn_clicked(self):
+        previous = str(self.templateEdit.text())
         if previous:
             startdir = path.dirname(previous)
         else:
@@ -90,7 +90,7 @@ into one set, as well as files 23 and 24.
 
     def set_template(self, fn):
         dtempl, numor = extract_template(fn)
-        self.datatemplate.setText(dtempl)
+        self.templateEdit.setText(dtempl)
         self.loader.template = dtempl
         try:
             cols, xguess, yguess, dyguess, mguess, nmon = \
@@ -100,47 +100,51 @@ into one set, as well as files 23 and 24.
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return
-        self.xcol.clear()
-        self.xcol.addItem('auto')
-        self.xcol.setCurrentIndex(0)
-        self.ycol.clear()
-        self.ycol.addItem('auto')
-        self.ycol.setCurrentIndex(0)
-        self.dycol.clear()
-        self.dycol.addItem('auto')
-        self.dycol.addItem('sqrt(Y)')
-        self.dycol.setCurrentIndex(0)
-        self.moncol.clear()
-        self.moncol.addItem('auto')
-        self.moncol.addItem('none')
-        self.moncol.setCurrentIndex(0)
+        self.xcolBox.clear()
+        self.xcolBox.addItem('auto')
+        self.xcolBox.setCurrentIndex(0)
+        self.ycolBox.clear()
+        self.ycolBox.addItem('auto')
+        self.ycolBox.setCurrentIndex(0)
+        self.dycolBox.clear()
+        self.dycolBox.addItem('auto')
+        self.dycolBox.addItem('sqrt(Y)')
+        self.dycolBox.setCurrentIndex(0)
+        self.moncolBox.clear()
+        self.moncolBox.addItem('auto')
+        self.moncolBox.addItem('none')
+        self.moncolBox.setCurrentIndex(0)
         for i, name in enumerate(cols):
-            self.xcol.addItem(name)
-            self.ycol.addItem(name)
-            self.dycol.addItem(name)
-            self.moncol.addItem(name)
-        self.monscale.setText(str(nmon or 1))
-        self.numors.setText(str(numor))
+            self.xcolBox.addItem(name)
+            self.ycolBox.addItem(name)
+            self.dycolBox.addItem(name)
+            self.moncolBox.addItem(name)
+        self.monscaleEdit.setText(str(nmon or 1))
+        self.numorsEdit.setText(str(numor))
         self.open_data()
 
     def open_data(self, final=False):
-        prec = self.precision.value()
-        xcol = str(self.xcol.currentText())
-        ycol = str(self.ycol.currentText())
-        dycol = str(self.dycol.currentText())
-        mcol = str(self.moncol.currentText())
+        try:
+            prec = float(self.precisionEdit.text())
+        except ValueError:
+            QMessageBox.information(self, 'Error', 'Enter a valid precision.')
+            return
+        xcol = str(self.xcolBox.currentText())
+        ycol = str(self.ycolBox.currentText())
+        dycol = str(self.dycolBox.currentText())
+        mcol = str(self.moncolBox.currentText())
         if mcol == 'none':
             mcol = None
         if dycol == 'sqrt(Y)':
             dycol = None
         try:
-            mscale = int(self.monscale.text())
+            mscale = int(self.monscaleEdit.text())
         except Exception:
             QMessageBox.information(self, 'Error', 'Monitor scale must be integer.')
             return
-        dtempl = self.datatemplate.text()
+        dtempl = self.templateEdit.text()
         self.loader.template = str(dtempl)
-        numors = str(self.numors.text())
+        numors = str(self.numorsEdit.text())
         try:
             datas = self.loader.load_numors(numors, prec,
                                             xcol, ycol, dycol, mcol, mscale)

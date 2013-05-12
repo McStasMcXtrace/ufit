@@ -35,7 +35,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="datalist">
+    <widget class="QListWidget" name="dataList">
      <property name="dragDropMode">
       <enum>QAbstractItemView::InternalMove</enum>
      </property>
