@@ -58,13 +58,19 @@ class MappingWindow(QMainWindow):
         zmin = maybe_float(self.zminEdit.text(), -1e300)
         zmax = maybe_float(self.zmaxEdit.text(), 1e300)
         yscale = maybe_float(self.scaleEdit.text(), 1.0)
-        plot_mapping(xaxis, yaxis, self.datas,
-                     minmax=(zmin, zmax),
-                     yscale=yscale,
-                     usemask=self.usemaskBox.isChecked(),
-                     interpolate=self.stepBox.value(),
-                     mat=not self.contourBox.isChecked(),
-                     log=self.logBox.isChecked(),
-                     dots=self.dotsBox.isChecked(),
-                     figure=self.canvas.figure)
+        try:
+            plot_mapping(xaxis, yaxis, self.datas,
+                         minmax=(zmin, zmax),
+                         yscale=yscale,
+                         usemask=self.usemaskBox.isChecked(),
+                         interpolate=self.stepBox.value(),
+                         mat=not self.contourBox.isChecked(),
+                         log=self.logBox.isChecked(),
+                         dots=self.dotsBox.isChecked(),
+                         figure=self.canvas.figure)
+        except Exception, err:
+            QMessageBox.warning(self, 'Mapping error',
+                                'Could not create mapping: %s (have you '
+                                'selected the right columns?)' % err)
+            return
         self.canvas.draw()
