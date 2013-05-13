@@ -8,9 +8,7 @@
 
 """Data mapping window."""
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QWidget, QDialog, QMainWindow, QVBoxLayout, \
-     QDialogButtonBox, QMessageBox
+from PyQt4.QtGui import QMainWindow, QVBoxLayout, QDialogButtonBox, QMessageBox
 
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 from ufit.plotting import mapping as plot_mapping
