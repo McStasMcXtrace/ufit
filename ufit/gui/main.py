@@ -96,7 +96,7 @@ class DatasetPanel(QTabWidget):
     def handle_new_model(self, model, update_mbuilder=True,
                          keep_paramvalues=True):
         if update_mbuilder:
-            self.mbuilder.modeldef.setText(model.get_description())
+            self.mbuilder.modeldefEdit.setText(model.get_description())
         self.model = model
         self.fitter.initialize(self.model, self.data, fit=False,
                                keep_old=keep_paramvalues)
