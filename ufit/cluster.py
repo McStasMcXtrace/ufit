@@ -11,6 +11,7 @@ Utilities for clustering execution of a piece of code to multiple hosts using
 SSH transport.
 """
 
+import sys
 import md5
 import Queue
 import threading
@@ -24,10 +25,32 @@ keyname = path.expanduser('~/.ufitcluster/key')
 clusterlist = []
 
 def init_cluster():
-    fp = open(path.expanduser('~/.ufitcluster/hosts'))
-    for line in fp: # user@host
-        clusterlist.append(line.strip().split('@'))
-    fp.close()
+    try:
+        fp = open(path.expanduser('~/.ufitcluster/hosts'))
+        for line in fp: # user@host
+            login, host = line.strip().split('@')
+            clusterlist.append((login, host))
+        fp.close()
+    except Exception, err:
+        print >>sys.stderr, 'Cannot read the list of cluster hosts:', err
+        print >>sys.stderr, 'Please create a file %s with one line for each ' \
+            'parallel process, for example:' % \
+            path.expanduser('~/.ufitcluster/hosts')
+        print >>sys.stderr
+        print >>sys.stderr, 'username@hostname1'
+        print >>sys.stderr, 'username@hostname1'
+        print >>sys.stderr, 'username@hostname1'
+        print >>sys.stderr, 'username@hostname1'
+        print >>sys.stderr, 'username@hostname2'
+        print >>sys.stderr, 'username@hostname2'
+        print >>sys.stderr
+        print >>sys.stderr, 'would run 4 parallel processes on hostname1 and ' \
+            '2 parallel processes on hostname2.'
+        print >>sys.stderr, 'For local operation only, use "localhost" as ' \
+            'hostname.'
+        print >>sys.stderr, 'The file %s must contain the SSH private key to ' \
+            'use for the connection, even for localhost.' % \
+            path.expanduser('~/.ufitcluster/key')
 
 
 def client_runner(client, task_queue, result_queue, code, funcname):
