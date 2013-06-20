@@ -28,6 +28,8 @@ def init_cluster():
     try:
         fp = open(path.expanduser('~/.ufitcluster/hosts'))
         for line in fp: # user@host
+            if line.startswith('#'):
+                continue
             login, host = line.strip().split('@')
             clusterlist.append((login, host))
         fp.close()
@@ -53,15 +55,15 @@ def init_cluster():
             path.expanduser('~/.ufitcluster/key')
 
 
-def client_runner(client, task_queue, result_queue, code, funcname):
+def client_runner(client, task_queue, result_queue):
     while True:
-        jobnum, args = task_queue.get()
+        code, funcname, jobnum, args = task_queue.get()
         if jobnum == -1:
             print '[C] exiting runner for %s' % client._host
             return
         try:
             sid = md5.new(str(time()) + str(args)).hexdigest()
-            print '[C] starting session on %s, job %s' % (client._host, sid)
+            print '[C] starting job on %s: %s' % (client._host, sid)
             code_footer = '''\nif __name__ == "__main__":
             import cPickle as pickle
             args = pickle.loads(%r)
@@ -77,19 +79,24 @@ def client_runner(client, task_queue, result_queue, code, funcname):
                 client.exec_command('python /tmp/ufit_cluster_%s.py; '
                                     'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
             result = pickle.load(stdout)
-            print '[C] done on job %s: %r' % (sid, result)
+            print '[C] done with job %s: %r' % (sid, result)
             result_queue.put((jobnum, result))
         except Exception, err:
             print '[C] no result on %s, requeuing: %r' % (client._host, err)
-            task_queue.put((jobnum, args))
+            task_queue.put((code, funcname, jobnum, args))
             return
 
 
-def run_cluster(code, funcname, argumentslist):
-    clients = []
-    runners = []
-    task_queue = Queue.Queue()
-    result_queue = Queue.Queue()
+clients = []
+runners = []
+task_queue = Queue.Queue()
+result_queue = Queue.Queue()
+cluster_setup = False
+
+def setup_cluster():
+    global cluster_setup
+    if cluster_setup:
+        return
     for i, (user, host) in enumerate(clusterlist):
         client = paramiko.SSHClient()
         client._host = '%s[%d]' % (host, i)
@@ -97,15 +104,26 @@ def run_cluster(code, funcname, argumentslist):
         client.connect(host, username=user, key_filename=keyname,
                        look_for_keys=False)
         clients.append(client)
+        print '[C] opened cluster connection to %s' % client._host
         runner = threading.Thread(target=client_runner,
-            args=(client, task_queue, result_queue, code, funcname))
+            args=(client, task_queue, result_queue))
         runners.append(runner)
         runner.start()
+    cluster_setup = True
+
+def kill_cluster():
+    for cl in clients:
+        task_queue.put((None, None, -1, None))  # end!
+        cl.close()
+
+
+def run_cluster(code, funcname, argumentslist):
+    setup_cluster()
     njobs = len(argumentslist)
     retval = [None] * njobs
     returns = 0
     for job in enumerate(argumentslist):
-        task_queue.put(job)
+        task_queue.put((code, funcname) + job)
     while returns < njobs:
         # XXX check if any client is still running
         jobnum, result = result_queue.get()
@@ -113,9 +131,6 @@ def run_cluster(code, funcname, argumentslist):
             raise result
         retval[jobnum] = result
         returns += 1
-    for cl in clients:
-        task_queue.put((-1, None))  # end!
-        cl.close()
     return retval
 
 init_cluster()
