@@ -63,7 +63,8 @@ def client_runner(client, task_queue, result_queue):
             return
         try:
             sid = md5.new(str(time()) + str(args)).hexdigest()
-            print '[C] starting job on %s: %s' % (client._host, sid)
+            sys.stdout.write('.'); sys.stdout.flush()
+            #print '[C] starting job on %s: %s' % (client._host, sid)
             code_footer = '''\nif __name__ == "__main__":
             import cPickle as pickle
             args = pickle.loads(%r)
@@ -79,7 +80,7 @@ def client_runner(client, task_queue, result_queue):
                 client.exec_command('python /tmp/ufit_cluster_%s.py; '
                                     'rm /tmp/ufit_cluster_%s.py' % (sid, sid))
             result = pickle.load(stdout)
-            print '[C] done with job %s: %r' % (sid, result)
+            #print '[C] done with job %s: %r' % (sid, result)
             result_queue.put((jobnum, result))
         except Exception, err:
             print '[C] no result on %s, requeuing: %r' % (client._host, err)
