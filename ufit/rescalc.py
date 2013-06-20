@@ -16,7 +16,7 @@ import multiprocessing
 
 from numpy import pi, radians, degrees, sin, cos, tan, arcsin, arccos, \
      arctan2, abs, sqrt, real, matrix, diag, cross, dot, array, arange, \
-     zeros, concatenate, reshape, delete, exp
+     zeros, concatenate, reshape, delete
 from numpy.random import randn
 from numpy.linalg import inv, det, eig, norm
 
@@ -214,8 +214,88 @@ class unitcell(object):
         return degrees(arcsin(Q*lam/4/pi))
 
 
-# instrumental setup description
+# parameters
+PARNAMES = [
+    'dm',
+    'da',
+    'etam',
+    'etas',
+    'etaa',
+    'sm',
+    'ss',
+    'sa',
+    'k',
+    'kfix',
+    'alpha1',
+    'alpha2',
+    'alpha3',
+    'alpha4',
+    'beta1',
+    'beta2',
+    'beta3',
+    'beta4',
+    'as',
+    'bs',
+    'cs',
+    'aa',
+    'bb',
+    'cc',
+    'ax',
+    'ay',
+    'az',
+    'bx',
+    'by',
+    'bz',
+    'qx',
+    'qy',
+    'qz',
+    'en',
+    'dqx',
+    'dqy',
+    'dqz',
+    'de',
+    'gh',
+    'gk',
+    'gl',
+    'gmod',
+]
+
 CFGNAMES = [
+    'sourcetype',
+    'sourcewidth',
+    'sourceheight',
+    'guideon',
+    'guidedivh',
+    'guidedivv',
+    'samplecuboid',
+    'samplewidthperp',
+    'samplewidthpar',
+    'sampleheight',
+    'detrectangular',
+    'detwidth',
+    'detheight',
+    'monothickness',
+    'monowidth',
+    'monoheight',
+    'anathickness',
+    'anawidth',
+    'anaheight',
+    'distsm',
+    'distms',
+    'distsa',
+    'distad',
+    'curvmonoh',
+    'curvmonov',
+    'curvanah',
+    'curvanav',
+    'distmoni',
+    'moniwidth',
+    'moniheight',
+]
+
+
+# instrumental setup description
+CFGDESC = [
     "=0 for circular source, =1 for rectangular source",
     "width/diameter of the source (cm)",
     "height/diameter of the source (cm)",
@@ -860,7 +940,8 @@ Resolution Info:
         msg += 'NR' + ('Value   :  ').rjust(16) + 'Explanation\n'
         msg += '===============================\n'
         for i in range(len(self.cfg)):
-            msg += '%2i' % i + ('%1.3f   :  ' % self.cfg[i]).rjust(16) + '%s\n' % self.cfgnames[i]
+            msg += '%2i' % i + ('%1.3f   :  ' % self.cfg[i]).rjust(16) + \
+                '%s\n' % CFGDESC[i]
         print msg
 
     def resellipse(self):
@@ -1023,6 +1104,12 @@ def single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected):
 
 pool = None
 
+class dummy_result(object):
+    def __init__(self, res):
+        self.res = res
+    def get(self):
+        return self.res
+
 def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """Calculates intensity of point in reciprocal space (qh,qk,ql,en) at takes
     into account the spectrometer resolution calculated by resolution class
@@ -1042,7 +1129,7 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
                 print 'Scattering triangle will not close for point: ' \
                     'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
                 print 'Attention: Intensity is therefore equal to zero at this point!'
-                results.append(pool.apply_async(lambda: 0))
+                results.append(dummy_result(0))
                 continue
             sigma = resmat.calcSigma()
             b_mat = resmat.b_mat[0:16]
