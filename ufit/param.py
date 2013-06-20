@@ -14,8 +14,8 @@ import numpy as np
 
 from ufit import UFitError
 
-__all__ = ['fixed', 'expr', 'overall', 'datapar', 'limited', 'Param',
-           'expr_namespace']
+__all__ = ['fixed', 'expr', 'overall', 'datapar', 'limited', 'delta',
+           'Param', 'expr_namespace']
 
 
 class fixed(str):
@@ -62,6 +62,12 @@ class limited(tuple):
     """
     def __new__(self, min, max, v):
         return (min, max, v)
+
+class delta(object):
+    """Give parameter delta together with initial value."""
+    def __init__(self, delta, v):
+        self.delta = delta
+        self.v = v
 
 
 expr_namespace = {
@@ -112,6 +118,9 @@ class Param(object):
             elif isinstance(pdef, datapar):
                 self.expr = 'data.' + pdef.v
                 pdef = 0
+            elif isinstance(pdef, delta):
+                self.delta = pdef.delta
+                pdef = pdef.v
             elif isinstance(pdef, tuple) and len(pdef) == 3:
                 self.pmin, self.pmax, pdef = pdef
             else:
