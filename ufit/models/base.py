@@ -207,13 +207,14 @@ class Model(object):
         if self._orig_params is not None:
             self.params = [p.copy() for p in self._orig_params]
 
-    def plot(self, data, axes=None, labels=True, pdict=None):
+    def plot(self, data, axes=None, labels=True, pdict=None, **kw):
         """Plot the model and the data in the current figure."""
-        DataPlotter(axes=axes).plot_model(self, data, labels, pdict)
+        DataPlotter(axes=axes).plot_model(self, data, labels, pdict, **kw)
 
-    def plot_components(self, data, axes=None, labels=True, pdict=None):
+    def plot_components(self, data, axes=None, labels=True, pdict=None, **kw):
         """Plot subcomponents of the model in the current figure."""
-        DataPlotter(axes=axes).plot_model_components(self, data, labels, pdict)
+        DataPlotter(axes=axes).plot_model_components(self, data, labels,
+                                                     pdict, **kw)
 
     def add_params(self, **params):
         """Add parameters that referenced by expressions in other parameters.

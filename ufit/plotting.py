@@ -130,7 +130,8 @@ class DataPlotter(object):
         xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
+        self.axes.plot(xxp, yy, kw.pop('fmt', 'g'), lw=2,
+                       label=labels and 'fit' or '', **kw)
 
     def plot_model_components(self, model, data, labels=True, paramvalues=None,
                               **kw):
@@ -142,7 +143,8 @@ class DataPlotter(object):
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         for comp in model.get_components():
             yy = comp.fcn(paramvalues, xx)
-            self.axes.plot(xxp, yy, '-.', label=labels and comp.name or '',
+            self.axes.plot(xxp, yy, kw.pop('fmt', '-.'),
+                           label=labels and comp.name or '',
                            **kw)
 
     def plot_params(self, params, chisqr):
