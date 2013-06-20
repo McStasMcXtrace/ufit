@@ -126,11 +126,20 @@ class Dataset(object):
         alldata = concatenate([dset._data for dset in allsets])
         new_array = rebin(alldata, binsize)
         sources = sum((dset.sources for dset in allsets), [])
-        # XXX should we merge meta's?
-        return self.__class__(self.meta, new_array,
-                              self.xcol, self.ycol, self.ncol, self.nscale,
-                              name='_'.join(d.name for d in allsets),
-                              sources=sources)
+        new_meta = self.meta.copy()
+        # XXX hkl data is a mess
+        if 'is_hkldata' in self.meta and binsize == 0:
+            new_meta['hkle'] = concatenate([dset.meta['hkle']
+                                            for dset in allsets])
+            print new_meta['hkle']
+        # XXX should we merge other meta's?
+        ret = self.__class__(new_meta, new_array,
+                             self.xcol, self.ycol, self.ncol, self.nscale,
+                             name='_'.join(d.name for d in allsets),
+                             sources=sources)
+        if 'is_hkldata' in self.meta:
+            ret.x = ret.meta['hkle']
+        return ret
 
     def plot(self, axes=None, symbols=True, lines=False):
         """Plot the dataset using matplotlib.

@@ -9,6 +9,10 @@ def rebin(data, binsize):
     """Simple rebinning of (x, y, dy, n) data."""
     # XXX make it work with hkle 4-d x data
 
+    if binsize == 0:
+        # no merging, just concatenate
+        return data
+
     x, y, dy, n = data.T
 
     # calculate new x values

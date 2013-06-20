@@ -92,6 +92,8 @@ class Loader(object):
             elif isinstance(col, str):
                 return col
             return colnames[col - 1]   # 1-based indices
+        if use_hkl:
+            meta['is_hkldata'] = True
         dset = Dataset(meta, datarr, colname(xcol), colname(ycol),
                        colname(ncol), nscale)
         if use_hkl and 'hkle' in dset.meta:  # 3-axis support
