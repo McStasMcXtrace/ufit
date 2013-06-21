@@ -54,27 +54,55 @@ class ConvolvedScatteringLaw(Model):
         init['NMC'] = str(NMC)  # str() makes it a fixed parameter
 
         instparnames = []
+        par_all = False
+        cfg_all = False
         self._instpars = []
 
+        cfg_orig = load_cfg(instfiles[0])
+        par_orig = load_par(instfiles[1])
+
         for par in init:
+            if par == 'par_ALL':
+                par_all = True
+            if par == 'cfg_ALL':
+                cfg_all = True
             if par.startswith('par_'):
                 if par[4:] in PARNAMES:
                     self._instpars.append(par[4:])
                     instparnames.append(par)
+                    if init[par] is None:
+                        init[par] = str(par_orig[par[4:]])
                 else:
                     raise Exception('invalid instrument parameter: %r' % par)
             if par.startswith('cfg_'):
                 if par[4:] in CFGNAMES:
                     self._instpars.append(CFGNAMES.index(par[4:]))
                     instparnames.append(par)
+                    if init[par] is None:
+                        init[par] = str(cfg_orig[CFGNAMES.index(par[4:])])
                 else:
                     raise Exception('invalid instrument configuration: %r' % par)
+
+        if par_all:
+            instparnames = [pn for pn in instparnames if not pn.startswith('par_')]
+            self._instpars = [pn for pn in self._instpars if not isinstance(pn, str)]
+            instparnames.extend('par_' + pn for pn in PARNAMES)
+            self._instpars.extend(PARNAMES)
+            for pn in PARNAMES:
+                init['par_' + pn] = par_orig[pn]
+        if cfg_all:
+            instparnames = [pn for pn in instparnames if not pn.startswith('cfg_')]
+            self._instpars = [ip for ip in self._instpars if isinstance(ip, str)]
+            instparnames.extend('cfg_' + x for x in CFGNAMES)
+            self._instpars.extend(range(len(CFGNAMES)))
+            for i in range(len(CFGNAMES)):
+                init['cfg_' + CFGNAMES[i]] = cfg_orig[i]
 
         self._pvs = self._init_params(name,
             ['NMC', 'bkgd'] + inspect.getargspec(self._sqw)[0][6:] +
             instparnames, init)
         self._ninstpar = len(instparnames)
-        self._resmat = resmat(load_cfg(instfiles[0]), load_par(instfiles[1]))
+        self._resmat = resmat(cfg_orig, par_orig)
 
     def fcn(self, p, x):
         parvalues = [p[pv] for pv in self._pvs]
