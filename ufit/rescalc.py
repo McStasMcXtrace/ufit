@@ -246,18 +246,18 @@ PARNAMES = [
     'bx',
     'by',
     'bz',
-    'qx',
-    'qy',
-    'qz',
-    'en',
-    'dqx',
-    'dqy',
-    'dqz',
-    'de',
-    'gh',
-    'gk',
-    'gl',
-    'gmod',
+    # 'qx',    # these are irrelevant for our resolution calc.
+    # 'qy',
+    # 'qz',
+    # 'en',
+    # 'dqx',
+    # 'dqy',
+    # 'dqz',
+    # 'de',
+    # 'gh',
+    # 'gk',
+    # 'gl',
+    # 'gmod',
 ]
 
 CFGNAMES = [
@@ -438,11 +438,6 @@ class resmat(object):
         L2 = self.cfg[21]                 # distance between sample and analyser [cm].
         L3 = self.cfg[22]                 # distance between analyser and detector [cm].
 
-        romh = sm*self.cfg[23]            # horizontal curvature of monochromator 1/radius [cm-1].
-        romv = sm*self.cfg[24]            # vertical curvature of monochromator [cm-1].
-        roah = sa*self.cfg[25]            # horizontal curvature of analyser [cm-1].
-        roav = sa*self.cfg[26]            # vertical curvature of analyser [cm-1].
-
         L1mon = self.cfg[27]              #distance monochromator monitor [cm]
         monitorw = self.cfg[28]/sqrt(12)  #monitor width [cm]
         monitorh = self.cfg[29]/sqrt(12)  #monitor height [cm]
@@ -471,7 +466,35 @@ class resmat(object):
         thetaa = sa*arcsin(pi/(da*kf))      # theta angles for analyser
         thetam = sm*arcsin(pi/(dm*ki))      # and monochromator.
         thetas = ss*0.5*arccos((ki**2+kf**2-q0**2)/(2*ki*kf)) # scattering angle from sample.
-        phi = arctan2(-kf*sin(2*thetas),ki-kf*cos(2*thetas))
+        phi = arctan2(-kf*sin(2*thetas), ki-kf*cos(2*thetas))
+
+        # _____________________________________________________________________________
+
+        # automatic determination of curvature, added GB 06/2013
+        if self.cfg[23] == -1:
+            if flag_guide:
+                romh = sm*0.5*(1./L1)*sin(abs(thetam))
+            else:
+                romh = sm*0.5*(1./L0 + 1./L1)*sin(abs(thetam))
+        else:
+            romh = sm*self.cfg[23]          # horizontal curvature of monochromator 1/radius [cm-1].
+        if self.cfg[24] == -1:
+            if flag_guide:
+                romv = sm*0.5*(1./L1)*sin(abs(thetam))**(-1)
+            else:
+                romv = sm*0.5*(1./L0 + 1./L1)*sin(abs(thetam))**(-1)
+        else:
+            romv = sm*self.cfg[24]          # vertical curvature of monochromator [cm-1].
+        if self.cfg[25] == -1:
+            roah = sa*0.5*(1./L2 + 1./L3)*sin(abs(thetaa))
+        else:
+            roah = sa*self.cfg[25]          # horizontal curvature of analyser [cm-1].
+        if self.cfg[26] == -1:
+            roav = sa*0.5*(1./L2 + 1./L3)*sin(abs(thetaa))**(-1)
+        else:
+            roav = sa*self.cfg[26]          # vertical curvature of analyser [cm-1].
+
+        # _____________________________________________________________________________
 
         # Make up the matrices in appendix 1 of M. Popovici (1975).
 
