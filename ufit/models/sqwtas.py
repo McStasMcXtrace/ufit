@@ -34,6 +34,15 @@ class ConvolvedScatteringLaw(Model):
     background is always included as a parameter named "bkgd".
 
     *instfiles* must be ('instr.cfg', 'instr.par').
+
+    Initial parameters can include parameters named cfg_... and par_...; this
+    will add instrument configuration and parameters to the fitting parameters.
+    They can be given initial values or a None value, in which case the initial
+    value will come from the .cfg or .par file.
+
+    Use cfg_ALL=1 or par_ALL=1 to add all cfg or par entries to the fit
+    parameters (this is mostly useful to interactively play around with the
+    resolution in one scan).
     """
     nsamples = -4  # for plotting: plot only 4x as many points as datapoints
 
