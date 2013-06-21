@@ -109,15 +109,16 @@ class Result(object):
         print '%-15s = %10.4g' % ('chi^2/NDF', self.chisqr)
         print '=' * 80
 
-    def plot(self, axes=None, params=True):
+    def plot(self, axes=None, params=True, multi=False):
         """Plot the data and model together in the current figure.
 
         If *params* is true, also plot parameter values as text.
         """
         plotter = DataPlotter(axes=axes)
-        plotter.plot_data(self.data)
-        plotter.plot_model(self.model, self.data, paramvalues=self.paramvalues)
-        if params:
+        c = plotter.plot_data(self.data, multi=multi)
+        plotter.plot_model(self.model, self.data, paramvalues=self.paramvalues,
+                           labels=not multi, color=c)
+        if params and not multi:
             plotter.plot_params(self.params, self.chisqr)
 
     def plotfull(self, axes=None, params=True):

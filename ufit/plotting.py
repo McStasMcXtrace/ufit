@@ -59,22 +59,22 @@ class DataPlotter(object):
         self.axes.clear()
         self.marker_cycle = cycle(self.markers)
 
-    def plot_data(self, data, multi=False):
+    def plot_data(self, data, multi=False, ms=8):
         """Plot dataset."""
         axes = self.axes
         marker = self.marker_cycle.next() if self.symbols else ''
         ls = '-' if self.lines else ''
         if data.mask.all():
             eb = axes.errorbar(data.x_plot, data.y, data.dy, ls=ls, marker=marker,
-                               ms=8, label=data.name, picker=5)
+                               ms=ms, label=data.name, picker=5)
             color = eb[0].get_color()
         else:
             mask = data.mask
             eb = axes.errorbar(data.x_plot[mask], data.y[mask], data.dy[mask], ls=ls,
-                               marker=marker, ms=8, label=data.name, picker=5)
+                               marker=marker, ms=ms, label=data.name, picker=5)
             color = eb[0].get_color()
             axes.errorbar(data.x_plot[~mask], data.y[~mask], data.dy[~mask], ls='',
-                          marker=marker, ms=8, picker=5, mfc='white', mec=color,
+                          marker=marker, ms=ms, picker=5, mfc='white', mec=color,
                           label='')
         if not multi:
             if data.fitmin is not None:
@@ -114,7 +114,8 @@ class DataPlotter(object):
         xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xxp, yy, 'g', lw=2, label=labels and 'fit' or '', **kw)
+        self.axes.plot(xxp, yy, 'g', lw=kw.pop('kw', 2),
+                       label=labels and 'fit' or '', **kw)
         for comp in model.get_components():
             if comp is model:
                 continue
@@ -130,7 +131,7 @@ class DataPlotter(object):
         xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xxp, yy, kw.pop('fmt', 'g'), lw=2,
+        self.axes.plot(xxp, yy, kw.pop('fmt', 'g'), lw=kw.pop('lw', 2),
                        label=labels and 'fit' or '', **kw)
 
     def plot_model_components(self, model, data, labels=True, paramvalues=None,
@@ -195,7 +196,7 @@ def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
                    min(yss):max(yss):interpolate]
     zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
     if mat:
-        im = axes.imshow(zi.T, origin='lower', aspect='auto',
+        im = axes.imshow(zi.T, origin='lower', aspect='auto', interpolation='nearest',
                          extent=(xi[0][0]/xscale, xi[-1][-1]/xscale,
                                  yi[-1][-1]/yscale, yi[0][0]/yscale))
     else:
@@ -204,4 +205,4 @@ def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
     axes.set_ylabel(y)
     figure.colorbar(im)
     if dots:
-        axes.scatter(xss, yss, 0.5)
+        axes.scatter(xss, yss, 0.1)
