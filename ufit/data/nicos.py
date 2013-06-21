@@ -114,4 +114,7 @@ def read_data(filename, fp):
         meta['environment'].append('B = %.3f K' % meta['B'])
     if colnames[3] == 'E':
         meta['hkle'] = coldata[:,:4]
+        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
+        xg = colnames[deviations.argmax()]
+        meta['hkle_vary'] = xg
     return colnames, coldata, meta
