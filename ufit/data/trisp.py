@@ -75,4 +75,6 @@ def read_data(filename, fp):
         raise UFitError('No data found in file %r' % filename)
     if names[0] == 'QH':
         meta['hkle'] = arr[:,:4]
+        deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
+        meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
     return names, arr, meta
