@@ -80,7 +80,7 @@ class Fitter(QWidget):
         self.param_frame = QFrame(self)
         layout = QGridLayout()
         for j, text in enumerate(('Param', 'Value', 'Error', 'Fix', 'Expr',
-                                  'Min', 'Max')):
+                                  'Min', 'Max', 'Delta')):
             ctl = QLabel(text, self)
             ctl.setFont(self.statusLabel.font())
             layout.addWidget(ctl, 0, j)
@@ -105,7 +105,8 @@ class Fitter(QWidget):
                 e4.lineEdit().setText(p.expr or '')
             e5 = SmallLineEdit(p.pmin is not None and '%.5g' % p.pmin or '', self)
             e6 = SmallLineEdit(p.pmax is not None and '%.5g' % p.pmax or '', self)
-            ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6)
+            e7 = SmallLineEdit(p.delta and '%.5g' % p.delta or '', self)
+            ctls = self.param_controls[p] = (e0, e1, e2, e3, e4, e5, e6, e7)
             for j, ctl in enumerate(ctls):
                 layout.addWidget(ctl, i, j)
             i += 1
@@ -132,6 +133,7 @@ class Fitter(QWidget):
                 ctls[3].setEnabled(False)
                 ctls[5].setEnabled(False)
                 ctls[6].setEnabled(False)
+                ctls[7].setEnabled(False)
             # else, if "fixed" is checked...
             elif ctls[3].checkState() == Qt.Checked:
                 # enable value, but disable expr and minmax
@@ -139,6 +141,7 @@ class Fitter(QWidget):
                 ctls[4].setEnabled(False)
                 ctls[5].setEnabled(False)
                 ctls[6].setEnabled(False)
+                ctls[7].setEnabled(False)
             # else: not fixed, no expr
             else:
                 # enable everything
@@ -149,6 +152,7 @@ class Fitter(QWidget):
                 ctls[4].setEnabled(True)
                 ctls[5].setEnabled(True)
                 ctls[6].setEnabled(True)
+                ctls[7].setEnabled(True)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
@@ -170,7 +174,7 @@ class Fitter(QWidget):
 
     def update_from_controls(self):
         for p, ctls in self.param_controls.iteritems():
-            _, val, _, fx, expr, pmin, pmax = ctls
+            _, val, _, fx, expr, pmin, pmax, delta = ctls
             p.value = float(val.text()) if val.text() else 0
             if fx.checkState() == Qt.Checked:
                 p.expr = str(val.text())
@@ -178,6 +182,7 @@ class Fitter(QWidget):
                 p.expr = str(expr.currentText())
             p.pmin = float(pmin.text()) if pmin.text() else None
             p.pmax = float(pmax.text()) if pmax.text() else None
+            p.delta = float(delta.text()) if delta.text() else 0
         self.update_enables()
         self.emit(SIGNAL('dirty'))
 
@@ -198,6 +203,7 @@ class Fitter(QWidget):
                 ctls[4].lineEdit().setText(p0.expr or '')
             ctls[5].setText(p0.pmin is not None and '%.5g' % p0.pmin or '')
             ctls[6].setText(p0.pmax is not None and '%.5g' % p0.pmax or '')
+            ctls[7].setText(p0.delta and '%.5g' % p0.delta or '')
         self.emit(SIGNAL('dirty'))
         self.do_plot()
 
