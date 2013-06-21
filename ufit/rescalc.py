@@ -341,6 +341,7 @@ class resmat(object):
 
     This code was ported from Bertrand Roessli's octave version of the ILL
     rescal MATLAB tools.
+    Checked against rescal5 rc_popma.m from ILL matlab libraries from 06/2013.
     """
 
     def __init__(self, cfg, par):
@@ -370,7 +371,9 @@ class resmat(object):
         self._cache = {}
 
     def calc_popovici(self):
-        """Performs the actual calculation."""
+        """Performs the actual calculation.
+
+        """
         # reset errors before new calculation
         self.ERROR = None
 
@@ -428,7 +431,6 @@ class resmat(object):
         ymon = self.cfg[14]               # width of monochromator [cm].
         zmon = self.cfg[15]               # height of monochromator [cm].
 
-
         xana = self.cfg[16]               # thickness of analyser [cm].
         yana = self.cfg[17]               # width of analyser [cm].
         zana = self.cfg[18]               # height of analyser [cm].
@@ -437,6 +439,8 @@ class resmat(object):
         L1 = self.cfg[20]                 # distance between monochromator and sample [cm].
         L2 = self.cfg[21]                 # distance between sample and analyser [cm].
         L3 = self.cfg[22]                 # distance between analyser and detector [cm].
+
+        # curvature radii are handled below, after we calculated thetam and thetaa.
 
         L1mon = self.cfg[27]              #distance monochromator monitor [cm]
         monitorw = self.cfg[28]/sqrt(12)  #monitor width [cm]
@@ -447,30 +451,28 @@ class resmat(object):
 
         # _____________________________________________________________________________
 
-        # In addition the parameters f, energy pre-multiplier-f*w
-        # where f=0.48 for meV to ang-2 - and q0 which is the wavevector
-        # transfer in ang-1, are passed over.
+        # THIS ASSUMES w IS IN meV!
 
         # Calculate ki and kf, thetam and thetaa
-        ki = abs(sqrt(kfix**2+(fx-1) * MEV2AA2 * w))  # kinematical equations.
-        kf = abs(sqrt(kfix**2-(2-fx) * MEV2AA2 * w))
+        ki = abs(sqrt(kfix**2 + (fx-1) * MEV2AA2 * w))  # kinematical equations.
+        kf = abs(sqrt(kfix**2 - (2-fx) * MEV2AA2 * w))
 
         # Test if scattering triangle is closed
 
-        cos_2theta = (ki**2 + kf**2 - q0**2)/(2*ki*kf)
+        cos_2theta = (ki**2 + kf**2 - q0**2) / (2*ki*kf)
         # print cos_2theta
-        if (cos_2theta > 1 or cos_2theta < -1):
+        if not -1 <= cos_2theta <= 1:
             self.ERROR = 'scattering triangle not closed'
             return
 
         thetaa = sa*arcsin(pi/(da*kf))      # theta angles for analyser
         thetam = sm*arcsin(pi/(dm*ki))      # and monochromator.
-        thetas = ss*0.5*arccos((ki**2+kf**2-q0**2)/(2*ki*kf)) # scattering angle from sample.
-        phi = arctan2(-kf*sin(2*thetas), ki-kf*cos(2*thetas))
+        thetas = ss*0.5*arccos((ki**2 + kf**2 - q0**2) / (2*ki*kf)) # scattering angle from sample.
+        phi = arctan2(-kf*sin(2*thetas), ki - kf*cos(2*thetas))
 
         # _____________________________________________________________________________
 
-        # automatic determination of curvature, added GB 06/2013
+        # automatic determination of curvature, added GB 06/2013 (not in RESCAL5)
         if self.cfg[23] == -1:
             if flag_guide:
                 romh = sm*0.5*(1./L1)*sin(abs(thetam))
@@ -504,10 +506,10 @@ class resmat(object):
             alf0_guide = MIN2RAD*2*pi*guide_h/ki
             bet0 = MIN2RAD*2*pi*guide_v/ki
 
-            if alf0_guide <= alf0:
-                alf0 = alf0_guide  # take into account collimator in the guide
+            if alf0_guide <= alf0:  # take into account collimator in the guide
+                alf0 = alf0_guide   # (not in RESCAL5)
 
-        G = matrix(zeros((8,8)))
+        G = matrix(zeros((8, 8)))
         G[0,0] = 1/alf0**2    # horizontal and vertical collimation matrix. The 4 Soller collimators
         G[1,1] = 1/alf1**2    # are described by a 8x8 diagonal matrix with non-zero elements.
         G[2,2] = 1/bet0**2    # alfi and beti are the FWHM horizontal and vertical beam divergences in
@@ -517,13 +519,13 @@ class resmat(object):
         G[6,6] = 1/bet2**2
         G[7,7] = 1/bet3**2
 
-        F = matrix(zeros((4,4)))
+        F = matrix(zeros((4, 4)))
         F[0,0] = 1/etam**2    # monochromator and analyser mosaic matrix. horizontal and vertical mosaic
         F[1,1] = 1/etamp**2   # spreads for monochromator and analyzer crystals
         F[2,2] = 1/etaa**2
         F[3,3] = 1/etaap**2
 
-        C = matrix(zeros((4,8)))
+        C = matrix(zeros((4, 8)))
         C[0,0] = 1./2
         C[0,1] = C[0,0]
         C[2,4] = C[0,0]
@@ -535,7 +537,7 @@ class resmat(object):
         C[3,7] = -C[3,6]              # thetaa = -arcsin(Ta/2kf))epsilona
                                       # epsilonm/a = 1 if sample scattering
                                       # direction opposite do mono/ana scattering dir, -1 otherwise
-        A = matrix(zeros((6,8)))
+        A = matrix(zeros((6, 8)))
         A[0,0] = ki/(tan(thetam)*2)
         A[0,1] = -A[0,0]
         A[1,1] = ki
@@ -545,7 +547,7 @@ class resmat(object):
         A[4,4] = kf
         A[5,6] = A[4,4]
 
-        B = matrix(zeros((4,6)))
+        B = matrix(zeros((4, 6)))
         B[0,0] = cos(phi)
         B[0,1] = sin(phi)
         B[0,3] = -cos(phi-2*thetas)    # thetas = scattering angle of
@@ -561,14 +563,15 @@ class resmat(object):
 
         # Now include the spatial effects.
 
-        S1I = matrix(zeros((3,3)))
         # --- monochromator spatial covariances ----------
+        S1I = matrix(zeros((3, 3)))
         factor = f12
         S1I[0,0] = factor*xmon**2
         S1I[1,1] = factor*ymon**2
         S1I[2,2] = factor*zmon**2
-        S2I = zeros((3,3))
+
         # --- sample spatial covariances -----------
+        S2I = zeros((3, 3))
         if nsam == 0:
             factor = f16
         else:
@@ -577,14 +580,15 @@ class resmat(object):
         S2I[0,0] = factor*xsam**2
         S2I[1,1] = factor*ysam**2
         S2I[2,2] = f12*zsam**2
+
         # --- analyser spatial covariances ---------
         factor = f12
-        S3I = zeros((3,3))
+        S3I = zeros((3, 3))
         S3I[0,0] = factor*xana**2
         S3I[1,1] = factor*yana**2
         S3I[2,2] = factor*zana**2
         # --- construct the full spatial covariance matrix
-        SI = zeros((13,13))
+        SI = zeros((13, 13))
         # --- source covariance --------------------
         if nsou == 0:
             factor = f16      # factor for converting diameter**2 to variance**2
@@ -606,27 +610,27 @@ class resmat(object):
         SI[11,11] = factor*ydet**2
         SI[12,12] = factor*zdet**2
 
-        S = inv(5.545*SI)
+        S = inv(5.545 * SI)
 
-        T = matrix(zeros((4,13)))
-        T[0,0] = -1/(2*L0)
-        T[0,2] = cos(thetam)*(1/L1-1/L0)/2
-        T[0,3] = sin(thetam)*(1/L0+1/L1-2*romh/(sin(thetam)))/2
-        T[0,5] = sin(thetas)/(2*L1)
-        T[0,6] = cos(thetas)/(2*L1)
-        T[1,1] = -1/(2*L0*sin(thetam))
-        T[1,4] = (1/L0+1/L1-2*sin(thetam)*romv)/(2*sin(thetam))
-        T[1,7] = -1/(2*L1*sin(thetam))
-        T[2,5] = sin(thetas)/(2*L2)
-        T[2,6] = -cos(thetas)/(2*L2)
-        T[2,8] = cos(thetaa)*(1/L3-1/L2)/2
-        T[2,9] = sin(thetaa)*(1/L2+1/L3-2*roah/(sin(thetaa)))/2
-        T[2,11] = 1/(2*L3)
-        T[3,7] = -1/(2*L2*sin(thetaa))
-        T[3,10] = (1/L2+1/L3-2*sin(thetaa)*roav)/(2*sin(thetaa))
-        T[3,12] = -1/(2*L3*sin(thetaa))
+        T = matrix(zeros((4, 13)))
+        T[0,0] = -1./(2*L0)
+        T[0,2] = cos(thetam)*(1./L1 - 1./L0)/2
+        T[0,3] = sin(thetam)*(1./L0 + 1./L1 - 2*romh/sin(thetam))/2
+        T[0,5] = sin(thetas)/(2.*L1)
+        T[0,6] = cos(thetas)/(2.*L1)
+        T[1,1] = -1./(2*L0*sin(thetam))
+        T[1,4] = (1./L0 + 1./L1 - 2*sin(thetam)*romv)/(2*sin(thetam))
+        T[1,7] = -1./(2*L1*sin(thetam))
+        T[2,5] = sin(thetas)/(2.*L2)
+        T[2,6] = -cos(thetas)/(2.*L2)
+        T[2,8] = cos(thetaa)*(1./L3 - 1./L2)/2
+        T[2,9] = sin(thetaa)*(1./L2 + 1./L3 - 2*roah/sin(thetaa))/2
+        T[2,11] = 1./(2*L3)
+        T[3,7] = -1./(2*L2*sin(thetaa))
+        T[3,10] = (1./L2 + 1./L3 - 2*sin(thetaa)*roav)/(2*sin(thetaa))
+        T[3,12] = -1./(2*L3*sin(thetaa))
 
-        D = matrix(zeros((8,13)))
+        D = matrix(zeros((8, 13)))
         D[0,0] = -1./L0
         D[0,2] = -cos(thetam)/L0
         D[0,3] = sin(thetam)/L0
@@ -652,12 +656,12 @@ class resmat(object):
 
         # Construction of the resolution matrix
         #if det(D*inv(S+T.transpose()*F*T)*D.transpose()) != 0:
-        MI = B*A*(inv(inv(D*(inv(S+T.transpose()*F*T))*D.transpose())+G))*A.transpose()*B.transpose() # including spatial effects.
+        MI = B*A*inv(inv(D*inv(S + T.T*F*T)*D.T) + G)*A.T*B.T # including spatial effects.
         #else:
         #MI = B*A*(inv(G))*A.transpose()*B.transpose()
         #MI = B*A*[inv[G+C'*F*C]]*A'*B'  # Cooper and Nathans matrix,
-        MI[1,1] = MI[1,1]+q0**2*etas**2
-        MI[2,2] = MI[2,2]+q0**2*etasp**2
+        MI[1,1] = MI[1,1] + q0**2*etas**2
+        MI[2,2] = MI[2,2] + q0**2*etasp**2
         M = inv(MI)
         NP = 5.545*M                        # Correction factor as input parameters
         N = NP
@@ -666,9 +670,6 @@ class resmat(object):
 
         #mon = 1          # monochromator reflectivity
         #ana = 1          # detector and analyser crystal efficiency function. [const.]
-
-        self.vi = 0
-        self.vf = 0
 
         #if mon_flag==1
         #   vi = 1
@@ -691,13 +692,12 @@ class resmat(object):
         Rm = ki**3/tan(thetam)
         Ra = kf**3/tan(thetaa)
         R0 = Rm*Ra*(2*pi)**4/(64*pi**2*sin(thetam)*sin(thetaa))* \
-            sqrt(det(F)/det((D*(S+T.transpose()*F*T)**(-1)*D.transpose())**(-1)+G)) #Popovici
+            sqrt(det(F) / det(inv(D*inv(S + T.T*F*T)*D.T) + G)) #Popovici
         # Werner and Pynn correction
         # for mosaic spread of crystal.
-        R0 = abs(R0/(etas*sqrt(1/etas**2+q0**2*N[1,1])))
+        R0 = abs(R0 / (etas*sqrt(1/etas**2 + q0**2*N[1,1])))
 
-        #Transform prefactor to Chesser-Axe normalization
-        RM_ = matrix(zeros((4,4)))
+        RM_ = matrix(zeros((4, 4)))
         RM_[0,0] = M[0,0]
         RM_[1,0] = M[1,0]
         RM_[0,1] = M[0,1]
@@ -712,10 +712,14 @@ class resmat(object):
         RM_[3,3] = M[2,2]
         RM_[3,1] = M[2,1]
         RM_[1,3] = M[1,2]
+
+        #Transform prefactor to Chesser-Axe normalization
         R0 = R0/(2*pi)**2*sqrt(det(RM_))
+
         #---------------------------------------------------------------------------------------------
         #Include kf/ki part of cross section
         R0 = R0*kf/ki
+
         #include monitor efficiency
         #Normalisation to flux monitor
         #bshape = matrix(diag((ysrc,zsrc)))
@@ -725,16 +729,16 @@ class resmat(object):
         f = F[0:2][:,0:2]
         #c = C[0:2][:,0:4]
         t = matrix(zeros((2,7)))
-        t[0,0] = -1/(2*L0)  #mistake in paper
-        t[0,2] = cos(thetam)*(1/L1mon-1/L0)/2
-        t[0,3] = sin(thetam)*(1/L0+1/L1mon-2*romh/(sin(thetam)))/2
-        t[0,6] = 1/(2*L1mon)
-        t[1,1] = -1/(2*L0*sin(thetam))
-        t[1,4] = (1/L0+1/L1mon-2*sin(thetam)*romv)/(2*sin(thetam))
-        sinv = matrix(diag((ysrc,zsrc,xmon,ymon,zmon,monitorw,monitorh))) #S-1 matrix
+        t[0,0] = -1./(2*L0)  #mistake in paper
+        t[0,2] = cos(thetam)*(1./L1mon - 1./L0)/2
+        t[0,3] = sin(thetam)*(1./L0 + 1./L1mon - 2*romh/(sin(thetam)))/2
+        t[0,6] = 1./(2*L1mon)
+        t[1,1] = -1./(2*L0*sin(thetam))
+        t[1,4] = (1./L0 + 1./L1mon - 2*sin(thetam)*romv)/(2*sin(thetam))
+        sinv = matrix(diag((ysrc, zsrc, xmon, ymon, zmon, monitorw, monitorh))) #S-1 matrix
         s = sinv**(-1)
-        d = matrix(zeros((4,7)))
-        d[0,0] = -1/L0
+        d = matrix(zeros((4, 7)))
+        d[0,0] = -1./L0
         d[0,2] = -cos(thetam)/L0
         d[0,3] = sin(thetam)/L0
         d[2,1] = D[0,0]
@@ -742,13 +746,13 @@ class resmat(object):
         d[1,2] = cos(thetam)/L1mon
         d[1,3] = sin(thetam)/L1mon
         d[1,5] = 0
-        d[1,6] = 1/L1mon
-        d[3,4] = -1/L1mon
-        Rmon = (2*pi)**2/(8*pi*sin(thetam))*sqrt(det(f)/det((d*(s+t.transpose()*f*t)**(-1)*d.transpose())**(-1)+g))
-        Rmon = Rmon*ki**3/tan(thetam)
+        d[1,6] = 1./L1mon
+        d[3,4] = -1./L1mon
+        Rmon = Rm*(2*pi)**2/(8*pi*sin(thetam))*sqrt(det(f)/det((d*(s + t.T*f*t)**(-1)*d.T)**(-1) + g))
         R0 = R0*ki #1/ki monitor efficiency
         R0 = R0/Rmon
         #------ END OF ZHELUDEV's CORRECTION
+
         #----- Final error check
         if NP.imag.all() == 0:
             self.ERROR = None
