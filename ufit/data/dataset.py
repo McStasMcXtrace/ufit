@@ -132,10 +132,16 @@ class Dataset(object):
                 continue
             new_meta[col] = concatenate([dset.meta[col] for dset in allsets])
         # XXX hkl data is a mess
-        if 'is_hkldata' in self.meta and binsize == 0:
-            new_meta['hkle'] = concatenate([dset.meta['hkle']
-                                            for dset in allsets])
-            print new_meta['hkle']
+        if 'is_hkldata' in self.meta:
+            concat = concatenate([dset.meta['hkle'] for dset in allsets])
+            if binsize != 0:
+                if len(set(dset.meta['hkle_vary'] for dset in allsets)) != 1:
+                    raise Exception('datasets have differing varying dimension')
+                #print concat
+                concat = array([concat[0]]*len(new_array))
+                concat[:,['h', 'k', 'l', 'E'].index(self.meta['hkle_vary'])] = new_array[:,0]
+            #print concat
+            new_meta['hkle'] = concat
         # XXX should we merge other meta's?
         ret = self.__class__(new_meta, new_array,
                              self.xcol, self.ycol, self.ncol, self.nscale,

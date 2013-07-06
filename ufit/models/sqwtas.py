@@ -73,9 +73,9 @@ class ConvolvedScatteringLaw(Model):
         for par in init:
             if par == 'par_ALL':
                 par_all = True
-            if par == 'cfg_ALL':
+            elif par == 'cfg_ALL':
                 cfg_all = True
-            if par.startswith('par_'):
+            elif par.startswith('par_'):
                 if par[4:] in PARNAMES:
                     self._instpars.append(par[4:])
                     instparnames.append(par)
@@ -83,7 +83,7 @@ class ConvolvedScatteringLaw(Model):
                         init[par] = str(par_orig[par[4:]])
                 else:
                     raise Exception('invalid instrument parameter: %r' % par)
-            if par.startswith('cfg_'):
+            elif par.startswith('cfg_'):
                 if par[4:] in CFGNAMES:
                     self._instpars.append(CFGNAMES.index(par[4:]))
                     instparnames.append(par)
@@ -98,14 +98,14 @@ class ConvolvedScatteringLaw(Model):
             instparnames.extend('par_' + pn for pn in PARNAMES)
             self._instpars.extend(PARNAMES)
             for pn in PARNAMES:
-                init['par_' + pn] = par_orig[pn]
+                init['par_' + pn] = str(par_orig[pn])
         if cfg_all:
             instparnames = [pn for pn in instparnames if not pn.startswith('cfg_')]
             self._instpars = [ip for ip in self._instpars if isinstance(ip, str)]
             instparnames.extend('cfg_' + x for x in CFGNAMES)
             self._instpars.extend(range(len(CFGNAMES)))
             for i in range(len(CFGNAMES)):
-                init['cfg_' + CFGNAMES[i]] = cfg_orig[i]
+                init['cfg_' + CFGNAMES[i]] = str(cfg_orig[i])
 
         self._pvs = self._init_params(name,
             ['NMC', 'bkgd'] + inspect.getargspec(self._sqw)[0][6:] +

@@ -90,6 +90,8 @@ def read_data(filename, fp):
         meta['environment'].append('T = %.3f K' % meta['TT'])
     if names[3] == 'EN':
         meta['hkle'] = arr[:,:4]
+        deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
+        meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
     if len(arr) == 0:
         raise UFitError('No data found in file %r' % filename)
     return names, arr, meta
