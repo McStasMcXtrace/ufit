@@ -53,6 +53,7 @@ def read_data(filename, fp):
         dtline[len('### NICOS data file, created at '):].strip(),
         '%Y-%m-%d %H:%M:%S'))
     meta['created'] = ctime
+    remark = ''
     for line in iter(fp.readline, ''):
         if line.startswith('### Scan data'):
             break
@@ -82,10 +83,14 @@ def read_data(filename, fp):
                 meta['experiment'] = oval.lower()
             elif key.endswith('_samplename'):
                 meta['title'] = oval
+            elif key.endswith('_remark'):
+                remark = oval
             elif key == 'number':
                 meta['filenumber'] = int(oval)
             # 'info' key already has the right name
             meta[key] = val
+    if remark and 'title' in meta:
+        meta['title'] += ', ' + remark
     meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
                                      meta.get('experiment', ''),
                                      meta.get('filenumber'))
@@ -102,6 +107,8 @@ def read_data(filename, fp):
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2)
+    if not coldata.size:
+        raise UFitError('empty data file')
     cols = dict((name, coldata[:,i]) for (i, name) in enumerate(colnames))
     meta['environment'] = []
     for col in cols:
@@ -112,6 +119,6 @@ def read_data(filename, fp):
         meta['environment'].append('T = %.3f K' % meta['sT'])
     if 'B' in cols:
         meta['environment'].append('B = %.3f K' % meta['B'])
-    if colnames[3] == 'E':
+    if len(colnames) >= 4 and colnames[3] == 'E':
         meta['hkle'] = coldata[:,:4]
     return colnames, coldata, meta

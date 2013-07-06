@@ -67,11 +67,12 @@ class BrowseWindow(QMainWindow):
                 self.loader.template = t
                 res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
             except Exception, e:
-                print e
+                print 'Could not load', fn, 'because:', e
             else:
                 self._data[n] = res
-                QListWidgetItem('%s (%s) - %s' % (n, res.xcol,
-                                                  res.meta.get('title', '?')),
+                QListWidgetItem('%s (%s) - %s - %s' %
+                                (n, res.xcol, res.meta.get('title', '?'),
+                                 ', '.join(res.meta.get('environment', '?'))),
                                 self.dataList, n)
 
     def on_dataList_itemSelectionChanged(self):
