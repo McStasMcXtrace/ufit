@@ -8,7 +8,7 @@
 
 """Models for different peak shapes."""
 
-from numpy import exp, log, sqrt
+from numpy import exp, log, sqrt, sin, cos
 from scipy.special import wofz
 
 from ufit.models import Model
@@ -184,3 +184,37 @@ class DHO(Model):
             self.params[2].name: p1[1] * 0.01,  # peak amplitude
             self.params[3].name: 2*abs(w[0] - p1[0]),  # gamma
         }
+
+
+class Gauss2D(Model):
+    """Gaussian peak in two dimensions
+
+    Parameters:
+
+    * `bkgd`   - Background
+    * `pos_x`  - X center position
+    * `pos_y`  - Y center position
+    * `ampl`   - amplitude
+    * `fwhm_x` - Full width in X direction
+    * `fwhm_y` - Full width in Y direction
+    * `theta`  - rotation of Gaussian in radians
+    """
+    param_names = ['bkgd', 'pos_x', 'pos_y', 'ampl', 'fwhm_x', 'fwhm_y', 'theta']
+
+    def __init__(self, name='', bkgd=None, pos_x=None, pos_y=None, ampl=None,
+                 fwhm_x=None, fwhm_y=None, theta=None):
+        pb, ppx, ppy, pa, pfx, pfy, pth = self._init_params(
+            name, self.param_names, locals())
+        self.params[3].finalize = abs
+        self.params[4].finalize = abs
+        self.params[5].finalize = abs
+
+        def fcn(p, x):
+            # rotate coordinate system by theta
+            c, s = cos(p[pth]), sin(p[pth])
+            x1 = (x[:,0] - p[ppx])*c - (x[:,1] - p[ppy])*s
+            y1 = (x[:,0] - p[ppx])*s + (x[:,1] - p[ppy])*c
+            return abs(p[pb]) + abs(p[pa]) * \
+                exp(-x1**2/p[pfx]**2 * 4*log(2)) * \
+                exp(-y1**2/p[pfy]**2 * 4*log(2))
+        self.fcn = fcn

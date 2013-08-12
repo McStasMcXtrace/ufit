@@ -8,10 +8,15 @@
 
 """Data mapping window."""
 
+from numpy import array, mgrid
+from matplotlib.cbook import flatten
+
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QDialogButtonBox, QMessageBox
 
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
+from ufit.data.dataset import Dataset
+from ufit.models.peaks import Gauss2D
 from ufit.plotting import mapping as plot_mapping
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
 
 def maybe_float(text, default):
@@ -71,4 +76,36 @@ class MappingWindow(QMainWindow):
                                 'Could not create mapping: %s (have you '
                                 'selected the right columns?)' % err)
             return
+        if self.fitBox.isChecked():
+            self.fit_2dgauss(xaxis, yaxis)
         self.canvas.draw()
+
+    def fit_2dgauss(self, x, y):
+        runs = self.datas
+        if self.usemaskBox.isChecked():
+            xss = array(list(flatten(run['col_'+x][run.mask] for run in runs)))
+            yss = array(list(flatten(run['col_'+y][run.mask] for run in runs)))
+            zss = array(list(flatten(run.y[run.mask] for run in runs)))
+            dzss = array(list(flatten(run.dy[run.mask] for run in runs)))
+        else:
+            xss = array(list(flatten(run['col_'+x] for run in runs)))
+            yss = array(list(flatten(run['col_'+y] for run in runs)))
+            zss = array(list(flatten(run.y for run in runs)))
+            dzss = array(list(flatten(run.dy for run in runs)))
+        maxidx = zss.argmax()
+        xdata = array((xss, yss)).T
+        model = Gauss2D(pos_x=xss[maxidx], pos_y=yss[maxidx],
+                        fwhm_x=0.5*(xss.max()-xss.min()),
+                        fwhm_y=0.5*(yss.max()-yss.min()), ampl=zss[maxidx])
+        data = Dataset.from_arrays('2dgauss', xdata, zss, dzss)
+        res = model.fit(data)
+        xx, yy = mgrid[xss.min():xss.max():100j,
+                       yss.min():yss.max():100j]
+        mesh = array((xx.ravel(), yy.ravel())).T
+        zmesh = model.fcn(res.paramvalues, mesh).reshape((100, 100))
+        ax = self.canvas.figure.gca()
+        ax.contour(xx, yy, zmesh)
+        self.fitParLbl.setText('pos_x: %(pos_x).5f  pos_y: %(pos_y).5f  '
+                               'theta: %(theta).5f  '
+                               'fwhm_x: %(fwhm_x).5f  fwhm_y: %(fwhm_y).5f  '
+                               'ampl: %(ampl).5f' % res.paramvalues)
