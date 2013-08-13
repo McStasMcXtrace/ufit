@@ -92,6 +92,11 @@ def read_data(filename, fp):
         meta['hkle'] = arr[:,:4]
         deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
         meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
+    elif names[0] == 'QH':  # 2-axis mode
+        meta['hkle'] = arr[:,:3]
+        meta['hkle'] = array([(h, k, l, 0) for (h, k, l) in meta['hkle']])
+        deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
+        meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
     if len(arr) == 0:
         raise UFitError('No data found in file %r' % filename)
     return names, arr, meta
