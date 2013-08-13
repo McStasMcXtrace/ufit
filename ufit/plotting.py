@@ -165,12 +165,14 @@ class DataPlotter(object):
                        transform=self.axes.transAxes, family='Monospace')
 
 
-def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
-            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None):
+def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
+            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
+            clear=True, colors=None):
     from scipy.interpolate import griddata as griddata_sp
     if figure is None:
         figure = pl.gcf()
-    figure.clf()
+    if clear:
+        figure.clf()
     axes = figure.gca()
     if usemask:
         xss = array(list(flatten(run['col_'+x][run.mask] for run in runs))) * xscale
@@ -195,12 +197,17 @@ def mapping(x, y, runs, minmax=None, mat=False, log=False, dots=True,
     xi, yi = mgrid[min(xss):max(xss):interpolate,
                    min(yss):max(yss):interpolate]
     zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
-    if mat:
-        im = axes.imshow(zi.T, origin='lower', aspect='auto', interpolation='nearest',
+    if mode == 0:
+        im = axes.imshow(zi.T, origin='lower', aspect='auto',
+                         interpolation='nearest',
                          extent=(xi[0][0]/xscale, xi[-1][-1]/xscale,
                                  yi[0][0]/yscale, yi[-1][-1]/yscale))
     else:
-        im = axes.contourf(xi, yi, zi, 20)
+        fcn = axes.contourf if mode == 1 else axes.contour
+        kwds = {}
+        if colors:
+            kwds = {'colors': colors}
+        im = fcn(xi, yi, zi, 20, **kwds)
     axes.set_xlabel(x)
     axes.set_ylabel(y)
     figure.colorbar(im)
