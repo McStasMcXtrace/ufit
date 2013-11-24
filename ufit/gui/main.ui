@@ -113,6 +113,7 @@
     <addaction name="actionPrint"/>
     <addaction name="separator"/>
     <addaction name="actionExportASCII"/>
+    <addaction name="actionExportFIT"/>
     <addaction name="actionExportParams"/>
     <addaction name="actionExportPython"/>
     <addaction name="separator"/>
@@ -285,6 +286,11 @@
    </property>
    <property name="text">
     <string>Export data as ASCII...</string>
+   </property>
+  </action>
+  <action name="actionExportFIT">
+   <property name="text">
+    <string>Export fit as ASCII...</string>
    </property>
   </action>
   <action name="actionExportPython">

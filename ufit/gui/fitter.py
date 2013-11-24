@@ -10,6 +10,8 @@
 
 import traceback
 
+from numpy import array, savetxt
+
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
@@ -275,6 +277,9 @@ class Fitter(QWidget):
         self.emit(SIGNAL('dirty'))
 
         self.last_result = res
+    
+    def export_fits(self, fp):
+        savetxt(fp, array([self.last_result.xx, self.last_result.yy]).T)
 
 
 class FitterMain(QMainWindow):
