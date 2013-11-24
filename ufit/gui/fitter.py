@@ -10,7 +10,7 @@
 
 import traceback
 
-from numpy import array, savetxt
+from numpy import array, savetxt, linspace
 
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
@@ -18,6 +18,7 @@ from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QComboBox, QKeySequence, QIcon
 
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
+from ufit.param import prepare_params
 
 def is_float(x):
     try:
@@ -279,7 +280,18 @@ class Fitter(QWidget):
         self.last_result = res
     
     def export_fits(self, fp):
-        savetxt(fp, array([self.last_result.xx, self.last_result.yy]).T)
+        xx = linspace(self.data.x.min(), self.data.x.max(), 1000)
+        if self.last_result is None:
+            paramvalues = prepare_params(self.model.params, self.data.meta)[3] 
+        else:
+            paramvalues = self.last_result.paramvalues
+        yy = self.model.fcn(paramvalues, xx)
+        yys = []
+        for comp in self.model.get_components():
+              if comp is self.model:
+                  continue
+              yys.append(comp.fcn(paramvalues, xx))                       
+        savetxt(fp, array([xx, yy] + yys).T)
 
 
 class FitterMain(QMainWindow):
