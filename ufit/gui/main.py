@@ -322,6 +322,20 @@ class UFitMain(QMainWindow):
         expfilename = path_to_str(filename)
         with open(expfilename, 'wb') as fp:
             self.current_panel.data.export_ascii(fp)
+    
+    @qtsig('')
+    def on_actionExportFIT_triggered(self):
+        if self.filename:
+            initialdir = path.dirname(self.filename)
+        else:
+            initialdir = ''
+        filename = QFileDialog.getSaveFileName(
+            self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
+        if filename == '':
+            return False
+        expfilename = path_to_str(filename)
+        with open(expfilename, 'wb') as fp:
+            self.current_panel.fitter.export_fits(fp)
 
     @qtsig('')
     def on_actionExportParams_triggered(self):
