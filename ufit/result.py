@@ -178,3 +178,12 @@ class MultiResult(list):
         for k in d:
             d[k] = array(d[k])
         return d
+
+    def printout(self):
+        """Print global parameters of the fit."""
+        print 'OVERALL fit results'
+        print '-' * 80
+        for p in self[0].params:
+            if p.overall:
+                print p
+        print '=' * 80
