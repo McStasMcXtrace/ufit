@@ -178,11 +178,9 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
 
     #print header for fitting cycles if direct output was demanded by user
     if mode == 'print':
-        print('=> performing fit! (max %i iterations)' % niter)
-        print('=> start value for residual variance = %10.3f' % (sbest/len(y)))
-        print('=> using least-squares algorithm!')
         print('Iteration  Time(s)  Residual Variance')
         print('=====================================')
+        print('%5i    %7.2f    %8.3f' % (0, 0, sbest/len(y)))
 
     for iteration in range(niter):
         t0 = time()
@@ -237,7 +235,7 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
                     sbest = copy(ss)
 
                 if ss <= sgoal:
-                    print 'ss <= sgoal', ss, sgoal
+                    #print 'ss <= sgoal', ss, sgoal
                     break
 
         epsLlast = epsL
@@ -253,11 +251,11 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
         else:
             chgprev = chg
             if ss > sgoal:
-                print 'ss > sgoal in outer loop!'
+                #print 'ss > sgoal in outer loop!'
                 break
 
         dt = time()-t0
-        cyclemsg = '%3i    %6.2f    %8.3f' % (iteration+1, dt, ss/len(y))
+        cyclemsg = '%5i    %7.2f    %8.3f' % (iteration+1, dt, ss/len(y))
         if mode == 'print':
             print(cyclemsg)
 
@@ -272,7 +270,7 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
     if not kvg:
         errmsg += '** CONVERGENCE NOT ACHIEVED! **\n'
     else:
-        print('\n-- The fit process has converged --')
+        print('===== Converged =====================')
 
     #Calculate R (Ref Draper & Smith p.46)
     r=corrcoef(y*wt,f*wt)
