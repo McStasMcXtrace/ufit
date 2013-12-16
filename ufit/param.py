@@ -137,6 +137,12 @@ class Param(object):
         cp.name = newname or self.name
         return cp
 
+    def fix(self):
+        self.expr = str(self.value)
+
+    def unfix(self):
+        self.expr = None
+
     def __reduce__(self):
         return (Param, (self.name, self.value, self.expr, self.pmin,
                         self.pmax, self.overall, self.delta, self.error,
