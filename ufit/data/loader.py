@@ -25,8 +25,11 @@ class Loader(object):
         from ufit.data import data_formats
         if self.format == 'auto':
             for n, m in data_formats.iteritems():
-                if m.check_data(fobj):
+                # check 'simple' last
+                if n != 'simple' and m.check_data(fobj):
                     return m
+            if data_formats['simple'].check_data(fobj):
+                return data_formats['simple']
             raise UFitError('File %r has no recognized file format' % filename)
         return data_formats[self.format]
 
@@ -147,7 +150,7 @@ class Loader(object):
         for part1 in parts1:
             if '-' in part1:
                 a, b = map(toint, part1.split('-'))
-                datasets.extend(self.load(n, xcol, ycol, dycol, ncol, nscale)
+                datasets.extend(self.load(n, xcol, ycol, dycol, ncol, nscale).merge(binsize)
                                 for n in range(a, b+1))
             else:
                 parts2 = part1.split('+')
