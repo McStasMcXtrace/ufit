@@ -21,7 +21,7 @@ class Dataset(object):
     def __init__(self, meta, data, xcol, ycol, ncol=None, nscale=1,
                  name='', sources=None):
         self.meta = attrdict(meta)
-        self.name = name or str(self.meta.filenumber)
+        self.name = name or str(getattr(self.meta, 'filenumber', '---'))
         self.sources = sources or [getattr(self, 'filedesc', '')]
         if 'title' not in meta:
             self.meta.title = self.name

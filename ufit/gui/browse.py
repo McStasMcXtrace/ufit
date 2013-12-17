@@ -62,6 +62,8 @@ class BrowseWindow(QMainWindow):
         files = os.listdir(root)
         for fn in sorted(files):
             fn = path.join(root, fn)
+            if not path.isfile(fn):
+                continue
             try:
                 t, n = extract_template(fn)
                 self.loader.template = t

@@ -34,7 +34,7 @@ def guess_cols(colnames, coldata, meta):
             if coldata[:,i].sum() > maxmon:
                 maxmon = coldata[:,i].sum()
                 mg = colname
-        if colname.startswith(('det', 'ctr', 'psd.total')):
+        if colname.startswith(('det', 'ctr', 'psd.roi')):
             if coldata[:,i].sum() > maxcts:
                 maxcts = coldata[:,i].sum()
                 yg = colname
@@ -113,10 +113,10 @@ def read_data(filename, fp):
     meta['environment'] = []
     for col in cols:
         meta[col] = cols[col].mean()
-    if 'Ts' in cols:
-        meta['environment'].append('T = %.3f K' % meta['Ts'])
-    elif 'sT' in cols:
-        meta['environment'].append('T = %.3f K' % meta['sT'])
+    for tcol in ['Ts', 'sT', 'T_ccr5_A', 'T_ccr5_B']:
+        if tcol in cols:
+            meta['environment'].append('T = %.3f K' % meta[tcol])
+            break
     if 'B' in cols:
         meta['environment'].append('B = %.3f K' % meta['B'])
     if len(colnames) >= 4 and colnames[3] == 'E':
