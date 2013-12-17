@@ -350,6 +350,9 @@ class resmat(object):
         # experimental setup (plus easily changed instrument things)
         self.par = par.copy()
 
+        # use a fixed resolution matrix
+        self.fixed_res = False
+
         # a string message or None if calculations are fine
         self.ERROR = None
 
@@ -840,9 +843,8 @@ Resolution Info:
         """
 
         #----- Work out transformations
-        a = self
-        A1 = matrix([a.par['ax'], a.par['ay'], a.par['az']]).transpose()
-        A2 = matrix([a.par['bx'], a.par['by'], a.par['bz']]).transpose()
+        A1 = matrix([self.par['ax'], self.par['ay'], self.par['az']]).transpose()
+        A2 = matrix([self.par['bx'], self.par['by'], self.par['bz']]).transpose()
         V1 = self.Q2c*A1
         V2 = self.Q2c*A2
         #----- Form unit vectors V1, V2, V3 in scattering plane
@@ -877,24 +879,38 @@ Resolution Info:
         #print V
 
         E = matrix(real(diag(E)))
-        sigma = zeros((1,4))[0]
+        sigma = zeros((1, 4))[0]
         sigma[0] = real(1./sqrt(E[0,0]))
         sigma[1] = real(1./sqrt(E[1,1]))
         sigma[2] = real(1./sqrt(E[2,2]))
         sigma[3] = real(1./sqrt(E[3,3]))
         self.b_mat = reshape(inv(V.transpose().transpose()), (1, 16))
-        #self.b_mat=reshape(inv((V.transpose())),(1,16))
+        self.sigma = sigma
+        #self.b_mat = reshape(inv((V.transpose())),(1,16))
         #print 'b_mat'
         #print self.b_mat
         return sigma
 
+    def setNPMatrix(self, m_matrix, (h, k, l)):
+        """Set fixed NP matrix for a given M matrix at Q point h,k,l."""
+        # see below for matrix meanings
+        TT = real(self.S*matrix([h, k, l]).transpose())
+        cos_theta = TT[0,0]/sqrt(dot(TT.transpose(),TT))
+        sin_theta = TT[1,0]/sqrt(dot(TT.transpose(),TT))
+
+        R = [[cos_theta, sin_theta, 0], [-sin_theta, cos_theta, 0], [0, 0, 1]]
+        T = matrix(zeros((4, 4)))
+        T[3, 3] = 1.
+        T[0:3, 0:3] = array(R*self.S).real
+        self.NP = T * m_matrix * T.transpose()
+
     def calcResEllipsoid(self, h, k, l, en):
         # set current Q vector and calculate corresponding resolution matrix
         # (sethklen calls self.calc_popovici() to calculate the matrix...
-        self.sethklen(h, k, l, en)
-
-        #   [R0,NP,vi,vf,Error]=feval(method,f,Qmag,p,mon_flag);
-        self.R0_corrected = real(self.R0/(sqrt(det(self.NP))/(2*pi)**2))
+        if not self.fixed_res:
+            self.sethklen(h, k, l, en)
+            #   [R0,NP,vi,vf,Error]=feval(method,f,Qmag,p,mon_flag);
+            self.R0_corrected = real(self.R0/(sqrt(det(self.NP))/(2*pi)**2))
         # corrected resolution volume as Monte Carlo integral is over a
         # normalised ellipsoid.
 
@@ -1118,15 +1134,10 @@ def single_mc(NMC, sqw, fit_par, QE, b_mat, sigma, R0_corrected):
     qk = XMC[1] + QE[1]
     ql = XMC[2] + QE[2]
     w  = XMC[3] + QE[3]
-    #from numpy import ones
-    #qh = QE[0]*ones(NMC)
-    #qk = QE[1]*ones(NMC)
-    #ql = QE[2]*ones(NMC)
-    #w  = QE[3]*ones(NMC)
 
     # QE is provided to sqw function in case center of resolution
     # is needed for further calculations
-    mc_intens = sqw(qh, qk, ql, w, QE, sigma, *fit_par)
+    mc_intens = sqw(qh, qk, ql, w, QE, (b_mat, sigma), *fit_par)
     return R0_corrected * mc_intens.mean()
 
 pool = None
@@ -1188,7 +1199,7 @@ def single_mc(NMC, fit_par, QE, b_mat, sigma, R0_corrected):
 
     # QE is provided to sqw function in case center of resolution
     # is needed for further calculations
-    mc_intens = __sqw(qh, qk, ql, w, QE, sigma, *fit_par)
+    mc_intens = __sqw(qh, qk, ql, w, QE, (b_mat, sigma), *fit_par)
     return R0_corrected * mc_intens.mean()
 '''
 
