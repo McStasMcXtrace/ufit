@@ -12,7 +12,7 @@ import time
 import inspect
 
 from ufit.rescalc import resmat, calc_MC, calc_MC_cluster, load_cfg, load_par, \
-     PARNAMES, CFGNAMES
+     PARNAMES, CFGNAMES, plot_resatpoint
 from ufit.models.base import Model
 
 __all__ = ['ConvolvedScatteringLaw']
@@ -146,3 +146,7 @@ class ConvolvedScatteringLaw(Model):
         t2 = time.time()
         print 'Sqw: iteration = %.3f sec' % (t2-t1)
         return res
+
+    def resplot(self, h, k, l, e):
+        self._resmat.sethklen(h, k, l, e)
+        plot_resatpoint(self._resmat.cfg, self._resmat.par, self._resmat)

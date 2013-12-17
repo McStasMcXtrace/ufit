@@ -14,11 +14,15 @@ from os import path
 from PyQt4 import uic
 from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-     QMessageBox
+     QMessageBox, QDialog
+
+#from matplotlib import use
+#use("Qt4Agg")
 
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
+from matplotlib import pyplot
 try:
     from matplotlib.backend_bases import key_press_handler
 except ImportError:
@@ -90,12 +94,15 @@ class MPLToolbar(NavigationToolbar2QT):
         'zoom_to_rect.png': 'selection-resize.png',
         'filesave.png':     'document-pdf.png',
         'printer.png':      'printer.png',
+        'mplexec.png':      'mplexec.png',
     }
 
     toolitems = list(NavigationToolbar2QT.toolitems)
     del toolitems[7]  # subplot adjust
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
+    toolitems.append(('Execute', 'Execute Python command', 'mplexec',
+                      'exec_callback'))
 
     def _init_toolbar(self):
         NavigationToolbar2QT._init_toolbar(self)
@@ -108,6 +115,18 @@ class MPLToolbar(NavigationToolbar2QT):
 
     def print_callback(self):
         self.emit(SIGNAL('printRequested'))
+
+    def exec_callback(self):
+        dlg = QDialog(self)
+        loadUi(dlg, 'exec.ui')
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        code = str(dlg.codeEdit.toPlainText())
+        namespace = {'ax': self.canvas.figure.gca()}
+        code = '''if 1:
+        from ufit.lab import *\n''' + code
+        exec code in namespace
+        self.canvas.draw()
 
     def save_figure(self, *args):
         filetypes = self.canvas.get_supported_filetypes_grouped()

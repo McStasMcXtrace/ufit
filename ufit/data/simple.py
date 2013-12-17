@@ -12,18 +12,28 @@ from numpy import loadtxt
 
 
 def check_data(fp):
-    dtline = fp.readline()
-    try:
-        map(float, dtline.split())
-    except ValueError:
-        fp.seek(0, 0)
-        return False
+    line1 = fp.readline()
+    line2 = fp.readline()
     fp.seek(0, 0)
+    # must be values in second line
+    try:
+        values = map(float, line2.split())
+    except ValueError:
+        return False
+    # optional header in first line
+    if line1.startswith(('#', '%')):
+        line1 = line1[1:]
+    if len(line1.split()) != len(values):
+        return False
     return True
 
 
 def guess_cols(colnames, coldata, meta):
-    return colnames[0], colnames[1], None, None
+    if len(colnames) > 2:
+        dycol = colnames[2]
+    else:
+        dycol = None
+    return colnames[0], colnames[1], dycol, None
 
 
 def read_data(filename, fp):
