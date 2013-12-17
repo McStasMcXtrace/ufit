@@ -46,7 +46,8 @@ class ConvolvedScatteringLaw(Model):
     """
     nsamples = -4  # for plotting: plot only 4x as many points as datapoints
 
-    def __init__(self, sqw, instfiles, NMC=2000, name=None, cluster=False, **init):
+    def __init__(self, sqw, instfiles, NMC=2000, name=None, cluster=False,
+                 matrix=None, mathkl=None, **init):
         self._cluster = False
         if isinstance(sqw, str):
             modname, funcname = sqw.split(':')
@@ -112,6 +113,12 @@ class ConvolvedScatteringLaw(Model):
             instparnames, init)
         self._ninstpar = len(instparnames)
         self._resmat = resmat(cfg_orig, par_orig)
+
+        if matrix is not None:
+            self._resmat.fixed_res = True
+            self._resmat.setNPMatrix(matrix, mathkl)
+            #self._resmat.NP = matrix
+            self._resmat.R0_corrected = 1.0
 
     def fcn(self, p, x):
         parvalues = [p[pv] for pv in self._pvs]
