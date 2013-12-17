@@ -120,7 +120,7 @@ class Dataset(object):
         The X values are redistributed into bins according to the given bin
         size.
         """
-        if not others:
+        if not others and binsize == 0:
             return self
         allsets = (self,) + others
         alldata = concatenate([dset._data for dset in allsets])
