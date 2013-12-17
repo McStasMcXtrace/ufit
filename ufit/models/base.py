@@ -185,6 +185,8 @@ class Model(object):
         # be changed on the fly
         success, msg, chi2 = backends.backend.do_fit(data, self.fcn,
                                                      self.params, kw)
+        # second run makes it better...
+#        success, msg, chi2 = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg, chi2)
@@ -495,7 +497,7 @@ class GlobalModel(Model):
             dpd = dict((pn, p[pn]) for pn in overall_params)
             for i, data in enumerate(datas):
                 dpd.update((opn, p[pn.name]) for (opn, pn) in diff_params[i])
-                results.append(model.fcn(dpd, data.x))
+                results.append(model.fcn(dpd, data.fit_columns[0]))
             return concatenate(results)
         self.fcn = new_fcn
 
