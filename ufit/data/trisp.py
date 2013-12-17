@@ -8,7 +8,7 @@
 
 """Load routine for TRISP spin-echo data."""
 
-from numpy import array, loadtxt
+from numpy import array, loadtxt, zeros
 
 from ufit import UFitError
 
@@ -20,15 +20,20 @@ def check_data(fp):
 
 
 def guess_cols(colnames, coldata, meta):
-    xg, yg, dyg, mg = None, None, None, None
-    if colnames[0] == 'QH':
-        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
-        xg = colnames[deviations.argmax()]
+    xg, yg, dyg, mg = None, 'c1', None, 'mon'
+    if 'QH' in colnames:
+        qhindex = colnames.index('QH')
+        deviations = array([(cs.max()-cs.min())
+                            for cs in coldata.T[qhindex:qhindex+4]])
+        xg = colnames[qhindex + deviations.argmax()]
     elif colnames[0] == 'TC1' and colnames[1] == 'TC4':
         xg = 'TC4'
     else:
         xg = colnames[0]
-    return xg, 'c1', None, 'mon'
+    if 'c1_1' in colnames:
+        mg = 'mon_1'
+        yg = 'c1_1'
+    return xg, yg, None, mg
 
 
 def good_ycol(c):
@@ -59,6 +64,8 @@ def read_data(filename, fp):
         except ValueError:
             pass
     names = fp.readline().split()
+    pal = 'pal' in names
+    # file with polarization analysis?
     if not names:
         raise UFitError('No data columns found in file %r' % filename)
     usecols = range(len(names))
@@ -73,6 +80,23 @@ def read_data(filename, fp):
         meta['environment'].append('T = %.3f K' % meta['TTA'])
     if len(arr) == 0:
         raise UFitError('No data found in file %r' % filename)
+    if pal:
+        if 'QH' not in names:
+            raise UFitError('Polarization data without QHKLE not supported')
+        nfixed = names.index('E')  # fixed columns (same for all PA points)
+        pal_values = set(arr[:,0])
+        npal = len(pal_values) # number of PA points
+        names_new = names[1:nfixed+1]
+        nvary = arr.shape[1] - nfixed - 1  # without pal and fixed columns
+        arr_new = zeros((arr.shape[0]//npal, nfixed + nvary*npal))
+        for pal_value in sorted(pal_values):
+            for name in names[nfixed+1:]:
+                names_new.append(name + '_%d' % pal_value)
+            arr_new[:, nfixed+(pal_value-1)*nvary:nfixed+pal_value*nvary] = \
+                arr[pal_value-1::npal, nfixed+1:]
+        arr_new[:,:nfixed] = arr[::npal,1:nfixed+1]  # take fixed points from first PA point
+        names = names_new
+        arr = arr_new
     if names[0] == 'QH':
         meta['hkle'] = arr[:,:4]
         deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
