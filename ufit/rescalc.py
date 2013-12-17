@@ -1236,3 +1236,105 @@ def load_cfg(filename):
             if line.strip():
                 pars.append(float(line.split()[0]))
     return pars
+
+
+def pylab_key_handler(event):
+    import pylab
+    if event.key == 'q':
+        pylab.close()
+
+def plot_resatpoint(cfg, par, resmat, fignum='Resolution calculation'):
+    import pylab
+
+    x, y, xslice, yslice, xxq, yxq, xxqslice, yxqslice, xyq, yyq, xyqslice, yyqslice = \
+        resmat.resellipse()
+
+    pylab.figure(fignum, figsize=(8.5, 6), dpi=120, facecolor='1.0')
+    pylab.clf()
+    pylab.rc('text', usetex=True)
+    pylab.rc('text.latex',
+             preamble='\\usepackage{amsmath}\\usepackage{helvet}\\usepackage{sfmath}')
+    pylab.subplots_adjust(left=0.11, bottom=0.08, right=0.97, top=0.81,
+                          wspace=0.25, hspace=0.27)
+    # register event handler to pylab
+    pylab.connect('key_press_event', pylab_key_handler)
+
+    pylab.subplot(221)
+    pylab.xlabel(r'Q$_x$ (\AA$^{-1}$)')
+    pylab.ylabel(r'Q$_y$ (\AA$^{-1}$)')
+    pylab.plot(x,y)
+    pylab.plot(xslice,yslice)
+
+    ax1 = pylab.gca()
+    text  = r"""\noindent\underline{Spectrometer Setup:}\newline
+\begin{tabular}{ll}
+d-spacings: & $d_M=%(dm)1.4f$\,\AA~~~$d_A=%(da)1.4f$\,\AA \\
+mosaic:     & $\eta_M=%(etam)3.1f'$~~~$\eta_S=%(etas)3.1f'$~~~$\eta_A=%(etaa)3.1f'$ \\
+s-sense:    & $s_M=%(sm)i$~~~$s_S=%(ss)i$~~~$s_A=%(sa)i$ \\
+$\alpha_{1\rightarrow4}$: & %(alpha1)i-Mono-%(alpha2)i-Sample-%(alpha3)i-Ana-%(alpha4)i (hor. coll.) \\
+$\beta_{1\rightarrow4}$:  & %(beta1)i-Mono-%(beta2)i-Sample-%(beta3)i-Ana-%(beta4)i   (vert. coll.) \\
+\end{tabular}
+""" % resmat.par
+    t1 = pylab.text(-0.25, 1.57, text.replace('\n', ''),
+                    horizontalalignment='left', verticalalignment='top',
+                    transform=ax1.transAxes)
+    t1.set_size(10)
+
+    pylab.subplot(222)
+    pylab.xlabel(r'Q$_x$ (\AA$^{-1}$)')
+    pylab.ylabel('Energy (meV)')
+    pylab.plot(xxq, yxq)
+    pylab.plot(xxqslice, yxqslice)
+
+    ax2 = pylab.gca()
+    text  = r"""\noindent\underline{Sample Parameters:}\newline
+\begin{tabular}{llllll}
+$a$ (\AA) & $b$ (\AA) & $c$ (\AA) & $\alpha$ ($^{\circ}$) & $\beta$ ($^{\circ}$) & $\gamma$ ($^{\circ}$) \\
+%(as)2.3f & %(bs)2.3f & %(cs)2.3f & %(aa)3.1f & %(bb)3.1f & %(cc)3.1f \\
+\end{tabular}\newline """ % resmat.par
+    if resmat.par['kfix'] == 1:
+        text += r'fixed incident energy $k_i=%2.4f$\,\AA$^{-1}$ ($\equiv %4.2f$\,meV)\newline ' % \
+            (resmat.par['k'], resmat.par['k']**2*2.07)
+    else:
+        text += r'fixed final energy $k_f=%2.4f$\,\AA$^{-1}$ ($\equiv %4.2f$\,meV)\newline ' % \
+            (resmat.par['k'], resmat.par['k']**2*2.07)
+    text += r'position: qh = %1.3f qk = %1.3f ql = %1.3f (r.l.u.) en = %2.3f (meV)\newline ' % \
+        (resmat.par['qx'], resmat.par['qy'], resmat.par['qz'], resmat.par['en'])
+    text += r'modulus of scattering vector $Q = %2.5f$\,\AA$^{-1}$' % resmat.q0
+    t2 = pylab.text(-0.25, 1.57, text.replace('\n', ' '),
+                    horizontalalignment='left', verticalalignment='top',
+                    transform=ax2.transAxes)
+    t2.set_size(10)
+
+    pylab.subplot(223)
+    pylab.xlabel(r'Q$_y$ (\AA$^{-1}$)')
+    pylab.ylabel(r'Energy (meV)')
+    pylab.plot(xyq,yyq)
+    pylab.plot(xyqslice,yyqslice)
+
+    pylab.subplot(224)
+    ax3 = pylab.gca()
+    pylab.axis('off')
+    pylab.rc('text', usetex=True)
+    text  = r'\noindent\underline{\textbf{Resolution Info:}}\newline ' + \
+        r'Resolution Volume: $R_0 = %7.5g$ (\AA$^{-3}$\,meV)\newline\newline ' % resmat.R0
+    mat = resmat.NP.tolist()
+    text += r'Resolution Matrix (in frame $Q_x$, $Q_y$, $Q_z$, $E$):\newline '
+    text += (r'$M = \left(\begin{array}{rrrr} %5.2f & %5.2f & %5.2f & %5.2f\\ ' \
+             r'%5.2f & %5.2f & %5.2f & %5.2f\\ %5.2f & %5.2f & %5.2f & %5.2f\\ ' \
+             r'%5.2f & %5.2f & %5.2f & %5.2f \end{array}\right)$\newline\newline\newline ') \
+             % (mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                mat[3][0], mat[3][1], mat[3][2], mat[3][3])
+    text += r'Bragg width:\newline '
+    text += r'\begin{tabular}{lllll} '
+    text += r'$Q_x$ (\AA$^{-1}$) & $Q_y$ (\AA$^{-1}$) & $Q_z$ (\AA$^{-1}$) & Vanadium & dE (meV) \\ '
+    bragw = tuple(resmat.calcBragg())
+    text += r'%1.5f & %1.5f & %1.5f & %1.5f & %1.5f \\ ' % bragw[:5]
+    text += r'\end{tabular}'
+    t3 = pylab.text(-0.13, 1.0, text,
+                    horizontalalignment='left', verticalalignment='top',
+                    transform=ax3.transAxes)
+    t3.set_size(10)
+    pylab.show()
