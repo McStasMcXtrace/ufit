@@ -13,6 +13,7 @@ from os import path
 
 t0 = time.time()
 
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap
 
 import ufit.guiresource
@@ -21,7 +22,8 @@ app = QApplication([])
 app.setOrganizationName('ufit')
 app.setApplicationName('gui')
 
-splash = QSplashScreen(QPixmap(':/splash.png'))
+pixmap = QPixmap(':/splash.png')
+splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
 splash.show()
 app.processEvents()
 
