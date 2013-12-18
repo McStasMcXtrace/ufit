@@ -8,13 +8,13 @@
 
 """Diverse other models."""
 
-from numpy import cos, sin, exp, pi, log, piecewise, sign
+from numpy import cos, sin, exp, pi, log, piecewise, sign, tanh
 
 from ufit.param import Param
 from ufit.models.base import Model
 
 __all__ = ['Const', 'StraightLine', 'Parabola',
-           'Cosine', 'Sinc', 'ExpDecay', 'PowerLaw']
+           'Cosine', 'Sinc', 'ExpDecay', 'PowerLaw', 'BrillouinT', 'BrillouinB']
 
 
 class Const(Model):
@@ -197,3 +197,47 @@ class PowerLaw(Model):
             self.params[1].name: scale,
             self.params[2].name: beta,
         }
+
+
+class BrillouinT(Model):
+    """Brillouin function versus temperature (in K)
+
+    Parameters:
+
+    * `J` - spin
+    * `B` - applied field in T
+    * `g` - g-factor
+    * `scale` - scale of the Y values
+    """
+    param_names = ['J', 'B', 'g', 'scale']
+
+    def __init__(self, name='', J=1, B=0, g=1, scale=1):
+        pj, pb, pg, ps = self._init_params(name, self.param_names, locals())
+        def fcn(p, x):
+            J = p[pj]
+            arg = 0.67171388 * p[pg] * p[pb] / x
+            return p[ps] * ((2*J+1)/(2*J)/tanh((2*J+1)/(2*J)*arg) -
+                            1/(2*J)/tanh(arg/(2*J)))
+        self.fcn = fcn
+
+
+class BrillouinB(Model):
+    """Brillouin function versus field (in T)
+
+    Parameters:
+
+    * `J` - spin
+    * `T` - temperature in K
+    * `g` - g-factor
+    * `scale` - scale of the Y values
+    """
+    param_names = ['J', 'T', 'g', 'scale']
+
+    def __init__(self, name='', J=1, T=1, g=1, scale=1):
+        pj, pt, pg, ps = self._init_params(name, self.param_names, locals())
+        def fcn(p, x):
+            J = p[pj]
+            arg = 0.67171388 * p[pg] * x / p[pt]
+            return p[ps] * ((2*J+1)/(2*J)/tanh((2*J+1)/(2*J)*arg) -
+                            1/(2*J)/tanh(arg/(2*J)))
+        self.fcn = fcn
