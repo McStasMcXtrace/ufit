@@ -32,7 +32,6 @@ matplotlib.use('Qt4Agg')
 
 from ufit.gui.main import UFitMain
 
-time.sleep(10)
 t1 = time.time()
 print 'import finished (%.3f s), starting up app...' % (t1-t0)
 
