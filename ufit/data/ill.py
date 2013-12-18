@@ -8,7 +8,9 @@
 
 """Load routine for ILL TAS data."""
 
-from numpy import array, loadtxt
+from warnings import catch_warnings
+
+from numpy import array, genfromtxt, atleast_2d
 
 from ufit import UFitError
 
@@ -82,7 +84,11 @@ def read_data(filename, fp):
         usecols.append(i)
     # Berlin implementation adds "Finished ..." in the last line,
     # pretend that it is a comment
-    arr = loadtxt(fp, ndmin=2, usecols=usecols, comments='F')
+    with catch_warnings(True) as warnings:
+        arr = atleast_2d(genfromtxt(fp, usecols=usecols, comments='F',
+                                    invalid_raise=False))
+    for warning in warnings:
+        print '!!!', warning.message
     for i, n in enumerate(names):
         meta[n] = arr[:,i].mean()
     meta['environment'] = []
