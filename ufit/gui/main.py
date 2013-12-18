@@ -303,11 +303,13 @@ class UFitMain(QMainWindow):
 
     def on_actionConnectData_toggled(self, on):
         self.canvas.plotter.lines = on
-        # XXX replot
+        QMessageBox.information(self, 'Info', 'The new style will be used '
+                                'the next time a plot is generated.')
 
     def on_actionDrawSymbols_toggled(self, on):
         self.canvas.plotter.symbols = on
-        # XXX replot
+        QMessageBox.information(self, 'Info', 'The new style will be used '
+                                'the next time a plot is generated.')
 
     @qtsig('')
     def on_actionExportASCII_triggered(self):
@@ -322,7 +324,7 @@ class UFitMain(QMainWindow):
         expfilename = path_to_str(filename)
         with open(expfilename, 'wb') as fp:
             self.current_panel.data.export_ascii(fp)
-    
+
     @qtsig('')
     def on_actionExportFIT_triggered(self):
         if self.filename:
@@ -531,31 +533,3 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_backend_action_triggered(self):
         backends.set_backend(str(self.sender().text()))
-
-
-def main(args, t0):
-    import time
-    t1 = time.time()
-    print 'import finished (%.3f s), starting up app...' % (t1-t0)
-    app = QApplication([])
-    app.setOrganizationName('ufit')
-    app.setApplicationName('gui')
-    mainwindow = UFitMain()
-
-    if len(args) == 1:
-        datafile = path.abspath(args[0])
-        if datafile.endswith('.ufit'):
-            try:
-                mainwindow.filename = datafile
-                mainwindow.load_session(datafile)
-            except Exception, err:
-                QMessageBox.warning(mainwindow,
-                                    'Error', 'Loading failed: %s' % err)
-                mainwindow.filename = None
-        else:
-            mainwindow.dloader.set_template(datafile)
-
-    t2 = time.time()
-    print 'loading finished (%.3f s), main window showing...' % (t2-t1)
-    mainwindow.show()
-    app.exec_()

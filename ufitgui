@@ -8,13 +8,49 @@
 # *****************************************************************************
 
 import sys
-
 import time
+from os import path
+
 t0 = time.time()
+
+from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap
+
+import ufit.guiresource
+
+app = QApplication([])
+app.setOrganizationName('ufit')
+app.setApplicationName('gui')
+
+splash = QSplashScreen(QPixmap(':/splash.png'))
+splash.show()
+app.processEvents()
 
 import matplotlib
 matplotlib.use('Qt4Agg')
 
-from ufit.gui.main import main
+from ufit.gui.main import UFitMain
 
-sys.exit(main(sys.argv[1:], t0))
+time.sleep(10)
+t1 = time.time()
+print 'import finished (%.3f s), starting up app...' % (t1-t0)
+
+mainwindow = UFitMain()
+args = sys.argv[1:]
+if len(args) == 1:
+    datafile = path.abspath(args[0])
+    if datafile.endswith('.ufit'):
+        try:
+            mainwindow.filename = datafile
+            mainwindow.load_session(datafile)
+        except Exception, err:
+            QMessageBox.warning(mainwindow,
+                                'Error', 'Loading failed: %s' % err)
+            mainwindow.filename = None
+    else:
+        mainwindow.dloader.set_template(datafile)
+
+t2 = time.time()
+print 'loading finished (%.3f s), main window showing...' % (t2-t1)
+mainwindow.show()
+splash.deleteLater()
+app.exec_()
