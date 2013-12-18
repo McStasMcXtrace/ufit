@@ -8,12 +8,12 @@
 
 """Models for different peak shapes."""
 
-from numpy import exp, log, sqrt, sin, cos
+from numpy import exp, log, sqrt, sin, cos, pi
 from scipy.special import wofz
 
 from ufit.models import Model
 
-__all__ = ['Gauss', 'Lorentz', 'Voigt', 'PseudoVoigt', 'DHO']
+__all__ = ['Gauss', 'GaussInt', 'Lorentz', 'Voigt', 'PseudoVoigt', 'DHO']
 
 
 class Gauss(Model):
@@ -43,6 +43,37 @@ class Gauss(Model):
             self.params[0].name: p[0],  # position
             self.params[1].name: p[1],  # peak amplitude
             self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM
+        }
+
+
+class GaussInt(Model):
+    """Gaussian peak with integrated intensity parameter
+
+    Parameters:
+
+    * `pos` - Peak center position
+    * `int` - Integrated intensity
+    * `fwhm` - Full width at half maximum
+    """
+    param_names = ['pos', 'int', 'fwhm']
+
+    def __init__(self, name='', pos=None, ampl=None, fwhm=None):
+        pp, pint, pf = self._init_params(name, self.param_names, locals())
+        # amplitude and fwhm should be positive
+        self.params[1].finalize = abs
+        self.params[2].finalize = abs
+
+        self.fcn = lambda p, x: \
+            abs(p[pint]) / (abs(p[pf]) * sqrt(2*pi)) * exp(-(x - p[pp])**2/p[pf]**2 * 4*log(2))
+
+    pick_points = ['peak', 'width']
+
+    def convert_pick(self, p, w):
+        fwhm = 2*abs(w[0] - p[0])
+        return {
+            self.params[0].name: p[0],  # position
+            self.params[1].name: p[1] * fwhm * sqrt(2*pi),  # peak intensity (integrated)
+            self.params[2].name: fwhm,  # FWHM
         }
 
 
@@ -218,3 +249,4 @@ class Gauss2D(Model):
                 exp(-x1**2/p[pfx]**2 * 4*log(2)) * \
                 exp(-y1**2/p[pfy]**2 * 4*log(2))
         self.fcn = fcn
+
