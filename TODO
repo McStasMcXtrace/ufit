@@ -1,11 +1,20 @@
+API
+===
+
+* refactor Dataset to be more logical and to have official data setters/getters
+
 Models
 ======
 
+* default to parameterizing Gauss and Lorentz by area/integrated intensity
 * convolution model
 
 GUI
 ===
 
+* arbitrary math. operations on datasets (x and y -> calc. dy automatically)
+* easier manipulation of the preview plot
+* combination of two datasets by math. operation
 * add'l parameters
 * export plot as python script / ipython notebook (?)
 * sqwtas
