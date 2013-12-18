@@ -25,6 +25,7 @@ app.setApplicationName('gui')
 pixmap = QPixmap(':/splash.png')
 splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
 splash.show()
+time.sleep(0.1)
 app.processEvents()
 
 import matplotlib
