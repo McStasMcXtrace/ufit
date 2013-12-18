@@ -168,6 +168,12 @@ class DataPlotter(object):
 def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
             xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
             clear=True, colors=None):
+    """
+
+    modes: 0 = image
+           1 = contour filled
+           2 = contour lines
+    """
     from scipy.interpolate import griddata as griddata_sp
     if figure is None:
         figure = pl.gcf()
@@ -207,9 +213,12 @@ def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
         kwds = {}
         if colors:
             kwds = {'colors': colors}
-        im = fcn(xi, yi, zi, 20, **kwds)
+        im = fcn(xi/xscale, yi/yscale, zi, 20,
+                 extent=(xi[0][0]/xscale, xi[-1][-1]/xscale,
+                         yi[0][0]/yscale, yi[-1][-1]/yscale),
+                 **kwds)
     axes.set_xlabel(x)
     axes.set_ylabel(y)
     figure.colorbar(im)
     if dots:
-        axes.scatter(xss, yss, 0.1)
+        axes.scatter(xss/xscale, yss/yscale, 0.1)
