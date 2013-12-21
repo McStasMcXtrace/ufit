@@ -13,15 +13,15 @@ import cPickle as pickle
 from cStringIO import StringIO
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, \
-     QVariant, QByteArray, QRectF
-from PyQt4.QtGui import QMainWindow, QVBoxLayout, QApplication, QTabWidget, \
-     QMessageBox, QFileDialog, QDialog, QAction, QActionGroup, QPrinter, \
-     QPrintPreviewWidget, QPainter, QPrintDialog, QListWidgetItem
+    QVariant, QByteArray, QRectF
+from PyQt4.QtGui import QMainWindow, QVBoxLayout, QTabWidget, QMessageBox, \
+    QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
+    QPrintPreviewWidget, QPrintDialog, QListWidgetItem
 from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
-     path_to_str
+    path_to_str
 from ufit.gui.dataloader import DataLoader
 from ufit.gui.dataops import DataOps
 from ufit.gui.multiops import MultiDataOps
@@ -392,6 +392,14 @@ class UFitMain(QMainWindow):
         if pdlg.exec_() != QDialog.Accepted:
             return
         render(self.printer)
+
+    @qtsig('')
+    def on_actionSavePlot_triggered(self):
+        self.canvas.save_figure()
+
+    @qtsig('')
+    def on_actionUnzoom_triggered(self):
+        self.toolbar.home()
 
     def check_save(self):
         if not self.isWindowModified():  # nothing there to be saved

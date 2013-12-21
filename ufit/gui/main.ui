@@ -143,8 +143,10 @@
     <property name="title">
      <string>&amp;Plot</string>
     </property>
+    <addaction name="actionSavePlot"/>
     <addaction name="actionPrint"/>
     <addaction name="separator"/>
+    <addaction name="actionUnzoom"/>
     <addaction name="actionDrawSymbols"/>
     <addaction name="actionConnectData"/>
    </widget>
@@ -281,7 +283,7 @@
      <normaloff>:/printer.png</normaloff>:/printer.png</iconset>
    </property>
    <property name="text">
-    <string>Print plot...</string>
+    <string>&amp;Print plot...</string>
    </property>
   </action>
   <action name="actionExportASCII">
@@ -306,6 +308,24 @@
   <action name="actionExportParams">
    <property name="text">
     <string>Export parameters as ASCII...</string>
+   </property>
+  </action>
+  <action name="actionSavePlot">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/document-pdf.png</normaloff>:/document-pdf.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save as PDF or image...</string>
+   </property>
+  </action>
+  <action name="actionUnzoom">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/home.png</normaloff>:/home.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Unzoom</string>
    </property>
   </action>
  </widget>
