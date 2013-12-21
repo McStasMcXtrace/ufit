@@ -20,6 +20,8 @@ GUI
 * sqwtas
 * export parameters as ascii
 * save mappings in file
+* logscale button and menu entry
+* new session menu entry
 
 Bugs
 ====
