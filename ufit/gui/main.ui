@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>367</width>
+    <width>386</width>
     <height>600</height>
    </rect>
   </property>
@@ -101,22 +101,14 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>367</width>
-     <height>22</height>
+     <width>386</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionLoadData"/>
-    <addaction name="actionPrint"/>
-    <addaction name="separator"/>
-    <addaction name="actionExportASCII"/>
-    <addaction name="actionExportFIT"/>
-    <addaction name="actionExportParams"/>
-    <addaction name="actionExportPython"/>
-    <addaction name="separator"/>
     <addaction name="actionLoad"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -131,21 +123,34 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>&amp;Data</string>
+     <string>&amp;Datasets</string>
     </property>
+    <addaction name="actionLoadData"/>
     <addaction name="actionRemoveData"/>
     <addaction name="actionMergeData"/>
     <addaction name="separator"/>
-    <addaction name="actionDrawSymbols"/>
-    <addaction name="actionConnectData"/>
+    <addaction name="actionExportASCII"/>
+    <addaction name="actionExportFIT"/>
+    <addaction name="actionExportParams"/>
+    <addaction name="actionExportPython"/>
    </widget>
    <widget class="QMenu" name="menuBackend">
     <property name="title">
      <string>&amp;Backend</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menu_Plot">
+    <property name="title">
+     <string>&amp;Plot</string>
+    </property>
+    <addaction name="actionPrint"/>
+    <addaction name="separator"/>
+    <addaction name="actionDrawSymbols"/>
+    <addaction name="actionConnectData"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Plot"/>
    <addaction name="menuBackend"/>
    <addaction name="menuHelp"/>
   </widget>
