@@ -16,9 +16,6 @@ from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
      QMessageBox, QDialog
 
-#from matplotlib import use
-#use("Qt4Agg")
-
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
@@ -29,6 +26,9 @@ except ImportError:
     key_press_handler = None
 from matplotlib.backends import backend_qt4
 backend_qt4.figureoptions = None  # disable toolbar button that doesn't work
+pyplot.rc('font', family='sans-serif')
+pyplot.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
+                     'Lucida Grande, Bitstream Vera Sans'})
 
 from ufit.plotting import DataPlotter
 
