@@ -12,11 +12,12 @@ neutrons.instruments.tas.tasres from the neutrons Python package, compiled by
 Marc Janoschek.
 """
 
+import os
 import multiprocessing
 
 from numpy import pi, radians, degrees, sin, cos, tan, arcsin, arccos, \
      arctan2, abs, sqrt, real, matrix, diag, cross, dot, array, arange, \
-     zeros, concatenate, reshape, delete
+     zeros, concatenate, reshape, delete, loadtxt
 from numpy.random import randn
 from numpy.linalg import inv, det, eig, norm
 
@@ -830,6 +831,72 @@ Resolution Info:
 
     __repr__ = __str__
 
+    def run_mcstas(self, NMC, QE):
+        os.system('rm -rf /tmp/x')
+        cmd = '/data/software/ufit/mcstas/templateTAS.out -n%g' % (NMC * 1000)
+        cmd += ' --dir /tmp/x'
+        for p in self.par:
+            if p in ('qx', 'qy', 'qz', 'en', 'de', 'dqx', 'dqy', 'dqz', 'gh',
+                     'gk', 'gl', 'gmod', 'etas'):
+                continue
+            pn = p.upper()
+            if p == 'k':
+                pn = 'KFIX'
+            if p == 'kfix':
+                pn = 'FX'
+            cmd += ' %s=%s' % (pn, self.par[p])
+        cmd += ' L1=%s L2=%s L3=%s L4=%s' % (self.cfg[19]/100,
+                                             self.cfg[20]/100,
+                                             self.cfg[21]/100,
+                                             self.cfg[22]/100)
+        cmd += ' WM=%s HM=%s WA=%s HA=%s WD=%s HD=%s' % (self.cfg[14]/100,
+                                                         self.cfg[15]/100,
+                                                         self.cfg[17]/100,
+                                                         self.cfg[18]/100,
+                                                         self.cfg[11]/100,
+                                                         self.cfg[12]/100)
+        #if self.cfg[23] <= 0:
+        #    cmd += ' RMH=%s' % self.cfg[23]
+        #else:
+        #    cmd += ' RMH=%s' % (1/self.cfg[23]/100)
+        #if self.cfg[24] <= 0:
+        #    cmd += ' RMV=%s' % self.cfg[24]
+        #else:
+        #    cmd += ' RMV=%s' % (1/self.cfg[24]/100)
+        #if self.cfg[25] <= 0:
+        #    cmd += ' RAH=%s' % self.cfg[25]
+        #else:
+        #    cmd += ' RAH=%s' % (1/self.cfg[25]/100)
+        #if self.cfg[26] <= 0:
+        #    cmd += ' RAV=%s' % self.cfg[26]
+        #else:
+        #    cmd += ' RAV=%s' % (1/self.cfg[26]/100)
+        cmd += ' swidth=%s sheight=%s sthick=%s' % (self.cfg[7]/100,
+                                                    self.cfg[8]/100,
+                                                    self.cfg[9]/100)
+        cmd += ' QH=%s QK=%s QL=%s EN=%s' % tuple(QE)
+        print '[MCSTAS] running:', cmd
+        os.system(cmd)
+        print '[MCSTAS] finished'
+        try:
+            arr = loadtxt('/tmp/x/res.dat', ndmin=2)
+        except IOError:
+            return [], [], [], [], []
+        # some mcstas bug?!
+        if len(arr.T) == 4:
+            return [], [], [], [], []
+        kix, kiy, kiz, kfx, kfy, kfz, x, y, z, pi, pf = arr.T
+        # NOTE: cyclic shift of x, y, z here due to different coordinate system
+        # conventions in McStas and here:
+        # - McStas: z along beam, y upwards, x completes RHS
+        # - here:   x along beam, z upwards, y completes RHS
+        Q = array((kiz, kix, kiy)) - array((kfz, kfx, kfy))
+        w = 2.072*(kix**2 + kiy**2 + kiz**2 - kfx**2 - kfy**2 - kfz**2)
+        p = pi*pf/1e7
+        print '%d neutrons for MC calculation' % len(w)
+        Q = array([array(dot(self.unitc.cart2rluMat, q))[0] for q in Q.T]).T
+        return Q[0], Q[1], Q[2], w, p
+
     def calc_STrafo(self):
         """Calculates transformation matrix self.S, which transforms from the
         coordinate frame given in h, k, l (r.l.u.) and E(meV) to cartesian
@@ -1147,6 +1214,19 @@ class dummy_result(object):
         self.res = res
     def get(self):
         return self.res
+
+
+def calc_MC_mcstas(x, fit_par, sqw, resmat, NMC):
+    """Trial with McStas."""
+    results = []
+    for QE in x:
+        qh, qk, ql, en, weights = resmat.run_mcstas(NMC, QE)
+        if qh == []:
+            mc_intens = 0
+        else:
+            mc_intens = (sqw(qh, qk, ql, en, QE, None, *fit_par) * weights).sum()
+        results.append(mc_intens)
+    return array(results)
 
 def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
     """Calculates intensity of point in reciprocal space (qh,qk,ql,en) at takes

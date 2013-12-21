@@ -11,9 +11,12 @@
 import time
 import inspect
 
-from ufit.rescalc import resmat, calc_MC, calc_MC_cluster, load_cfg, load_par, \
-     PARNAMES, CFGNAMES, plot_resatpoint
+from numpy import matrix as zeros
+
+from ufit.rescalc import resmat, calc_MC, calc_MC_cluster, calc_MC_mcstas, \
+    load_cfg, load_par, PARNAMES, CFGNAMES, plot_resatpoint
 from ufit.models.base import Model
+from ufit.param import prepare_params, update_params
 
 __all__ = ['ConvolvedScatteringLaw']
 
@@ -44,11 +47,12 @@ class ConvolvedScatteringLaw(Model):
     parameters (this is mostly useful to interactively play around with the
     resolution in one scan).
     """
-    nsamples = -4  # for plotting: plot only 4x as many points as datapoints
+    nsamples = -1  # for plotting: plot only 4x as many points as datapoints
 
     def __init__(self, sqw, instfiles, NMC=2000, name=None, cluster=False,
-                 matrix=None, mathkl=None, **init):
+                 mcstas=None, matrix=None, mathkl=None, **init):
         self._cluster = False
+        self._mcstas = mcstas
         if isinstance(sqw, str):
             modname, funcname = sqw.split(':')
             mod = __import__(modname)
@@ -123,7 +127,7 @@ class ConvolvedScatteringLaw(Model):
     def fcn(self, p, x):
         parvalues = [p[pv] for pv in self._pvs]
         t1 = time.time()
-        print 'Sqw: values = ', parvalues
+        #print 'Sqw: values = ', parvalues
         if self._ninstpar:
             sqwpar  = parvalues[2:-self._ninstpar]
             for pn, pv in zip(self._instpars, parvalues[-self._ninstpar:]):
@@ -135,7 +139,10 @@ class ConvolvedScatteringLaw(Model):
         else:
             sqwpar = parvalues[2:]
             use_caching = True
-        if self._cluster:
+        if self._mcstas:
+            res = calc_MC_mcstas(x, sqwpar, self._sqw, self._resmat,
+                                 parvalues[0])
+        elif self._cluster:
             res = calc_MC_cluster(x, sqwpar, self._sqwcode,
                                   self._sqwfunc, self._resmat, parvalues[0],
                                   use_caching=use_caching)
@@ -144,9 +151,19 @@ class ConvolvedScatteringLaw(Model):
                           parvalues[0], use_caching=use_caching)
         res += parvalues[1]  # background
         t2 = time.time()
-        print 'Sqw: iteration = %.3f sec' % (t2-t1)
+        #print 'Sqw: iteration = %.3f sec' % (t2-t1)
         return res
 
     def resplot(self, h, k, l, e):
         self._resmat.sethklen(h, k, l, e)
         plot_resatpoint(self._resmat.cfg, self._resmat.par, self._resmat)
+
+    def simulate(self, data):
+        varying, varynames, dependent, _ = prepare_params(self.params, data.meta)
+        pd = dict((p.name, p.value) for p in self.params)
+        update_params(dependent, data.meta, pd)
+        yy = self.fcn(pd, data.x)
+        new = data.copy()
+        new.y = yy
+        new.dy = zeros(len(yy))
+        return new
