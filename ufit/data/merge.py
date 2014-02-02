@@ -1,6 +1,6 @@
 # data merging
 
-from numpy import arange, ones, zeros, sqrt
+from numpy import arange, ones, zeros, sqrt, array
 
 from ufit import UFitError
 
@@ -16,6 +16,7 @@ def rebin(data, binsize):
     x, y, dy, n = data.T
 
     # calculate new x values
+    
     halfbinsize = binsize/2.
     stops = arange(x.min() - (x.min() % binsize) - binsize,
                    x.max() - (x.max() % binsize) + 2*binsize,
@@ -57,3 +58,36 @@ def rebin(data, binsize):
 
     # return array
     return newarray
+
+def mergeList(tomerge):
+    tomerge = array(tomerge)
+    merged = tomerge.sum(axis = 0)
+    merged[2] = sqrt((tomerge**2).sum(axis = 0)[2])
+    merged[0] = merged[0] / len(tomerge)
+    return merged;
+
+def floatmerge(data, binsize):
+    """Merging data based on floating window."""
+
+    if binsize == 0:
+        # no merging, just concatenate
+        return data
+
+    # sort data
+    data = data[data[:,0].argsort()]
+    
+    lastvals = None
+    tomerge =  []
+    newlist =  []
+    for vals in data:
+        if lastvals != None:
+            if vals[0] > lastvals[0] + binsize:
+                #merge points in list:
+                newlist.append(mergeList(tomerge))
+                tomerge = []
+        tomerge.append(vals)
+        lastvals = vals
+    newlist.append(mergeList(tomerge))
+
+    # return array
+    return array(newlist)

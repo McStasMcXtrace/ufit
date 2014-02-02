@@ -112,6 +112,16 @@ class MultiDataOps(QWidget):
         self.emit(SIGNAL('newData'), new_data)
 
     @qtsig('')
+    def on_floatMergeBtn_clicked(self):
+        try:
+            precision = float(self.mergeEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
+            return
+        new_data = self.datas[0].merge(precision, floatMerge = True, *self.datas[1:])
+        self.emit(SIGNAL('newData'), new_data)
+
+    @qtsig('')
     def on_onemodelBtn_clicked(self):
         which = self.onemodelBox.currentIndex()
         if which < 0:
