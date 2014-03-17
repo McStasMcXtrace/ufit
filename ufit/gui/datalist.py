@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -10,10 +10,9 @@
 
 # parts borrowed from M. Janoschek' nfit2 GUI
 
-from PyQt4.QtCore import Qt, QVariant, QSize, QString, SIGNAL, \
-     QAbstractListModel, QModelIndex
+from PyQt4.QtCore import Qt, QSize, SIGNAL, QAbstractListModel, QModelIndex
 from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle, \
-     QAbstractItemView
+    QAbstractItemView
 
 
 class DataListView(QListView):
@@ -39,34 +38,33 @@ class DataListModel(QAbstractListModel):
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < len(self.panels)):
-            return QVariant()
+            return None
         nr = index.row()
         if role == Qt.DisplayRole:
-            return QVariant(self.panels[nr].as_html())
+            return self.panels[nr].as_html()
         elif role == Qt.TextAlignmentRole:
-            return QVariant(int(Qt.AlignLeft|Qt.AlignVCenter))
-        return QVariant()
+            return int(Qt.AlignLeft|Qt.AlignVCenter)
+        return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.TextAlignmentRole:
             if orientation == Qt.Horizontal:
-                return QVariant(int(Qt.AlignLeft|Qt.AlignVCenter))
-            return QVariant(int(Qt.AlignRight|Qt.AlignVCenter))
+                return int(Qt.AlignLeft|Qt.AlignVCenter)
+            return int(Qt.AlignRight|Qt.AlignVCenter)
         if role != Qt.DisplayRole:
-            return QVariant()
+            return None
 
 
 class DataListDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
-        text = index.model().data(index).toString()
+        text = index.model().data(index)
         palette = self.parent().palette()
         document = QTextDocument()
         document.setDefaultFont(option.font)
         if option.state & QStyle.State_Selected:
-            document.setHtml(QString("<font color=%1>%2</font>")
-                    .arg(palette.highlightedText().color().name())
-                    .arg(text))
+            document.setHtml("<font color=%s>%s</font>" %
+                    (palette.highlightedText().color().name(), text))
             color = palette.highlight().color()
         else:
             document.setHtml(text)
@@ -78,7 +76,7 @@ class DataListDelegate(QStyledItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
-        text = index.model().data(index).toString()
+        text = index.model().data(index)
         document = QTextDocument()
         document.setDefaultFont(option.font)
         document.setHtml(text)

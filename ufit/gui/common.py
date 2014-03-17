@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -46,9 +46,10 @@ def str_to_path(string):
 
 class MPLCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent=None, width=10, height=6, dpi=72):
+    def __init__(self, parent, width=10, height=6, dpi=72):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
+        self.main = parent
         self.axes = fig.add_subplot(111)
         self.plotter = DataPlotter(self, self.axes)
         # make tight_layout do the right thing
@@ -101,7 +102,7 @@ class MPLToolbar(NavigationToolbar2QT):
     del toolitems[7]  # subplot adjust
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
-    toolitems.append(('Execute', 'Execute Python command', 'mplexec',
+    toolitems.append(('Execute', 'Show Python console', 'mplexec',
                       'exec_callback'))
 
     def _init_toolbar(self):
@@ -117,16 +118,15 @@ class MPLToolbar(NavigationToolbar2QT):
         self.emit(SIGNAL('printRequested'))
 
     def exec_callback(self):
-        dlg = QDialog(self)
-        loadUi(dlg, 'exec.ui')
-        if dlg.exec_() != QDialog.Accepted:
-            return
-        code = str(dlg.codeEdit.toPlainText())
-        namespace = {'ax': self.canvas.figure.gca()}
-        code = '''if 1:
-        from ufit.lab import *\n''' + code
-        exec code in namespace
-        self.canvas.draw()
+        from ufit.gui.console import ConsoleWindow
+        w = ConsoleWindow(self)
+        w.ipython.executeCommand('from ufit.lab import *')
+        w.ipython.pushVariables({
+            'fig': self.canvas.figure,
+            'ax': self.canvas.figure.gca(),
+            'D': self.canvas.main.panels,
+        })
+        w.show()
 
     def save_figure(self, *args):
         filetypes = self.canvas.get_supported_filetypes_grouped()

@@ -3,7 +3,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -12,6 +12,10 @@ import time
 from os import path
 
 t0 = time.time()
+
+import sip
+sip.setapi('QString', 2)
+sip.setapi('QVariant', 2)
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap

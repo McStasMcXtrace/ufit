@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -13,7 +13,7 @@ import cPickle as pickle
 from cStringIO import StringIO
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, \
-    QVariant, QByteArray, QRectF
+    QByteArray, QRectF
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QTabWidget, QMessageBox, \
     QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
     QPrintPreviewWidget, QPrintDialog, QListWidgetItem
@@ -193,13 +193,13 @@ class UFitMain(QMainWindow):
                          self.on_backend_action_triggered)
 
         with self.sgroup as settings:
-            geometry = settings.value('geometry').toByteArray()
+            geometry = settings.value('geometry', QByteArray())
             self.restoreGeometry(geometry)
-            windowstate = settings.value('windowstate').toByteArray()
+            windowstate = settings.value('windowstate', QByteArray())
             self.restoreState(windowstate)
-            splitstate = settings.value('splitstate').toByteArray()
+            splitstate = settings.value('splitstate', QByteArray())
             self.splitter.restoreState(splitstate)
-            vsplitstate = settings.value('vsplitstate').toByteArray()
+            vsplitstate = settings.value('vsplitstate', QByteArray())
             self.vsplitter.restoreState(vsplitstate)
 
     def set_dirty(self):
@@ -527,11 +527,10 @@ class UFitMain(QMainWindow):
             return
         event.accept()
         with self.sgroup as settings:
-            settings.setValue('geometry', QVariant(self.saveGeometry()))
-            settings.setValue('windowstate', QVariant(self.saveState()))
-            settings.setValue('splitstate', QVariant(self.splitter.saveState()))
-            settings.setValue('vsplitstate',
-                              QVariant(self.vsplitter.saveState()))
+            settings.setValue('geometry', self.saveGeometry())
+            settings.setValue('windowstate', self.saveState())
+            settings.setValue('splitstate', self.splitter.saveState())
+            settings.setValue('vsplitstate', self.vsplitter.saveState())
 
     @qtsig('')
     def on_actionAbout_triggered(self):
