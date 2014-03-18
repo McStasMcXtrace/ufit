@@ -2,11 +2,13 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
 """Fit result class."""
+
+import copy
 
 from numpy import array, linspace, ravel
 from matplotlib import pyplot as pl
@@ -28,6 +30,9 @@ class Result(object):
 
     def __getitem__(self, key):
         return self.paramdict[key]
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     @cached_property
     def paramdict(self):
