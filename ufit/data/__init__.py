@@ -9,13 +9,14 @@
 """Data loading and treatment for ufit."""
 
 from ufit import UFitError
-from ufit.data import ill, nicos, simple, trisp
+from ufit.data import ill, nicos, nicos_old, simple, trisp
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset, DatasetList
 
 data_formats = {
     'ill': ill,
     'nicos': nicos,
+    'old nicos': nicos_old,
     'simple': simple,
     'trisp': trisp,
 }
