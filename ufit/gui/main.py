@@ -325,6 +325,8 @@ class UFitMain(QMainWindow):
         def deref():
             self.inspector_window = None
         self.connect(self.inspector_window, SIGNAL('close'), deref)
+        if isinstance(self.current_panel, DatasetPanel):
+            self.inspector_window.newData(self.current_panel.data)
         self.inspector_window.show()
 
     @qtsig('')
