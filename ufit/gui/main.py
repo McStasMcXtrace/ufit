@@ -266,9 +266,9 @@ class UFitMain(QMainWindow):
             panel.replot(panel._limits)
             self.toolbar.update()
         else:
+            self.select_new_panel(self.multiops)
             self.plot_multi()
             self.multiops.initialize([self.panels[i] for i in indlist])
-            self.select_new_panel(self.multiops)
 
     def plot_multi(self, *ignored):
         # XXX better title

@@ -14,7 +14,7 @@ from os import path
 from PyQt4 import uic
 from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-     QMessageBox, QDialog
+     QMessageBox
 
 from matplotlib.backends.backend_qt4agg import \
      FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
