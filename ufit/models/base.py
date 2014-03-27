@@ -283,6 +283,13 @@ class Model(object):
             if p.name in initial_values:
                 p.value = initial_values[p.name]
 
+    def export_python(self, fp, objname='model'):
+        fp.write('%s = %s\n' % (objname, self.get_description()))
+        for param in self.params:
+            fp.write('%s[%r].set_props(%r, %r, %r, %r, %r, %r)\n' %
+                     (objname, param.name, param.value, param.error,
+                      param.expr, param.pmin, param.pmax, param.delta))
+
 
 class CombinedModel(Model):
     """Models an arithmetic combination of two sub-models.

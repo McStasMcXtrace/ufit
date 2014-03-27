@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -151,7 +151,7 @@ class Dataset(object):
             ret.x = ret.meta['hkle']
         return ret
 
-    def plot(self, axes=None, symbols=True, lines=False):
+    def plot(self, axes=None, symbols=True, lines=False, **kw):
         """Plot the dataset using matplotlib.
 
         *axes* is a matplotlib Axes object, as returned by :func:`gca()`.  If
@@ -163,10 +163,14 @@ class Dataset(object):
         dp = DataPlotter(axes=axes)
         dp.symbols = symbols
         dp.lines = lines
-        dp.plot_data(self)
+        dp.plot_data(self, **kw)
 
     def export_ascii(self, fp):
         savetxt(fp, array([self.x, self.y, self.dy]).T)
+
+    def export_python(self, fp, objname='data'):
+        fp.write('%s = as_data(%r, %r, %r, %r)\n' %
+                 (objname, self.x, self.y, self.dy, self.name))
 
 
 class DataList(dict):

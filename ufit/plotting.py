@@ -59,23 +59,23 @@ class DataPlotter(object):
         self.axes.clear()
         self.marker_cycle = cycle(self.markers)
 
-    def plot_data(self, data, multi=False, ms=8):
+    def plot_data(self, data, multi=False, ms=8, **kw):
         """Plot dataset."""
         axes = self.axes
         marker = self.marker_cycle.next() if self.symbols else ''
         ls = '-' if self.lines else ''
         if data.mask.all():
             eb = axes.errorbar(data.x_plot, data.y, data.dy, ls=ls, marker=marker,
-                               ms=ms, label=data.name, picker=5)
+                               ms=ms, label=data.name, picker=5, **kw)
             color = eb[0].get_color()
         else:
             mask = data.mask
             eb = axes.errorbar(data.x_plot[mask], data.y[mask], data.dy[mask], ls=ls,
-                               marker=marker, ms=ms, label=data.name, picker=5)
+                               marker=marker, ms=ms, label=data.name, picker=5, **kw)
             color = eb[0].get_color()
             axes.errorbar(data.x_plot[~mask], data.y[~mask], data.dy[~mask], ls='',
                           marker=marker, ms=ms, picker=5, mfc='white', mec=color,
-                          label='')
+                          label='', **kw)
         if not multi:
             if data.fitmin is not None:
                 axes.axvline(data.fitmin, ls='-', color='gray')

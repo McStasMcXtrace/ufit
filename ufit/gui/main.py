@@ -127,8 +127,23 @@ class DatasetPanel(QTabWidget):
 
     def export_python(self, fp):
         fp.write('from ufit.lab import *\n')
-        self.data.export_python(fp)
-        self.model.export_python(fp)
+        fp.write('\n')
+        self.data.export_python(fp, 'data')
+        fp.write('\n')
+        self.model.export_python(fp, 'model')
+        fp.write('''\
+## just plot current values
+data.plot()
+model.plot_components(data)
+model.plot(data)
+
+## to fit again use this...
+#result = model.fit(data)
+#result.printout()
+#result.plot()
+
+show()
+''')
 
 
 class UFitMain(QMainWindow):
@@ -360,8 +375,6 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
-        QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
-        return
         if self.filename:
             initialdir = path.dirname(self.filename)
         else:
