@@ -82,7 +82,7 @@ class DataPlotter(object):
             if data.fitmax is not None:
                 axes.axvline(data.fitmax, ls='-', color='grey')
             axes.set_title('%s\n%s' % (data.meta.get('title', ''),
-                                       data.meta.get('info', '')),
+                                       data.meta.get('subtitle', '')),
                            size='medium')
             self.plot_finish(data.xaxis, data.yaxis)
         return color

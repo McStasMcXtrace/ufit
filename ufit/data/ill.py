@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -51,7 +51,7 @@ def read_data(filename, fp):
                 if float(s.strip()) != 0 or xcol is None:
                     xcol = k[1:]
         elif line.startswith('COMND:'):
-            meta['info'] = ' '.join(line[7:].rstrip().lower().split())
+            meta['subtitle'] = ' '.join(line[7:].rstrip().lower().split())
         elif line.startswith('TITLE:'):
             meta['title'] = line[6:].strip()
         elif line.startswith('FILE_:'):
@@ -68,9 +68,6 @@ def read_data(filename, fp):
         line = fp.readline()
         if not line:
             break
-    meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
-                                     meta.get('experiment', ''),
-                                     meta.get('filenumber'))
     all_names = fp.readline().split()
     if not all_names:
         raise UFitError('No data columns found in in file %r' % filename)

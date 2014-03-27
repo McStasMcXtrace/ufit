@@ -16,17 +16,45 @@ from ufit.utils import attrdict
 from ufit.data.merge import rebin
 from ufit.plotting import DataPlotter
 
+# Special metadata keys, to be set by the loaders if possible
+#
+# * instrument: the name of the instrument used
+# * experiment: the number or short name of the experiment/proposal
+# * filenumber: the file number of the data file
+# * filedesc: a combination of instrument, experiment and filenumber
+# * title: "title" of the data file, i.e. experiment name or sample name
+# * subtitle: "scan info", normally the scan command used
+# * environment: a list of "sample environment" type strings
+# * datafilename: the file name when the data was loaded
+
+def sanitize_meta(meta, name):
+    if 'instrument' not in meta:
+        meta.instrument = ''
+    if 'experiment' not in meta:
+        meta.experiment = ''
+    if 'filenumber' not in meta:
+        meta.filenumber = 0
+    if 'title' not in meta:
+        meta.title = name or str(meta.filenumber or '---')
+    if 'subtitle' not in meta:
+        # 'info' is the old name of 'subtitle'
+        meta.subtitle = meta.get('info', '')
+    if 'environment' not in meta:
+        meta.environment = []
+    if 'filedesc' not in meta:
+        meta.filedesc = '%s:%s:%s' % (meta.instrument, meta.experiment,
+                                      meta.filenumber)
+    if 'datafilename' not in meta:
+        meta.datafilename = ''
+
 
 class Dataset(object):
     def __init__(self, meta, data, xcol, ycol, ncol=None, nscale=1,
                  name='', sources=None):
         self.meta = attrdict(meta)
-        self.name = name or str(getattr(self.meta, 'filenumber', '---'))
-        self.sources = sources or [getattr(self, 'filedesc', '')]
-        if 'title' not in meta:
-            self.meta.title = self.name
-        if 'environment' not in meta:
-            self.meta.environment = ''
+        sanitize_meta(self.meta, name)
+        self.name = name or str(self.meta.filenumber or '---')
+        self.sources = sources or [self.meta.filedesc]
         self._data = data
 
         self.xcol = self.xaxis = xcol
@@ -55,6 +83,10 @@ class Dataset(object):
         self.reset_mask()
         self.fitmin = None
         self.fitmax = None
+
+    def after_load(self):
+        """Update internal data structures after unpickling."""
+        sanitize_meta(self.meta, self.name)
 
     def copy(self):
         return copy.deepcopy(self)

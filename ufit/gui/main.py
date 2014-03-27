@@ -468,6 +468,7 @@ class UFitMain(QMainWindow):
         self._loading = True
         try:
             for data, model in info['datasets']:
+                data.after_load()
                 self.handle_new_data(data, False, model)
             self.dloader.templateEdit.setText(info['template'])
         finally:

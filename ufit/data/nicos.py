@@ -90,6 +90,7 @@ def read_data(filename, fp):
                 key = key[:-6]
             if key.endswith('_instrument'):
                 meta['instrument'] = oval.lower()
+                continue
             elif key.endswith('_proposal'):
                 meta['experiment'] = oval.lower()
             elif key.endswith('_samplename'):
@@ -98,13 +99,13 @@ def read_data(filename, fp):
                 remark = oval
             elif key == 'number':
                 meta['filenumber'] = int(oval)
-            # 'info' key already has the right name
+                continue
+            elif key == 'info':
+                meta['subtitle'] = val
+                continue
             meta[key] = val
     if remark and 'title' in meta:
         meta['title'] += ', ' + remark
-    meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
-                                     meta.get('experiment', ''),
-                                     meta.get('filenumber'))
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
     return _nicos_common_load(fp, colnames, colunits, meta, '#')

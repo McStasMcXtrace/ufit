@@ -118,10 +118,8 @@ def read_data(filename, fp):
     if 'filename' in meta:
         meta['filename'] = meta['filename'].strip("'")
         meta['filenumber'] = int(meta['filename'].split("_")[1])
-    meta['filedesc'] = '%s:%s' % (meta.get('instrument', ''),
-                                  meta.get('filenumber'))
-    #read data
-    meta['info'] = fp.readline().strip()
+    # read data
+    meta['subtitle'] = fp.readline().strip()
     colnames = fp.readline().split()
     colunits = fp.readline().split()
 

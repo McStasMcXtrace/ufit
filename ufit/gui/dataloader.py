@@ -98,7 +98,7 @@ into one set, as well as files 23 and 24.
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            #raise
+            print e
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return
