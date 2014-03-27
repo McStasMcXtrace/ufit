@@ -17,7 +17,8 @@ from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
     QMessageBox
 
 from matplotlib.backends.backend_qt4agg import \
-    FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+    FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
+from matplotlib._pylab_helpers import Gcf
 from matplotlib.figure import Figure
 from matplotlib import pyplot
 try:
@@ -57,6 +58,13 @@ class MPLCanvas(FigureCanvas):
         self.axes.set_ylabel('y')
         self.axes.set_title('(data title)\n(info)', size='medium')
         FigureCanvas.__init__(self, fig)
+        # create a figure manager so that we can use pylab commands on the
+        # main viewport
+        def make_active(event):
+            Gcf.set_active(self.manager)
+        self.manager = FigureManagerQT(self, 1)
+        self.manager._cidgcf = self.mpl_connect('button_press_event', make_active)
+        Gcf.set_active(self.manager)
         self.setParent(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updateGeometry()

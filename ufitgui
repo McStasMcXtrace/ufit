@@ -20,6 +20,9 @@ sip.setapi('QVariant', 2)
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap
 
+import matplotlib
+matplotlib.use('Qt4Agg')
+
 import ufit.guiresource
 
 app = QApplication([])
@@ -31,9 +34,6 @@ splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
 splash.show()
 time.sleep(0.1)
 app.processEvents()
-
-import matplotlib
-matplotlib.use('Qt4Agg')
 
 from ufit.gui.main import UFitMain
 
