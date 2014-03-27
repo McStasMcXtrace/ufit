@@ -16,18 +16,22 @@ from ufit.utils import attrdict
 from ufit.data.merge import rebin
 from ufit.plotting import DataPlotter
 
-# Special metadata keys, to be set by the loaders if possible
-#
-# * instrument: the name of the instrument used
-# * experiment: the number or short name of the experiment/proposal
-# * filenumber: the file number of the data file
-# * filedesc: a combination of instrument, experiment and filenumber
-# * title: "title" of the data file, i.e. experiment name or sample name
-# * subtitle: "scan info", normally the scan command used
-# * environment: a list of "sample environment" type strings
-# * datafilename: the file name when the data was loaded
 
 def sanitize_meta(meta, name):
+    """
+    Sanitize metadata so that keys that must always be there, are there.
+
+    These special metadata keys, to be set by the loaders if possible, are:
+
+    * instrument: the name of the instrument used
+    * experiment: the number or short name of the experiment/proposal
+    * filenumber: the file number of the data file
+    * filedesc: a combination of instrument, experiment and filenumber
+    * title: "title" of the data file, i.e. experiment name or sample name
+    * subtitle: "scan info", normally the scan command used
+    * environment: a list of "sample environment" type strings
+    * datafilename: the file name when the data was loaded
+    """
     if 'instrument' not in meta:
         meta.instrument = ''
     if 'experiment' not in meta:

@@ -72,7 +72,7 @@ class DatasetPanel(QTabWidget):
         self.emit(SIGNAL('updateList'))
 
     def gen_htmldesc(self):
-        title = self.data.meta.get('title', '')
+        title = self.data.title
         self.dataops.titleEdit.setText(title)
         self.title = title
         self.htmldesc = '<big><b>%s</b></big>' % self.index + \

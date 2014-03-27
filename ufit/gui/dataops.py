@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -37,9 +37,8 @@ class DataOps(QWidget):
         if self.data.fitmax is not None:
             self.limitmaxEdit.setText('%.5g' % self.data.fitmax)
         self.monscaleEdit.setText(str(self.data.nscale))
-        # XXX fix this mess (title, name, environment, sources, ...)
-        self.titleEdit.setText(self.data.meta.get('title', ''))
-        self.nameEdit.setText(self.data.name or '')
+        self.titleEdit.setText(self.data.title)
+        self.nameEdit.setText(self.data.name)
 
     def on_canvas_pick(self, event):
         if not hasattr(event, 'artist'):

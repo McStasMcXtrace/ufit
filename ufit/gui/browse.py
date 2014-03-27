@@ -73,8 +73,8 @@ class BrowseWindow(QMainWindow):
             else:
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s - %s' %
-                                (n, res.xcol, res.meta.get('title', '?'),
-                                 ', '.join(res.meta.get('environment', '?'))),
+                                (n, res.xcol, res.title,
+                                 ', '.join(res.environment)),
                                 self.dataList, n)
 
     def on_dataList_itemSelectionChanged(self):
