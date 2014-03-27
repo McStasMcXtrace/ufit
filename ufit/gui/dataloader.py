@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -33,7 +33,7 @@ class DataLoader(QWidget):
     def createUI(self, standalone):
         loadUi(self, 'dataloader.ui')
         self.dataformatBox.addItem('auto')
-        for fmt in data_formats:
+        for fmt in sorted(data_formats):
             self.dataformatBox.addItem(fmt)
 
         self.buttonBox.addButton(QDialogButtonBox.Open)
