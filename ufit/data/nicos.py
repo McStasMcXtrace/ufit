@@ -107,10 +107,10 @@ def read_data(filename, fp):
                                      meta.get('filenumber'))
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
-    return _nicos_common_load(fp, colnames, colunits, meta)
+    return _nicos_common_load(fp, colnames, colunits, meta, '#')
 
 
-def _nicos_common_load(fp, colnames, colunits, meta):
+def _nicos_common_load(fp, colnames, colunits, meta, comments):
     def convert_value(s):
         try:
             return float(s)
@@ -123,7 +123,7 @@ def _nicos_common_load(fp, colnames, colunits, meta):
     usecols = cvdict.keys()
     # comments='*' is for the nicos_old format but doesn't hurt for the new
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2,
-                      comments='*')
+                      comments=comments)
     if not coldata.size:
         raise UFitError('empty data file')
     cols = dict((name, coldata[:,i]) for (i, name) in enumerate(colnames))

@@ -26,27 +26,27 @@ def check_data(fp):
 from ufit.data.nicos import guess_cols
 
 
+mapping = {
+    'name:': 'title',
+    '1st orientation reflection': 'orient1',
+    '2nd orientation reflection': 'orient2',
+    'zone axis for scattering plane': 'zoneaxis',
+    'created at': 'created',
+    'PSI0 (deg)': 'psi_offset',
+    'Scattering sense': 'scattersense',
+    'mono focussing mode': 'mono_focus',
+    'ana  focussing mode': 'ana_focus',
+    'TAS operation mode': 'opmode',
+    'mth  (A1) (deg)': 'mth_offset',
+    'mtt  (A2) (deg)': 'mtt_offset',
+    'sth  (A3) (deg)': 'sth_offset',
+    'stt  (A4) (deg)': 'stt_offset',
+    'ath  (A5) (deg)': 'ath_offset',
+    'att  (A6) (deg)': 'att_offset',
+}
+
+
 def read_data(filename, fp):
-
-    mapping = {'name:':'title',
-                '1st orientation reflection':'orient1',
-                '2nd orientation reflection':'orient2',
-                'zone axis for scattering plane':'zoneaxis',
-                'created at':'created',
-                'PSI0 (deg)':'psi_offset',
-                'Scattering sense':'scattersense',
-                'mono focussing mode':'mono_focus',
-                'ana  focussing mode':'ana_focus',
-                'TAS operation mode':'opmode',
-                'mth  (A1) (deg)':'mth_offset',
-                'mtt  (A2) (deg)':'mtt_offset',
-                'sth  (A3) (deg)':'sth_offset',
-                'stt  (A4) (deg)':'stt_offset',
-                'ath  (A5) (deg)':'ath_offset',
-                'att  (A6) (deg)':'att_offset',
-                }
-
-
     meta = {}
     first_pos = fp.tell()
     dtline = fp.readline()
@@ -54,10 +54,6 @@ def read_data(filename, fp):
     if not dtline.startswith('filename'):
         raise UFitError('%r does not appear to be an OLD NICOS data file' %
                         filename)
-    #ctime = time.mktime(time.strptime(
-    #    dtline[len('### NICOS data file, created at '):].strip(),
-    #    '%Y-%m-%d %H:%M:%S'))
-    #meta['created'] = ctime
     for line in iter(fp.readline, ''):
         #finished, go for data
         if line.startswith('scan data'):
@@ -129,4 +125,4 @@ def read_data(filename, fp):
     colnames = fp.readline().split()
     colunits = fp.readline().split()
 
-    return _nicos_common_load(fp, colnames, colunits, meta)
+    return _nicos_common_load(fp, colnames, colunits, meta, '*')
