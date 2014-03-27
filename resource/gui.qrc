@@ -20,5 +20,6 @@
     <file>arrow-move.png</file>
     <file>document-pdf.png</file>
     <file>terminal--arrow.png</file>
+    <file>magnifier-zoom-fit.png</file>
   </qresource>
 </RCC>

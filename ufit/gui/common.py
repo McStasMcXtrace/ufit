@@ -96,7 +96,7 @@ class MPLCanvas(FigureCanvas):
 class MPLToolbar(NavigationToolbar2QT):
 
     icon_name_map = {
-        'home.png':         'home.png',
+        'home.png':         'magnifier-zoom-fit.png',
         'back.png':         'arrow-180.png',
         'forward.png':      'arrow.png',
         'move.png':         'arrow-move.png',
@@ -121,6 +121,14 @@ class MPLToolbar(NavigationToolbar2QT):
         if name in self.icon_name_map:
             return QIcon(':/' + self.icon_name_map[name])
         return QIcon()
+
+    def home(self):
+        # always unzoom completely
+        self._views.clear()
+        self._positions.clear()
+        self.canvas.figure.gca().autoscale()
+        self.canvas.draw()
+        return NavigationToolbar2QT.home(self)
 
     def print_callback(self):
         self.emit(SIGNAL('printRequested'))
