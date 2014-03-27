@@ -563,7 +563,12 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_actionAbout_triggered(self):
         QMessageBox.information(self, 'About',
-                                'ufit, written by Georg Brandl 2013.')
+            u'''\
+ufit, a neutron data fitting suite
+
+Written by Georg Brandl, 2013-2014.
+Contributions by Petr Cermak.
+''')
 
     @qtsig('')
     def on_backend_action_triggered(self):
