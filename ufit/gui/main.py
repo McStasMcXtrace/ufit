@@ -283,7 +283,7 @@ class UFitMain(QMainWindow):
             panel.replot(panel._limits)
             self.toolbar.update()
             if self.inspector_window:
-                self.inspector_window.newData(panel.data)
+                self.inspector_window.setDataPanel(panel)
         else:
             self.select_new_panel(self.multiops)
             self.plot_multi()
@@ -322,11 +322,12 @@ class UFitMain(QMainWindow):
             self.inspector_window.activateWindow()
             return
         self.inspector_window = InspectorWindow(self)
+        self.connect(self.inspector_window, SIGNAL('dirty'), self.set_dirty)
         def deref():
             self.inspector_window = None
         self.connect(self.inspector_window, SIGNAL('close'), deref)
         if isinstance(self.current_panel, DatasetPanel):
-            self.inspector_window.newData(self.current_panel.data)
+            self.inspector_window.setDataPanel(self.current_panel)
         self.inspector_window.show()
 
     @qtsig('')
@@ -522,7 +523,7 @@ class UFitMain(QMainWindow):
         fp = open(filename, 'wb')
         info = {
             'datasets': [(panel.data, panel.model) for panel in self.panels],
-            'template': str(self.dloader.templateEdit.text()),
+            'template': self.dloader.templateEdit.text(),
             'version':  SAVE_VERSION,
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
