@@ -14,10 +14,10 @@ from os import path
 from PyQt4 import uic
 from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-     QMessageBox
+    QMessageBox
 
 from matplotlib.backends.backend_qt4agg import \
-     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+    FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
 from matplotlib import pyplot
 try:
@@ -95,14 +95,14 @@ class MPLToolbar(NavigationToolbar2QT):
         'zoom_to_rect.png': 'selection-resize.png',
         'filesave.png':     'document-pdf.png',
         'printer.png':      'printer.png',
-        'mplexec.png':      'mplexec.png',
+        'pyconsole.png':    'terminal--arrow.png',
     }
 
     toolitems = list(NavigationToolbar2QT.toolitems)
     del toolitems[7]  # subplot adjust
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
-    toolitems.append(('Execute', 'Show Python console', 'mplexec',
+    toolitems.append(('Execute', 'Show Python console', 'pyconsole',
                       'exec_callback'))
 
     def _init_toolbar(self):
@@ -118,7 +118,12 @@ class MPLToolbar(NavigationToolbar2QT):
         self.emit(SIGNAL('printRequested'))
 
     def exec_callback(self):
-        from ufit.gui.console import ConsoleWindow
+        try:
+            from ufit.gui.console import ConsoleWindow
+        except ImportError:
+            QMessageBox.information(self, 'ufit',
+                'Please install IPython with qtconsole to activate this function.')
+            return
         w = ConsoleWindow(self)
         w.ipython.executeCommand('from ufit.lab import *')
         w.ipython.pushVariables({

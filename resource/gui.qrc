@@ -19,5 +19,6 @@
     <file>selection-resize.png</file>
     <file>arrow-move.png</file>
     <file>document-pdf.png</file>
+    <file>terminal--arrow.png</file>
   </qresource>
 </RCC>
