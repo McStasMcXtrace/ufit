@@ -102,7 +102,7 @@
      <x>0</x>
      <y>0</y>
      <width>386</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -133,6 +133,8 @@
     <addaction name="actionExportFIT"/>
     <addaction name="actionExportParams"/>
     <addaction name="actionExportPython"/>
+    <addaction name="separator"/>
+    <addaction name="actionInspector"/>
    </widget>
    <widget class="QMenu" name="menuBackend">
     <property name="title">
@@ -170,6 +172,8 @@
    <addaction name="separator"/>
    <addaction name="actionLoad"/>
    <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionInspector"/>
   </widget>
   <action name="actionLoad">
    <property name="icon">
@@ -326,6 +330,18 @@
    </property>
    <property name="text">
     <string>&amp;Unzoom</string>
+   </property>
+  </action>
+  <action name="actionInspector">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/table-select-row.png</normaloff>:/table-select-row.png</iconset>
+   </property>
+   <property name="text">
+    <string>Data inspector</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
    </property>
   </action>
  </widget>

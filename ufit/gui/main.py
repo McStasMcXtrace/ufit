@@ -28,6 +28,7 @@ from ufit.gui.multiops import MultiDataOps
 from ufit.gui.modelbuilder import ModelBuilder
 from ufit.gui.fitter import Fitter
 from ufit.gui.datalist import DataListModel
+from ufit.gui.inspector import InspectorWindow
 
 
 SAVE_VERSION = 1
@@ -142,6 +143,7 @@ class UFitMain(QMainWindow):
         self.max_index = 1
         self.printer = None  # delay construction; takes half a second
         self.print_width = 0
+        self.inspector_window = None
 
         loadUi(self, 'main.ui')
 
@@ -265,6 +267,8 @@ class UFitMain(QMainWindow):
             self.select_new_panel(panel)
             panel.replot(panel._limits)
             self.toolbar.update()
+            if self.inspector_window:
+                self.inspector_window.newData(panel.data)
         else:
             self.select_new_panel(self.multiops)
             self.plot_multi()
@@ -296,6 +300,17 @@ class UFitMain(QMainWindow):
             self.datalistmodel.reset()
             self.dataList.setCurrentIndex(
                 self.datalistmodel.index(len(self.panels)-1, 0))
+
+    @qtsig('')
+    def on_actionInspector_triggered(self):
+        if self.inspector_window:
+            self.inspector_window.activateWindow()
+            return
+        self.inspector_window = InspectorWindow(self)
+        def deref():
+            self.inspector_window = None
+        self.connect(self.inspector_window, SIGNAL('close'), deref)
+        self.inspector_window.show()
 
     @qtsig('')
     def on_actionLoadData_triggered(self):
