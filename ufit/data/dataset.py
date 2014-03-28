@@ -166,7 +166,7 @@ class Dataset(object):
         for col in self.meta:
             if not col.startswith('col_'):
                 continue
-            new_meta[col] = concatenate([dset.meta[col] for dset in allsets])
+            new_meta[col] = concatenate([dset.meta.get(col, []) for dset in allsets])
         # XXX hkl data is a mess
         if 'is_hkldata' in self.meta:
             concat = concatenate([dset.meta['hkle'] for dset in allsets])
