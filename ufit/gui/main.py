@@ -446,6 +446,23 @@ class UFitMain(QMainWindow):
             return True
         return False
 
+    def clear_datasets(self):
+        for panel in self.panels[:]:
+            self.stacker.removeWidget(panel)
+        del self.panels[:]
+        self.datalistmodel.reset()
+        self.max_index = 1
+
+    @qtsig('')
+    def on_actionNewSession_triggered(self):
+        if not self.check_save():
+            return
+        self.clear_datasets()
+        self.filename = None
+        self.setWindowModified(False)
+        self.setWindowTitle('ufit[*]')
+        self.on_loadBtn_clicked()
+
     @qtsig('')
     def on_actionLoad_triggered(self):
         if not self.check_save():
@@ -465,9 +482,7 @@ class UFitMain(QMainWindow):
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
 
     def load_session(self, filename):
-        for panel in self.panels[1:]:
-            self.stacker.removeWidget(panel)
-        del self.panels[1:]
+        self.clear_datasets()
         info = pickle.load(open(filename, 'rb'))
         self._loading = True
         try:

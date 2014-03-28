@@ -48,7 +48,7 @@
             </property>
             <property name="icon">
              <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/document--plus.png</normaloff>:/document--plus.png</iconset>
+              <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
             </property>
            </widget>
           </item>
@@ -102,13 +102,14 @@
      <x>0</x>
      <y>0</y>
      <width>386</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionNewSession"/>
     <addaction name="actionLoad"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -168,11 +169,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionLoadData"/>
-   <addaction name="separator"/>
+   <addaction name="actionNewSession"/>
    <addaction name="actionLoad"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
+   <addaction name="actionLoadData"/>
    <addaction name="actionInspector"/>
   </widget>
   <action name="actionLoad">
@@ -235,7 +236,7 @@
   <action name="actionLoadData">
    <property name="icon">
     <iconset resource="../../resource/gui.qrc">
-     <normaloff>:/document--plus.png</normaloff>:/document--plus.png</iconset>
+     <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
    </property>
    <property name="text">
     <string>Load data</string>
@@ -342,6 +343,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionNewSession">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/document.png</normaloff>:/document.png</iconset>
+   </property>
+   <property name="text">
+    <string>New session</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

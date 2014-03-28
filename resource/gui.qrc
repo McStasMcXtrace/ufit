@@ -4,7 +4,7 @@
     <file>splash.png</file>
     <file>printer.png</file>
     <file>arrow-join.png</file>
-    <file>document--plus.png</file>
+    <file>notebook--plus.png</file>
     <file>document-export.png</file>
     <file>cross-button.png</file>
     <file>disks-black.png</file>
@@ -23,5 +23,6 @@
     <file>magnifier-zoom-fit.png</file>
     <file>log-x.png</file>
     <file>log-y.png</file>
+    <file>document.png</file>
   </qresource>
 </RCC>

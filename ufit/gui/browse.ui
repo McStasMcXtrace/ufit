@@ -68,7 +68,7 @@
             </property>
             <property name="icon">
              <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/document--plus.png</normaloff>:/document--plus.png</iconset>
+              <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
             </property>
            </widget>
           </item>
