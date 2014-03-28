@@ -86,12 +86,14 @@ class DataPlotter(object):
             self.plot_finish(data.xaxis, data.yaxis)
         return color
 
-    def plot_finish(self, xlabel=None, ylabel=None):
+    def plot_finish(self, xlabel=None, ylabel=None, title=None):
         axes = self.axes
         if xlabel is not None:
             axes.set_xlabel(xlabel)
         if ylabel is not None:
             axes.set_ylabel(ylabel)
+        if title is not None:
+            axes.set_title(title)
         axes.legend(prop={'size': 'small'})
         axes.grid(True)
         if self._limits:

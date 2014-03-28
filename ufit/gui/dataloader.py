@@ -161,9 +161,16 @@ into one set, as well as files 23 and 24.
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()
+            xlabels = set()
+            ylabels = set()
+            titles = set()
             for data in datas:
                 self.plotter.plot_data(data, multi=True)
-            self.plotter.plot_finish()
+                xlabels.add(data.xaxis)
+                ylabels.add(data.yaxis)
+                titles.add(data.title)
+            self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
+                                     ', '.join(titles))
             self.plotter.draw()
 
     def initialize(self):
