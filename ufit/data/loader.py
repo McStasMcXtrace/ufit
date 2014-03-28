@@ -36,20 +36,14 @@ class Loader(object):
     def _inner_load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
         try:
             filename = self.template % n
-            default_filedesc = str(n)
         except TypeError:
             filename = self.template
-            default_filedesc = path.basename(self.template)
         fobj = open(filename, 'rb')
         rdr = self._get_reader(filename, fobj)
         colnames, coldata, meta = rdr.read_data(filename, fobj)
         colguess = rdr.guess_cols(colnames, coldata, meta)
         if 'filenumber' not in meta:
             meta['filenumber'] = n
-        if 'filedesc' not in meta:
-            meta['filedesc'] = default_filedesc
-        if 'environment' not in meta:
-            meta['environment'] = []
         meta['datafilename'] = filename
         for colname, colvalues in zip(colnames, coldata.T):
             meta['col_%s' % colname] = colvalues
