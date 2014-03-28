@@ -57,6 +57,7 @@ class DatasetPanel(QTabWidget):
         self.connect(self.dataops, SIGNAL('newData'), self.handle_new_data)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
+        self.connect(self.mbuilder, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
         self.connect(self.fitter, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.fitter, SIGNAL('dirty'), self.set_dirty)
@@ -87,21 +88,23 @@ class DatasetPanel(QTabWidget):
     def set_dirty(self):
         self.emit(SIGNAL('dirty'))
 
-    def on_mbuilder_newModel(self, model):
-        self.handle_new_model(model, update_mbuilder=False)
+    def on_mbuilder_newModel(self, model, switch_fitter=True):
+        self.handle_new_model(model, update_mbuilder=False,
+                              switch_fitter=switch_fitter)
         self.set_dirty()
 
     def handle_new_data(self, *args):
         self.emit(SIGNAL('newData'), *args)
 
     def handle_new_model(self, model, update_mbuilder=True,
-                         keep_paramvalues=True):
+                         keep_paramvalues=True, switch_fitter=True):
         if update_mbuilder:
             self.mbuilder.modeldefEdit.setText(model.get_description())
         self.model = model
         self.fitter.initialize(self.model, self.data, fit=False,
                                keep_old=keep_paramvalues)
-        self.setCurrentWidget(self.fitter)
+        if switch_fitter:
+            self.setCurrentWidget(self.fitter)
 
     def set_picker(self, widget):
         self.picker_widget = widget
