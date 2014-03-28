@@ -325,7 +325,7 @@ class UFitMain(QMainWindow):
         self.connect(self.inspector_window, SIGNAL('dirty'), self.set_dirty)
         def deref():
             self.inspector_window = None
-        self.connect(self.inspector_window, SIGNAL('close'), deref)
+        self.connect(self.inspector_window, SIGNAL('closed'), deref)
         if isinstance(self.current_panel, DatasetPanel):
             self.inspector_window.setDataPanel(self.current_panel)
         self.inspector_window.show()
