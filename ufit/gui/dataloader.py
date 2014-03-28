@@ -73,9 +73,10 @@ into one set, as well as files 23 and 24.
     @qtsig('')
     def on_browseBtn_clicked(self):
         bwin = BrowseWindow(self)
+        bwin.show()
+        QApplication.processEvents()
         templ = path_to_str(self.templateEdit.text())
         bwin.set_directory(path.dirname(templ))
-        bwin.show()
 
     @qtsig('')
     def on_settemplateBtn_clicked(self):
