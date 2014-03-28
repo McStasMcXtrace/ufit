@@ -18,7 +18,7 @@ sip.setapi('QString', 2)
 sip.setapi('QVariant', 2)
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap
+from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap, QMessageBox
 
 import matplotlib
 matplotlib.use('Qt4Agg')
