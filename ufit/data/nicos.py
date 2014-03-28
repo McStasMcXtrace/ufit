@@ -122,7 +122,6 @@ def _nicos_common_load(fp, colnames, colunits, meta, comments):
     colnames = [name for name in colnames if name != ';']
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
-    # comments='*' is for the nicos_old format but doesn't hurt for the new
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2,
                       comments=comments)
     if not coldata.size:
@@ -131,7 +130,7 @@ def _nicos_common_load(fp, colnames, colunits, meta, comments):
     meta['environment'] = []
     for col in cols:
         meta[col] = cols[col].mean()
-    for tcol in ['Ts', 'sT', 'T_ccr5_A', 'T_ccr5_B']:
+    for tcol in ['Ts', 'sT', 'T_ccr5_A', 'T_ccr5_B', 'sensor1']:
         if tcol in cols:
             meta['environment'].append('T = %.3f K' % meta[tcol])
             break
