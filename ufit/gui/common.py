@@ -104,10 +104,15 @@ class MPLToolbar(NavigationToolbar2QT):
         'filesave.png':     'document-pdf.png',
         'printer.png':      'printer.png',
         'pyconsole.png':    'terminal--arrow.png',
+        'log-x.png':        'log-x.png',
+        'log-y.png':        'log-y.png',
     }
 
     toolitems = list(NavigationToolbar2QT.toolitems)
     del toolitems[7]  # subplot adjust
+    toolitems.insert(0, ('Log x', 'Logarithmic X scale', 'log-x', 'logx_callback'))
+    toolitems.insert(1, ('Log y', 'Logarithmic Y scale', 'log-y', 'logy_callback'))
+    toolitems.insert(2, (None, None, None, None))
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
     toolitems.append(('Execute', 'Show Python console', 'pyconsole',
@@ -116,6 +121,8 @@ class MPLToolbar(NavigationToolbar2QT):
     def _init_toolbar(self):
         NavigationToolbar2QT._init_toolbar(self)
         self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self._actions['logx_callback'].setCheckable(True)
+        self._actions['logy_callback'].setCheckable(True)
 
     def _icon(self, name):
         if name in self.icon_name_map:
@@ -129,6 +136,26 @@ class MPLToolbar(NavigationToolbar2QT):
         self.canvas.figure.gca().autoscale()
         self.canvas.draw()
         return NavigationToolbar2QT.home(self)
+
+    def logx_callback(self):
+        ax = self.canvas.figure.gca()
+        if ax.get_xscale() == 'linear':
+            ax.set_xscale('symlog')
+            self._actions['logx_callback'].setChecked(True)
+        else:
+            ax.set_xscale('linear')
+            self._actions['logx_callback'].setChecked(False)
+        self.canvas.draw()
+
+    def logy_callback(self):
+        ax = self.canvas.figure.gca()
+        if ax.get_yscale() == 'linear':
+            ax.set_yscale('symlog')
+            self._actions['logy_callback'].setChecked(True)
+        else:
+            ax.set_yscale('linear')
+            self._actions['logy_callback'].setChecked(False)
+        self.canvas.draw()
 
     def print_callback(self):
         self.emit(SIGNAL('printRequested'))

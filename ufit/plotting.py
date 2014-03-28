@@ -56,7 +56,10 @@ class DataPlotter(object):
             self._limits = self.axes.get_xlim(), self.axes.get_ylim()
         else:
             self._limits = limits
+        xscale, yscale = self.axes.get_xscale(), self.axes.get_yscale()
         self.axes.clear()
+        self.axes.set_xscale(xscale)
+        self.axes.set_yscale(yscale)
         self.marker_cycle = cycle(self.markers)
 
     def plot_data(self, data, multi=False, ms=8, **kw):

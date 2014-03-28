@@ -21,5 +21,7 @@
     <file>document-pdf.png</file>
     <file>terminal--arrow.png</file>
     <file>magnifier-zoom-fit.png</file>
+    <file>log-x.png</file>
+    <file>log-y.png</file>
   </qresource>
 </RCC>
