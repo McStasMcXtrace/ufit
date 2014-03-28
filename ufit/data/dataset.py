@@ -90,6 +90,10 @@ class Dataset(object):
 
     def after_load(self):
         """Update internal data structures after unpickling."""
+        if 'fitmin' not in self.__dict__:
+            self.fitmin = self.fitmax = None
+        if 'mask' not in self.__dict__:
+            self.reset_mask()
         sanitize_meta(self.meta, self.name)
 
     def copy(self):

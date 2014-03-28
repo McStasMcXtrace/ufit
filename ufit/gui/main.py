@@ -484,6 +484,10 @@ class UFitMain(QMainWindow):
     def load_session(self, filename):
         self.clear_datasets()
         info = pickle.load(open(filename, 'rb'))
+        if 'panels' in info:
+            info['version'] = 0
+            info['datasets'] = info.pop('panels')
+            info['template'] = ''
         self._loading = True
         try:
             for data, model in info['datasets']:
