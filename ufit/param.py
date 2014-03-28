@@ -163,6 +163,14 @@ class Param(object):
         return '<Param %s = %.5g +/- %s>' % (
             self.name, self.value, self.error)
 
+    def set_props(self, value, error, expr, pmin, pmax, delta):
+        self.value = value
+        self.error = error
+        self.expr = expr
+        self.pmin = pmin
+        self.pmax = pmax
+        self.delta = delta
+
 
 # XXX replace by something more safe later
 param_eval = eval

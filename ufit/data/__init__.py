@@ -2,21 +2,23 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
 """Data loading and treatment for ufit."""
 
 from ufit import UFitError
-from ufit.data import ill, nicos, simple, trisp
+from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset, DatasetList
 
 data_formats = {
     'ill': ill,
     'nicos': nicos,
+    'old nicos': nicos_old,
     'simple': simple,
+    'simple comma-separated': simple_csv,
     'trisp': trisp,
 }
 
@@ -54,7 +56,10 @@ def set_dataformat(format):
 
     * ``'ill'`` - ILL TAS data format
     * ``'nicos'`` - NICOS data format
+    * ``'old nicos'`` - NICOS 1.0 data format
+    * ``'trisp'`` - FRM-II TRISP data format
     * ``'simple'`` - simple whitespace-separated multi-column files
+    * ``'simple comma-separated'`` - simple comma-separated multi-column files
     """
     if format not in data_formats:
         raise UFitError('Unknown data format: %r, available formats are %s'

@@ -16,52 +16,189 @@
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="2" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="gaussOnlyBtn">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Gauss peaks only mode</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="1" column="0" colspan="4">
-      <widget class="QTextEdit" name="modeldefEdit">
-       <property name="html">
-        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+      <widget class="QStackedWidget" name="modeldefStacker">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="page">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0" colspan="4">
+            <widget class="QTextEdit" name="modeldefEdit">
+             <property name="html">
+              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Background(bkgd=0)&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;+ Gauss('peak', pos=0, ampl=1, fwhm=1)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2" colspan="2">
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>220</width>
+                <height>124</height>
+               </rect>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <property name="margin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="modelinfoLbl">
+                 <property name="text">
+                  <string>(Model info)</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item row="2" column="0" rowspan="2" colspan="2">
+            <widget class="QListWidget" name="premodelsList"/>
+           </item>
+           <item row="4" column="0" colspan="4">
+            <widget class="QLabel" name="statusLbl">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Click &quot;Check&quot; to check model definition.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="label_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Add predefined model:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QPushButton" name="addmodelBtn">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Add</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_2">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>For each peak that you want to fit:
+
+* click first on the maximum
+* then click on the X position of the half maximum
+
+When finished, click &quot;Apply&quot; below to go to the fitting page.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>68</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
-     <item row="6" column="0" colspan="4">
+     <item row="2" column="0" colspan="4">
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
         <set>QDialogButtonBox::Reset</set>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QLabel" name="label_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Add predefined model:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="3">
-      <widget class="QPushButton" name="addmodelBtn">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Add</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="4">
+     <item row="0" column="0" colspan="2">
       <widget class="QLabel" name="label">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -80,72 +217,11 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="5" column="0" colspan="4">
-      <widget class="QLabel" name="statusLbl">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Click &quot;Check&quot; to check model definition.</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2" colspan="2">
-      <widget class="QScrollArea" name="scrollArea">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>220</width>
-          <height>130</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <property name="margin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="modelinfoLbl">
-           <property name="text">
-            <string>(Model info)</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-     </item>
-     <item row="3" column="0" rowspan="2" colspan="2">
-      <widget class="QListWidget" name="premodelsList"/>
-     </item>
     </layout>
    </item>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>modeldefEdit</tabstop>
-  <tabstop>premodelsList</tabstop>
-  <tabstop>scrollArea</tabstop>
-  <tabstop>addmodelBtn</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>

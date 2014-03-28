@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -46,10 +46,9 @@ def read_data(filename, fp):
     infofp = open(filename[:-4] + '.log', 'rb')
     # first line in scan info
     line = infofp.readline()
-    meta['info'] = ' '.join(line.lower().split())
+    meta['subtitle'] = ' '.join(line.lower().split())
     meta['title'] = ''  # nothing here
     meta['instrument'] = 'trisp'
-    meta['experiment'] = ''
     while not line.startswith('Limits'):
         line = infofp.readline()
         if '-----' in line:

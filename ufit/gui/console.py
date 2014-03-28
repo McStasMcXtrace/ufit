@@ -8,11 +8,11 @@
 
 """Embedded IPython qt console."""
 
+from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QMainWindow
 
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.qt.inprocess import QtInProcessKernelManager
-from IPython.lib import guisupport
 
 
 class QIPythonWidget(RichIPythonWidget):
@@ -29,23 +29,29 @@ class QIPythonWidget(RichIPythonWidget):
         def stop():
             kernel_client.stop_channels()
             kernel_manager.shutdown_kernel()
-            guisupport.get_app_qt4().exit()
+            self.emit(SIGNAL('close'))
         self.exit_requested.connect(stop)
+        def replot():
+            self.emit(SIGNAL('replot'))
+        self.executed.connect(replot)
 
     def pushVariables(self, variableDict):
         """Given a dictionary containing name / value pairs, push those
         variables to the IPython console widget.
         """
         self.kernel_manager.kernel.shell.push(variableDict)
+
     def clearTerminal(self):
         """Clears the terminal."""
         self._control.clear()
-    def printText(self,text):
+
+    def printText(self, text):
         """Prints some plain text to the console."""
         self._append_plain_text(text)
-    def executeCommand(self,command):
+
+    def executeCommand(self, command):
         """Execute a command in the frame of the console widget."""
-        self._execute(command,False)
+        self._execute(command, False)
 
 
 class ConsoleWindow(QMainWindow):
@@ -62,3 +68,9 @@ Objects in the namespace:
             ''',
             self)
         self.setCentralWidget(self.ipython)
+
+        self.connect(self.ipython, SIGNAL('close'), self.close)
+        def redraw():
+            parent.canvas.draw()
+        self.connect(self.ipython, SIGNAL('replot'), redraw)
+

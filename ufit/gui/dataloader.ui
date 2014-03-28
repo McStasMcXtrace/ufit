@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>461</width>
-    <height>306</height>
+    <height>320</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -267,12 +267,19 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>0.001</string>
+        <string>0</string>
        </property>
       </widget>
      </item>
      <item row="8" column="1" colspan="3">
       <widget class="QLineEdit" name="numorsEdit"/>
+     </item>
+     <item row="9" column="2">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>(0 means no merging)</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

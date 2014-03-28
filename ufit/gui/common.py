@@ -14,10 +14,11 @@ from os import path
 from PyQt4 import uic
 from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-     QMessageBox, QDialog
+    QMessageBox
 
 from matplotlib.backends.backend_qt4agg import \
-     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+    FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
+from matplotlib._pylab_helpers import Gcf
 from matplotlib.figure import Figure
 from matplotlib import pyplot
 try:
@@ -57,6 +58,13 @@ class MPLCanvas(FigureCanvas):
         self.axes.set_ylabel('y')
         self.axes.set_title('(data title)\n(info)', size='medium')
         FigureCanvas.__init__(self, fig)
+        # create a figure manager so that we can use pylab commands on the
+        # main viewport
+        def make_active(event):
+            Gcf.set_active(self.manager)
+        self.manager = FigureManagerQT(self, 1)
+        self.manager._cidgcf = self.mpl_connect('button_press_event', make_active)
+        Gcf.set_active(self.manager)
         self.setParent(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updateGeometry()
@@ -88,37 +96,77 @@ class MPLCanvas(FigureCanvas):
 class MPLToolbar(NavigationToolbar2QT):
 
     icon_name_map = {
-        'home.png':         'home.png',
+        'home.png':         'magnifier-zoom-fit.png',
         'back.png':         'arrow-180.png',
         'forward.png':      'arrow.png',
         'move.png':         'arrow-move.png',
         'zoom_to_rect.png': 'selection-resize.png',
         'filesave.png':     'document-pdf.png',
         'printer.png':      'printer.png',
-        'mplexec.png':      'mplexec.png',
+        'pyconsole.png':    'terminal--arrow.png',
+        'log-x.png':        'log-x.png',
+        'log-y.png':        'log-y.png',
     }
 
     toolitems = list(NavigationToolbar2QT.toolitems)
     del toolitems[7]  # subplot adjust
+    toolitems.insert(0, ('Log x', 'Logarithmic X scale', 'log-x', 'logx_callback'))
+    toolitems.insert(1, ('Log y', 'Logarithmic Y scale', 'log-y', 'logy_callback'))
+    toolitems.insert(2, (None, None, None, None))
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
-    toolitems.append(('Execute', 'Show Python console', 'mplexec',
+    toolitems.append(('Execute', 'Show Python console', 'pyconsole',
                       'exec_callback'))
 
     def _init_toolbar(self):
         NavigationToolbar2QT._init_toolbar(self)
         self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self._actions['logx_callback'].setCheckable(True)
+        self._actions['logy_callback'].setCheckable(True)
 
     def _icon(self, name):
         if name in self.icon_name_map:
             return QIcon(':/' + self.icon_name_map[name])
         return QIcon()
 
+    def home(self):
+        # always unzoom completely
+        self._views.clear()
+        self._positions.clear()
+        self.canvas.figure.gca().autoscale()
+        self.canvas.draw()
+        return NavigationToolbar2QT.home(self)
+
+    def logx_callback(self):
+        ax = self.canvas.figure.gca()
+        if ax.get_xscale() == 'linear':
+            ax.set_xscale('symlog')
+            self._actions['logx_callback'].setChecked(True)
+        else:
+            ax.set_xscale('linear')
+            self._actions['logx_callback'].setChecked(False)
+        self.canvas.draw()
+
+    def logy_callback(self):
+        ax = self.canvas.figure.gca()
+        if ax.get_yscale() == 'linear':
+            ax.set_yscale('symlog')
+            self._actions['logy_callback'].setChecked(True)
+        else:
+            ax.set_yscale('linear')
+            self._actions['logy_callback'].setChecked(False)
+        self.canvas.draw()
+
     def print_callback(self):
         self.emit(SIGNAL('printRequested'))
 
     def exec_callback(self):
-        from ufit.gui.console import ConsoleWindow
+        try:
+            from ufit.gui.console import ConsoleWindow
+        except ImportError:
+            QMessageBox.information(self, 'ufit',
+                'Please install IPython with qtconsole to activate this function.')
+            return
         w = ConsoleWindow(self)
         w.ipython.executeCommand('from ufit.lab import *')
         w.ipython.pushVariables({

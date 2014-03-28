@@ -28,6 +28,8 @@ class BrowseWindow(QMainWindow):
         self._data = {}
         self.canvas = MPLCanvas(self)
         self.canvas.plotter.lines = True
+        self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
+                              horizontalalignment='center')
         self.toolbar = MPLToolbar(self.canvas, self)
         self.toolbar.setObjectName('browsetoolbar')
         self.addToolBar(self.toolbar)
@@ -69,13 +71,15 @@ class BrowseWindow(QMainWindow):
                 self.loader.template = t
                 res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
             except Exception, e:
-                print 'Could not load', fn, 'because:', e
+                print e
             else:
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s - %s' %
-                                (n, res.xcol, res.meta.get('title', '?'),
-                                 ', '.join(res.meta.get('environment', '?'))),
+                                (n, res.xcol, res.title,
+                                 ', '.join(res.environment)),
                                 self.dataList, n)
+        self.canvas.axes.clear()
+        self.canvas.draw()
 
     def on_dataList_itemSelectionChanged(self):
         numors = [item.type() for item in self.dataList.selectedItems()]

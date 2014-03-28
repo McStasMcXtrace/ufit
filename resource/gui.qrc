@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>table-select-row.png</file>
     <file>splash.png</file>
     <file>printer.png</file>
     <file>arrow-join.png</file>
@@ -18,5 +19,9 @@
     <file>selection-resize.png</file>
     <file>arrow-move.png</file>
     <file>document-pdf.png</file>
+    <file>terminal--arrow.png</file>
+    <file>magnifier-zoom-fit.png</file>
+    <file>log-x.png</file>
+    <file>log-y.png</file>
   </qresource>
 </RCC>

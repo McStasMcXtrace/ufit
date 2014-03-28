@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -56,43 +56,47 @@ class DataPlotter(object):
             self._limits = self.axes.get_xlim(), self.axes.get_ylim()
         else:
             self._limits = limits
+        xscale, yscale = self.axes.get_xscale(), self.axes.get_yscale()
         self.axes.clear()
+        self.axes.set_xscale(xscale)
+        self.axes.set_yscale(yscale)
         self.marker_cycle = cycle(self.markers)
 
-    def plot_data(self, data, multi=False, ms=8):
+    def plot_data(self, data, multi=False, ms=8, **kw):
         """Plot dataset."""
         axes = self.axes
         marker = self.marker_cycle.next() if self.symbols else ''
         ls = '-' if self.lines else ''
         if data.mask.all():
             eb = axes.errorbar(data.x_plot, data.y, data.dy, ls=ls, marker=marker,
-                               ms=ms, label=data.name, picker=5)
+                               ms=ms, label=data.name, picker=5, **kw)
             color = eb[0].get_color()
         else:
             mask = data.mask
             eb = axes.errorbar(data.x_plot[mask], data.y[mask], data.dy[mask], ls=ls,
-                               marker=marker, ms=ms, label=data.name, picker=5)
+                               marker=marker, ms=ms, label=data.name, picker=5, **kw)
             color = eb[0].get_color()
             axes.errorbar(data.x_plot[~mask], data.y[~mask], data.dy[~mask], ls='',
                           marker=marker, ms=ms, picker=5, mfc='white', mec=color,
-                          label='')
+                          label='', **kw)
         if not multi:
             if data.fitmin is not None:
                 axes.axvline(data.fitmin, ls='-', color='gray')
             if data.fitmax is not None:
                 axes.axvline(data.fitmax, ls='-', color='grey')
-            axes.set_title('%s\n%s' % (data.meta.get('title', ''),
-                                       data.meta.get('info', '')),
+            axes.set_title('%s\n%s' % (data.title, data.subtitle),
                            size='medium')
             self.plot_finish(data.xaxis, data.yaxis)
         return color
 
-    def plot_finish(self, xlabel=None, ylabel=None):
+    def plot_finish(self, xlabel=None, ylabel=None, title=None):
         axes = self.axes
         if xlabel is not None:
             axes.set_xlabel(xlabel)
         if ylabel is not None:
             axes.set_ylabel(ylabel)
+        if title is not None:
+            axes.set_title(title)
         axes.legend(prop={'size': 'small'})
         axes.grid(True)
         if self._limits:

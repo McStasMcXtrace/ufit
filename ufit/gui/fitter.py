@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -278,11 +278,11 @@ class Fitter(QWidget):
         self.emit(SIGNAL('dirty'))
 
         self.last_result = res
-    
+
     def export_fits(self, fp):
         xx = linspace(self.data.x.min(), self.data.x.max(), 1000)
         if self.last_result is None:
-            paramvalues = prepare_params(self.model.params, self.data.meta)[3] 
+            paramvalues = prepare_params(self.model.params, self.data.meta)[3]
         else:
             paramvalues = self.last_result.paramvalues
         yy = self.model.fcn(paramvalues, xx)
@@ -290,7 +290,7 @@ class Fitter(QWidget):
         for comp in self.model.get_components():
               if comp is self.model:
                   continue
-              yys.append(comp.fcn(paramvalues, xx))                       
+              yys.append(comp.fcn(paramvalues, xx))
         savetxt(fp, array([xx, yy] + yys).T)
 
 

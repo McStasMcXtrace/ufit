@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -20,11 +20,22 @@ def check_data(fp):
     return dtline.startswith('### NICOS data file')
 
 
+def _hkle_index(colnames):
+    # find the index of the "h" column or -1 if it's not a qscan
+    if 'h' in colnames:
+        qhindex = colnames.index('h')
+        if qhindex < len(colnames) - 3 and colnames[qhindex+3] == 'E':
+            return qhindex
+    return -1
+
+
 def guess_cols(colnames, coldata, meta):
     xg, yg, mg = None, None, None
-    if colnames[0] == 'h':
-        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
-        xg = colnames[deviations.argmax()]
+    qhindex = _hkle_index(colnames)
+    if qhindex > -1:
+        deviations = array([cs.max() - cs.min()
+                            for cs in coldata.T[qhindex:qhindex+4]])
+        xg = colnames[qhindex + deviations.argmax()]
     else:
         xg = colnames[0]
     maxmon = 0
@@ -79,6 +90,7 @@ def read_data(filename, fp):
                 key = key[:-6]
             if key.endswith('_instrument'):
                 meta['instrument'] = oval.lower()
+                continue
             elif key.endswith('_proposal'):
                 meta['experiment'] = oval.lower()
             elif key.endswith('_samplename'):
@@ -87,15 +99,19 @@ def read_data(filename, fp):
                 remark = oval
             elif key == 'number':
                 meta['filenumber'] = int(oval)
-            # 'info' key already has the right name
+                continue
+            elif key == 'info':
+                meta['subtitle'] = val
+                continue
             meta[key] = val
     if remark and 'title' in meta:
         meta['title'] += ', ' + remark
-    meta['filedesc'] = '%s:%s:%s' % (meta.get('instrument', ''),
-                                     meta.get('experiment', ''),
-                                     meta.get('filenumber'))
     colnames = fp.readline()[1:].split()
     colunits = fp.readline()[1:].split()
+    return _nicos_common_load(fp, colnames, colunits, meta, '#')
+
+
+def _nicos_common_load(fp, colnames, colunits, meta, comments):
     def convert_value(s):
         try:
             return float(s)
@@ -106,22 +122,25 @@ def read_data(filename, fp):
     colnames = [name for name in colnames if name != ';']
     colunits = [unit for unit in colunits if unit != ';']
     usecols = cvdict.keys()
-    coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2)
+    coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2,
+                      comments=comments)
     if not coldata.size:
         raise UFitError('empty data file')
     cols = dict((name, coldata[:,i]) for (i, name) in enumerate(colnames))
     meta['environment'] = []
     for col in cols:
         meta[col] = cols[col].mean()
-    for tcol in ['Ts', 'sT', 'T_ccr5_A', 'T_ccr5_B']:
+    for tcol in ['Ts', 'sT', 'T_ccr5_A', 'T_ccr5_B', 'sensor1']:
         if tcol in cols:
             meta['environment'].append('T = %.3f K' % meta[tcol])
             break
     if 'B' in cols:
         meta['environment'].append('B = %.3f K' % meta['B'])
-    if len(colnames) >= 4 and colnames[3] == 'E':
-        meta['hkle'] = coldata[:,:4]
-        deviations = array([(cs.max()-cs.min()) for cs in coldata.T[:4]])
-        xg = colnames[deviations.argmax()]
+    qhindex = _hkle_index(colnames)
+    if qhindex > -1:
+        meta['hkle'] = coldata[:,qhindex:qhindex+4]
+        deviations = array([cs.max() - cs.min()
+                            for cs in coldata.T[qhindex:qhindex+4]])
+        xg = colnames[qhindex + deviations.argmax()]
         meta['hkle_vary'] = xg
     return colnames, coldata, meta

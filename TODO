@@ -13,14 +13,12 @@ GUI
 ===
 
 * arbitrary math. operations on datasets (x and y -> calc. dy automatically)
-* easier manipulation of the preview plot
 * combination of two datasets by math. operation
 * add'l parameters
 * export plot as python script / ipython notebook (?)
 * sqwtas
 * export parameters as ascii
 * save mappings in file
-* logscale button and menu entry
 * new session menu entry
 
 Bugs

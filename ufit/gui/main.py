@@ -28,6 +28,7 @@ from ufit.gui.multiops import MultiDataOps
 from ufit.gui.modelbuilder import ModelBuilder
 from ufit.gui.fitter import Fitter
 from ufit.gui.datalist import DataListModel
+from ufit.gui.inspector import InspectorWindow
 
 
 SAVE_VERSION = 1
@@ -56,6 +57,7 @@ class DatasetPanel(QTabWidget):
         self.connect(self.dataops, SIGNAL('newData'), self.handle_new_data)
         self.connect(self.mbuilder, SIGNAL('newModel'),
                      self.on_mbuilder_newModel)
+        self.connect(self.mbuilder, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
         self.connect(self.fitter, SIGNAL('pickRequest'), self.set_picker)
         self.connect(self.fitter, SIGNAL('dirty'), self.set_dirty)
@@ -71,7 +73,7 @@ class DatasetPanel(QTabWidget):
         self.emit(SIGNAL('updateList'))
 
     def gen_htmldesc(self):
-        title = self.data.meta.get('title', '')
+        title = self.data.title
         self.dataops.titleEdit.setText(title)
         self.title = title
         self.htmldesc = '<big><b>%s</b></big>' % self.index + \
@@ -86,21 +88,23 @@ class DatasetPanel(QTabWidget):
     def set_dirty(self):
         self.emit(SIGNAL('dirty'))
 
-    def on_mbuilder_newModel(self, model):
-        self.handle_new_model(model, update_mbuilder=False)
+    def on_mbuilder_newModel(self, model, switch_fitter=True):
+        self.handle_new_model(model, update_mbuilder=False,
+                              switch_fitter=switch_fitter)
         self.set_dirty()
 
     def handle_new_data(self, *args):
         self.emit(SIGNAL('newData'), *args)
 
     def handle_new_model(self, model, update_mbuilder=True,
-                         keep_paramvalues=True):
+                         keep_paramvalues=True, switch_fitter=True):
         if update_mbuilder:
             self.mbuilder.modeldefEdit.setText(model.get_description())
         self.model = model
         self.fitter.initialize(self.model, self.data, fit=False,
                                keep_old=keep_paramvalues)
-        self.setCurrentWidget(self.fitter)
+        if switch_fitter:
+            self.setCurrentWidget(self.fitter)
 
     def set_picker(self, widget):
         self.picker_widget = widget
@@ -126,8 +130,23 @@ class DatasetPanel(QTabWidget):
 
     def export_python(self, fp):
         fp.write('from ufit.lab import *\n')
-        self.data.export_python(fp)
-        self.model.export_python(fp)
+        fp.write('\n')
+        self.data.export_python(fp, 'data')
+        fp.write('\n')
+        self.model.export_python(fp, 'model')
+        fp.write('''\
+## just plot current values
+data.plot()
+model.plot_components(data)
+model.plot(data)
+
+## to fit again use this...
+#result = model.fit(data)
+#result.printout()
+#result.plot()
+
+show()
+''')
 
 
 class UFitMain(QMainWindow):
@@ -142,6 +161,7 @@ class UFitMain(QMainWindow):
         self.max_index = 1
         self.printer = None  # delay construction; takes half a second
         self.print_width = 0
+        self.inspector_window = None
 
         loadUi(self, 'main.ui')
 
@@ -265,10 +285,12 @@ class UFitMain(QMainWindow):
             self.select_new_panel(panel)
             panel.replot(panel._limits)
             self.toolbar.update()
+            if self.inspector_window:
+                self.inspector_window.setDataPanel(panel)
         else:
+            self.select_new_panel(self.multiops)
             self.plot_multi()
             self.multiops.initialize([self.panels[i] for i in indlist])
-            self.select_new_panel(self.multiops)
 
     def plot_multi(self, *ignored):
         # XXX better title
@@ -296,6 +318,20 @@ class UFitMain(QMainWindow):
             self.datalistmodel.reset()
             self.dataList.setCurrentIndex(
                 self.datalistmodel.index(len(self.panels)-1, 0))
+
+    @qtsig('')
+    def on_actionInspector_triggered(self):
+        if self.inspector_window:
+            self.inspector_window.activateWindow()
+            return
+        self.inspector_window = InspectorWindow(self)
+        self.connect(self.inspector_window, SIGNAL('dirty'), self.set_dirty)
+        def deref():
+            self.inspector_window = None
+        self.connect(self.inspector_window, SIGNAL('closed'), deref)
+        if isinstance(self.current_panel, DatasetPanel):
+            self.inspector_window.setDataPanel(self.current_panel)
+        self.inspector_window.show()
 
     @qtsig('')
     def on_actionLoadData_triggered(self):
@@ -345,8 +381,6 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
-        QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
-        return
         if self.filename:
             initialdir = path.dirname(self.filename)
         else:
@@ -438,6 +472,7 @@ class UFitMain(QMainWindow):
         self._loading = True
         try:
             for data, model in info['datasets']:
+                data.after_load()
                 self.handle_new_data(data, False, model)
             self.dloader.templateEdit.setText(info['template'])
         finally:
@@ -491,7 +526,7 @@ class UFitMain(QMainWindow):
         fp = open(filename, 'wb')
         info = {
             'datasets': [(panel.data, panel.model) for panel in self.panels],
-            'template': str(self.dloader.templateEdit.text()),
+            'template': self.dloader.templateEdit.text(),
             'version':  SAVE_VERSION,
         }
         pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
@@ -535,7 +570,12 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_actionAbout_triggered(self):
         QMessageBox.information(self, 'About',
-                                'ufit, written by Georg Brandl 2013.')
+            u'''\
+ufit, a neutron data fitting suite
+
+Written by Georg Brandl, 2013-2014.
+Contributions by Petr Cermak.
+''')
 
     @qtsig('')
     def on_backend_action_triggered(self):

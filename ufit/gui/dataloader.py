@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -33,7 +33,7 @@ class DataLoader(QWidget):
     def createUI(self, standalone):
         loadUi(self, 'dataloader.ui')
         self.dataformatBox.addItem('auto')
-        for fmt in data_formats:
+        for fmt in sorted(data_formats):
             self.dataformatBox.addItem(fmt)
 
         self.buttonBox.addButton(QDialogButtonBox.Open)
@@ -73,9 +73,10 @@ into one set, as well as files 23 and 24.
     @qtsig('')
     def on_browseBtn_clicked(self):
         bwin = BrowseWindow(self)
+        bwin.show()
+        QApplication.processEvents()
         templ = path_to_str(self.templateEdit.text())
         bwin.set_directory(path.dirname(templ))
-        bwin.show()
 
     @qtsig('')
     def on_settemplateBtn_clicked(self):
@@ -98,7 +99,7 @@ into one set, as well as files 23 and 24.
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            #raise
+            print e
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return
@@ -151,7 +152,7 @@ into one set, as well as files 23 and 24.
             datas = self.loader.load_numors(numors, prec,
                                             xcol, ycol, dycol, mcol, mscale)
         except Exception, e:
-            QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
+            QMessageBox.information(self, 'Error', str(e))
             return
         if final:
             self.last_data = datas
@@ -161,9 +162,16 @@ into one set, as well as files 23 and 24.
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()
+            xlabels = set()
+            ylabels = set()
+            titles = set()
             for data in datas:
                 self.plotter.plot_data(data, multi=True)
-            self.plotter.plot_finish()
+                xlabels.add(data.xaxis)
+                ylabels.add(data.yaxis)
+                titles.add(data.title)
+            self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
+                                     ', '.join(titles))
             self.plotter.draw()
 
     def initialize(self):
