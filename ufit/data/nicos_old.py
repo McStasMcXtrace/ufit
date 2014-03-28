@@ -8,12 +8,10 @@
 
 """Load routine for OLD NICOS data."""
 
-import re
+import time
 
 from ufit import UFitError
 from ufit.data.nicos import _nicos_common_load
-
-meta_re = re.compile(r'^\s*([^:]*?)\s*:\s*(.*?)\s*$')
 
 def check_data(fp):
     dtline = fp.readline()
@@ -27,24 +25,29 @@ from ufit.data.nicos import guess_cols
 
 
 mapping = {
-    'name:': 'title',
-    '1st orientation reflection': 'orient1',
-    '2nd orientation reflection': 'orient2',
-    'zone axis for scattering plane': 'zoneaxis',
+    'name': 'title',
+    '1st orientation reflection': 'Sample_orient1',
+    '2nd orientation reflection': 'Sample_orient2',
+    'zone axis for scattering plane': 'Sample_zoneaxis',
     'created at': 'created',
-    'PSI0 (deg)': 'psi_offset',
-    'Scattering sense': 'scattersense',
+    'PSI0 (deg)': 'Sample_psi0',
+    'psi0 (deg)': 'Sample_psi0',
+    'a,b,c (A)': 'Sample_lattice',
+    'alpha,beta,gamma (deg)': 'Sample_angles',
+    'Scattering sense': 'scatteringsense',
     'mono focussing mode': 'mono_focus',
     'ana  focussing mode': 'ana_focus',
     'TAS operation mode': 'opmode',
-    'mth  (A1) (deg)': 'mth_offset',
-    'mtt  (A2) (deg)': 'mtt_offset',
-    'sth  (A3) (deg)': 'sth_offset',
-    'stt  (A4) (deg)': 'stt_offset',
-    'ath  (A5) (deg)': 'ath_offset',
-    'att  (A6) (deg)': 'att_offset',
 }
 
+blacklist = set([
+    'installation', 'sourcetype', 'sourcepower', 'moderator',
+    'moderator temperature', 'beamtube', 'white flux@monochr.',
+    'beam tube width', 'beam tube height', 'responsable',
+    'phone', 'fax', 'mth  (A1) (deg)', 'mtt  (A2) (deg)',
+    'psi  (A3) (deg)', 'phi  (A4) (deg)', 'ath  (A5) (deg)',
+    'att  (A6) (deg)', 'sth  (A3) (deg)', 'stt  (A4) (deg)',
+])
 
 def read_data(filename, fp):
     meta = {}
@@ -52,13 +55,12 @@ def read_data(filename, fp):
     dtline = fp.readline()
     fp.seek(first_pos)
     if not dtline.startswith('filename'):
-        raise UFitError('%r does not appear to be an OLD NICOS data file' %
-                        filename)
+        raise UFitError('%r does not appear to be an old NICOS data file' % filename)
     for line in iter(fp.readline, ''):
-        #finished, go for data
+        # finished, go for data
         if line.startswith('scan data'):
             break
-        #skip this lines
+        # skip these lines
         if line.startswith(('***', '[', 'Sample information',
                             'instrument general setup at file creation',
                             'offsets of main axes')):
@@ -75,49 +77,48 @@ def read_data(filename, fp):
         #            ts[self.pol_devices[i]] = s[i]
         #        self.pol_states.append(ts)
 
-        #else
-        #apply mapping
-        for k, v in mapping.items():
-            if line.startswith(k):
-                line = v + line[len(k):]
+        try:
+            key, value = line.split(':', 1)
+        except ValueError:
+            print 'ignored line:', repr(line)
+            continue
+        key = key.strip()
+        value = value.strip()
 
-        try: # try to parse header lines
-            k, v = meta_re.findall(line)[0]
-            if v.strip() == v and len(v.split()) == 1:
-                meta[k] = v
-            elif 'filter' in k or k in ('saph', 'user', 'phone', 'fax',
-                                        'orient1', 'orient2', 'zoneaxis',
-                                        'responsable', 'created', 'scattersense',
-                                        'samplename'): #take whole value
-                meta[k] = v
-            elif k in ('ss1', 'ss2'):
+        # some values are not important
+        if key in blacklist:
+            continue
+
+        # some value names should be mapped
+        if key in mapping:
+            key = mapping[key]
+
+        parts = value.split()
+        if not parts:
+            continue
+        if key in ('ss1', 'ss2'):
+            try:
                 for i, side in enumerate(('left', 'right', 'bottom', 'top')):
-                    meta['%s_%s' % (k, side)] = float(v.split()[i])
-                    meta['%s_%s_unit' % (k, side)] = v.split()[4]
-                meta[k] = tuple(float(b) for b in v.split()[:4])
-                meta['%s_unit' % k] = v.split()[4]
-            elif k in ('a, b, c (A)', 'alpha, beta, gamma (deg)'):
-                for i in range(3):
-                    meta[k.split()[0].split(', ')[i]] = float(v.split(', ')[i])
-                    meta['%s_unit' % k.split()[0].split(', ')[i]] = k.split()[1][1:-1]
-            elif k == 'opmode':
-                meta[k] = v.split()[0][1:-1]
-                meta[v.split()[0][1:-1]] = v.split()[2]
-            elif v.endswith(('mm', 'deg', 'A-1', 'THz', 'meV', 'T', 'K',
-                             'bar', '%', 's', 'min', 'A')):
-                meta[k] = v.split()[0]
-                meta['%s_unit' % k] = v.split()[1]
-            else:
-                # device values
-                if len(v.split()) == 2:
-                    meta[k] = v.split()[0]
-        except Exception:
-            # ignore bad lines
-            print 'ignored line:', line.strip()
+                    meta['%s_%s' % (key, side)] = float(parts[i])
+                meta[key] = tuple(float(b) for b in parts[:4])
+            except Exception:
+                continue
+        elif value.endswith(('mm', 'deg', 'deg.', 'A-1', 'THz', 'meV', 'T', 'K',
+                             'bar', '%', 's', 'min', 'min.', 'A')):
+            try:
+                meta[key] = float(parts[0])
+            except ValueError:
+                meta[key] = parts[0]
+        else:
+            meta[key] = value
 
+    # convert some values
+    if 'created' in meta:
+        meta['created'] = time.mktime(time.strptime(meta['created'], '%m/%d/%Y %H:%M:%S'))
     if 'filename' in meta:
         meta['filename'] = meta['filename'].strip("'")
         meta['filenumber'] = int(meta['filename'].split("_")[1])
+
     # read data
     meta['subtitle'] = fp.readline().strip()
     colnames = fp.readline().split()
