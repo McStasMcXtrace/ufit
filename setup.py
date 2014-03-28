@@ -2,7 +2,7 @@ import os
 from distutils.core import setup
 
 def find_packages():
-    """Return a list of all nicos subpackages."""
+    """Return a list of all ufit subpackages."""
     out = ['ufit']
     stack = [('ufit', 'ufit.')]
     while stack:
@@ -16,7 +16,7 @@ def find_packages():
     return out
 
 def find_ui_files():
-    """Find all Qt .ui files in nicos.clients.gui subpackages."""
+    """Find all Qt .ui files in ufit.gui subpackages."""
     res = {}
     for root, dirs, files in os.walk('ufit/gui'):
         uis = [uifile for uifile in files if uifile.endswith('.ui')]
