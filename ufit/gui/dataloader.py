@@ -151,7 +151,7 @@ into one set, as well as files 23 and 24.
             datas = self.loader.load_numors(numors, prec,
                                             xcol, ycol, dycol, mcol, mscale)
         except Exception, e:
-            QMessageBox.information(self, 'Error', 'Could not read data: %s' % e)
+            QMessageBox.information(self, 'Error', str(e))
             return
         if final:
             self.last_data = datas

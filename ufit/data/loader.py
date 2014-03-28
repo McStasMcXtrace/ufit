@@ -33,7 +33,7 @@ class Loader(object):
             raise UFitError('File %r has no recognized file format' % filename)
         return data_formats[self.format]
 
-    def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
+    def _inner_load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
         try:
             filename = self.template % n
             default_filedesc = str(n)
@@ -103,6 +103,12 @@ class Loader(object):
             dset.x = dset.meta['hkle']
         self.sets[n] = dset
         return dset
+
+    def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
+        try:
+            return self._inner_load(n, xcol, ycol, dycol, ncol, nscale)
+        except Exception, e:
+            raise UFitError('Could not load data file %d: %s' % (n, e))
 
     def guess_cols(self, n):
         try:
