@@ -69,7 +69,7 @@ class BrowseWindow(QMainWindow):
                 self.loader.template = t
                 res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
             except Exception, e:
-                print 'Could not load', fn, 'because:', e
+                print e
             else:
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s - %s' %
