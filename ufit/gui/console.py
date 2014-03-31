@@ -51,7 +51,7 @@ class QIPythonWidget(RichIPythonWidget):
 
     def executeCommand(self, command):
         """Execute a command in the frame of the console widget."""
-        self._execute(command, False)
+        self._execute(command, True)
 
 
 class ConsoleWindow(QMainWindow):
