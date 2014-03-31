@@ -6,7 +6,6 @@ API
 Models
 ======
 
-* default to parameterizing Gauss and Lorentz by area/integrated intensity
 * convolution model
 
 GUI

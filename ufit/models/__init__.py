@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -23,7 +23,9 @@ __all__ = base.__all__ + peaks.__all__ + corr.__all__ + other.__all__ + \
 # Concrete models that can be used in the simplified GUI interface.
 
 concrete_models = [
+    GaussInt,
     Gauss,
+    LorentzInt,
     Lorentz,
     Voigt,
     PseudoVoigt,

@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -13,7 +13,8 @@ from scipy.special import wofz
 
 from ufit.models import Model
 
-__all__ = ['Gauss', 'GaussInt', 'Lorentz', 'Voigt', 'PseudoVoigt', 'DHO']
+__all__ = ['Gauss', 'GaussInt', 'Lorentz', 'LorentzInt',
+           'Voigt', 'PseudoVoigt', 'DHO']
 
 
 class Gauss(Model):
@@ -57,9 +58,9 @@ class GaussInt(Model):
     """
     param_names = ['pos', 'int', 'fwhm']
 
-    def __init__(self, name='', pos=None, ampl=None, fwhm=None):
+    def __init__(self, name='', pos=None, int=None, fwhm=None):
         pp, pint, pf = self._init_params(name, self.param_names, locals())
-        # amplitude and fwhm should be positive
+        # integration and fwhm should be positive
         self.params[1].finalize = abs
         self.params[2].finalize = abs
 
@@ -103,6 +104,36 @@ class Lorentz(Model):
             self.params[0].name: p[0],  # position
             self.params[1].name: p[1],  # peak amplitude
             self.params[2].name: 2*abs(w[0] - p[0]),  # FWHM
+        }
+
+
+class LorentzInt(Model):
+    """Lorentzian peak with integrated intensity parameter
+
+    Parameters:
+
+    * `pos` - Peak center position
+    * `int` - Integrated intensity
+    * `fwhm` - Full width at half maximum
+    """
+    param_names = ['pos', 'int', 'fwhm']
+
+    def __init__(self, name='', pos=None, int=None, fwhm=None):
+        pp, pint, pf = self._init_params(name, self.param_names, locals())
+        # integration and fwhm should be positive
+        self.params[1].finalize = abs
+        self.params[2].finalize = abs
+
+        self.fcn = lambda p, x: 2 * abs(p[pint]) / (pi * p[pf]) / (1 + 4*(x - p[pp])**2/p[pf]**2)
+
+    pick_points = ['peak', 'width']
+
+    def convert_pick(self, p, w):
+        fwhm = 2*abs(w[0] - p[0])
+        return {
+            self.params[0].name: p[0],  # position
+            self.params[1].name: p[1] * fwhm * pi/2,  # integrated intensity
+            self.params[2].name: fwhm,  # FWHM
         }
 
 

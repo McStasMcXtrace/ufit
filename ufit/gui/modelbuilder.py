@@ -14,7 +14,7 @@ from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
 
 from ufit.models import concrete_models, eval_model
 from ufit.models.corr import Background
-from ufit.models.peaks import Gauss
+from ufit.models.peaks import GaussInt
 from ufit.gui.common import loadUi
 
 
@@ -75,8 +75,8 @@ class ModelBuilder(QWidget):
             pos = self.gauss_peak_pos[0]
             ampl = self.gauss_peak_pos[1] - self.data.y.min()
             fwhm = abs(pos - event.xdata) * 2
-            self.pick_model += Gauss('p%02d' % self.gauss_picking,
-                                     pos=pos, ampl=ampl, fwhm=fwhm)
+            self.pick_model += GaussInt('p%02d' % (self.gauss_picking/2),
+                                        pos=pos, int=fwhm*ampl*2.5, fwhm=fwhm)
             self.emit(SIGNAL('newModel'), self.pick_model, False)
             self.modeldefEdit.setText(self.pick_model.get_description())
         self.gauss_picking += 1
