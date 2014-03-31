@@ -3,11 +3,6 @@ API
 
 * refactor Dataset to be more logical and to have official data setters/getters
 
-Models
-======
-
-* convolution model
-
 GUI
 ===
 

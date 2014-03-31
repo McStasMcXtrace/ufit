@@ -41,4 +41,5 @@ concrete_models = [
     Sinc,
     ExpDecay,
     PowerLaw,
+    GaussianConvolution,
 ]
