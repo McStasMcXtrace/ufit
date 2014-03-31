@@ -164,7 +164,7 @@ class Dataset(object):
             return self
         allsets = (self,) + others
         alldata = concatenate([dset._data for dset in allsets])
-        if "floatMerge" in settings and settings["floatMerge"]:
+        if settings.get('floatmerge'):
             new_array = floatmerge(alldata, binsize)
         else:
             new_array = rebin(alldata, binsize)

@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -118,7 +118,7 @@ class MultiDataOps(QWidget):
         except ValueError:
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
-        new_data = self.datas[0].merge(precision, floatMerge = True, *self.datas[1:])
+        new_data = self.datas[0].merge(precision, floatmerge=True, *self.datas[1:])
         self.emit(SIGNAL('newData'), new_data)
 
     @qtsig('')
