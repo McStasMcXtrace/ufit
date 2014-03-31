@@ -13,7 +13,7 @@ import copy
 from numpy import array, concatenate, ones, broadcast_arrays, savetxt
 
 from ufit.utils import attrdict
-from ufit.data.merge import rebin
+from ufit.data.merge import rebin, floatmerge
 from ufit.plotting import DataPlotter
 
 
@@ -154,7 +154,7 @@ class Dataset(object):
                               name=self.name + '|' + other.name,
                               sources=self.sources + other.sources)
 
-    def merge(self, binsize, *others):
+    def merge(self, binsize, *others, **settings):
         """Merge this dataset with others.
 
         The X values are redistributed into bins according to the given bin
@@ -164,7 +164,10 @@ class Dataset(object):
             return self
         allsets = (self,) + others
         alldata = concatenate([dset._data for dset in allsets])
-        new_array = rebin(alldata, binsize)
+        if "floatMerge" in settings and settings["floatMerge"]:
+            new_array = floatmerge(alldata, binsize)
+        else:
+            new_array = rebin(alldata, binsize)
         sources = sum((dset.sources for dset in allsets), [])
         new_meta = self.meta.copy()
         for col in self.meta:

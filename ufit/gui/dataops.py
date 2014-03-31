@@ -14,7 +14,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QListWidgetItem, QMessageBox
 
 from ufit.gui.common import loadUi
-from ufit.data.merge import rebin
+from ufit.data.merge import rebin, floatmerge
 
 
 class DataOps(QWidget):
@@ -103,6 +103,21 @@ class DataOps(QWidget):
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
         new_array = rebin(self.data._data, binsize)
+        self.data.__init__(self.data.meta, new_array,
+                           self.data.xcol, self.data.ycol, self.data.ncol,
+                           self.data.nscale, name=self.data.name,
+                           sources=self.data.sources)
+        self.emit(SIGNAL('replotRequest'), None)
+        self.emit(SIGNAL('dirty'))
+
+    @qtsig('')
+    def on_floatmergeBtn_clicked(self):
+        try:
+            binsize = float(self.precisionEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
+            return
+        new_array = floatmerge(self.data._data, binsize)
         self.data.__init__(self.data.meta, new_array,
                            self.data.xcol, self.data.ycol, self.data.ncol,
                            self.data.nscale, name=self.data.name,

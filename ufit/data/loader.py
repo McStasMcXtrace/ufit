@@ -127,7 +127,7 @@ class Loader(object):
         return colnames, xguess, yguess, dyguess, mguess, nmon
 
     def load_numors(self, nstring, binsize, xcol, ycol, dycol=None,
-                    ncol=None, nscale=1):
+                    ncol=None, nscale=1, floatMerge = False):
         """Load a number of data files and merge them according to numor
         list operations:
 
@@ -150,7 +150,7 @@ class Loader(object):
         for part1 in parts1:
             if '-' in part1:
                 a, b = map(toint, part1.split('-'))
-                datasets.extend(self.load(n, xcol, ycol, dycol, ncol, nscale).merge(binsize)
+                datasets.extend(self.load(n, xcol, ycol, dycol, ncol, nscale).merge(binsize, floatMerge = floatMerge)
                                 for n in range(a, b+1))
             else:
                 parts2 = part1.split('+')
@@ -160,10 +160,10 @@ class Loader(object):
                         a, b = map(toint, part2.split('>'))
                         ds = [self.load(n, xcol, ycol, dycol, ncol, nscale)
                               for n in range(a, b+1)]
-                        inner.append(ds[0].merge(binsize, *ds[1:]))
+                        inner.append(ds[0].merge(binsize, *ds[1:], floatMerge = floatMerge))
                     else:
                         inner.append(
                             self.load(toint(part2), xcol, ycol, dycol,
                                       ncol, nscale))
-                datasets.append(inner[0].merge(binsize, *inner[1:]))
+                datasets.append(inner[0].merge(binsize, *inner[1:], floatMerge = floatMerge))
         return DatasetList(datasets)

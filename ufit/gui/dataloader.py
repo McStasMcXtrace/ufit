@@ -132,6 +132,7 @@ into one set, as well as files 23 and 24.
         except ValueError:
             QMessageBox.information(self, 'Error', 'Enter a valid precision.')
             return
+        floatMerge = self.rbFloatMerge.isChecked()
         xcol = str(self.xcolBox.currentText())
         ycol = str(self.ycolBox.currentText())
         dycol = str(self.dycolBox.currentText())
@@ -150,7 +151,7 @@ into one set, as well as files 23 and 24.
         numors = str(self.numorsEdit.text())
         try:
             datas = self.loader.load_numors(numors, prec,
-                                            xcol, ycol, dycol, mcol, mscale)
+                                            xcol, ycol, dycol, mcol, mscale, floatMerge)
         except Exception, e:
             QMessageBox.information(self, 'Error', str(e))
             return
