@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>495</width>
-    <height>460</height>
+    <width>805</width>
+    <height>696</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -165,7 +165,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Rebin (destructive):</string>
+        <string>Merge/Rebin (destructive):</string>
        </property>
       </widget>
      </item>
@@ -315,11 +315,22 @@
       </widget>
      </item>
      <item row="4" column="1" colspan="2">
-      <widget class="QLineEdit" name="precisionEdit">
-       <property name="text">
-        <string>0.001</string>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="precisionEdit">
+         <property name="text">
+          <string>0.001</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="floatmergeBtn">
+         <property name="text">
+          <string>Float merge</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -344,7 +355,6 @@
   <tabstop>nameEdit</tabstop>
   <tabstop>nameBtn</tabstop>
   <tabstop>cloneBtn</tabstop>
-  <tabstop>precisionEdit</tabstop>
   <tabstop>rebinBtn</tabstop>
   <tabstop>addConstEdit</tabstop>
   <tabstop>addBtn</tabstop>
