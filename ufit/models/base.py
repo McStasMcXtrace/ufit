@@ -11,7 +11,7 @@ from ufit.result import Result, MultiResult
 from ufit.utils import get_chisqr, cached_property
 from ufit.plotting import DataPlotter
 
-__all__ = ['Model', 'CombinedModel', 'Function', 'eval_model']
+__all__ = ['Model', 'CombinedModel', 'Function', 'Custom', 'eval_model']
 
 
 data_re = re.compile(r'\bdata\b')
@@ -451,6 +451,25 @@ class Function(Model):
         if self.python_code:
             return self.python_code
         return 'Function(%s, %s)' % (self.name, self._real_fcn.func_name)
+
+
+class Custom(Model):
+    """Create a model class from a user-defined expression."""
+    def __init__(self, name, params, expr, **init):
+        self._params = params
+        self._expr = expr
+        params = params.split()
+        pvs = self._init_params(name, params, init)
+        param_assign = ['%s = p[%r]' % pv for pv in zip(params, pvs)]
+        namespace = param.expr_namespace.copy()
+        exec '''def _fcn(p, x):
+        %s
+        return %s
+        ''' % ('\n        '.join(param_assign), expr) in namespace
+        self.fcn = namespace['_fcn']
+
+    def get_description(self):
+        return 'Custom(%r, %r, %r)' % (self.name, self._params, self._expr)
 
 
 class GlobalModel(Model):

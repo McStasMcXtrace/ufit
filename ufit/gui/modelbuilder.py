@@ -8,14 +8,18 @@
 
 """Model builder panel."""
 
+import re
+
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
-     QMessageBox, QInputDialog, QTextCursor
+    QMessageBox, QInputDialog, QTextCursor, QDialog
 
 from ufit.models import concrete_models, eval_model
 from ufit.models.corr import Background
 from ufit.models.peaks import GaussInt
 from ufit.gui.common import loadUi
+
+ident_re = re.compile('[a-zA-Z][a-zA-Z0-9_]*$')
 
 
 class ModelBuilder(QWidget):
@@ -100,18 +104,52 @@ class ModelBuilder(QWidget):
         modelitem = self.premodelsList.currentItem()
         if not modelitem:
             return
-        model = self.model_dict[str(modelitem.text())]
+        modelcls = str(modelitem.text())
         modelname = QInputDialog.getText(self, 'ufit', 'Please enter a name '
                                          'for the model part:')[0]
         if not modelname:
             return
+        self.insert_model_code('%s(%r)' % (modelcls, str(modelname)))
+
+    @qtsig('')
+    def on_addCustomBtn_clicked(self):
+        dlg = QDialog(self)
+        loadUi(dlg, 'custommodel.ui')
+        while 1:
+            if dlg.exec_() != QDialog.Accepted:
+                return
+            modelname = str(dlg.nameBox.text())
+            params = str(dlg.paramBox.text())
+            value = str(dlg.valueEdit.toPlainText()).strip()
+            if not ident_re.match(modelname):
+                QMessageBox.warning(self, 'Error', 'Please enter a valid model '
+                                    'name (must be a Python identifier using '
+                                    'only alphabetic characters and digits).')
+                continue
+            if not params:
+                QMessageBox.warning(self, 'Error', 'Please enter some parameters.')
+                continue
+            for param in params.split():
+                if not ident_re.match(param):
+                    QMessageBox.warning(
+                        self, 'Error', 'Parameter name %s is not valid (must '
+                        'be a Python identifier using only alphabetic '
+                        'characters and digits).' % param)
+                    params = None
+                    break
+            if not params:
+                continue
+            break
+        self.insert_model_code('Custom(%r, %r, %r)' % (modelname, params, value))
+
+    def insert_model_code(self, code):
         currentmodel = str(self.modeldefEdit.toPlainText())
         prefix = ''
         if currentmodel:
             prefix = ' + '
         tc = self.modeldefEdit.textCursor()
         tc.movePosition(QTextCursor.End)
-        tc.insertText('%s%s(%r)' % (prefix, model.__name__, str(modelname)))
+        tc.insertText(prefix + code)
 
     def default_model(self, data):
         ymin = data.y.min()
