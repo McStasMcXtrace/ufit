@@ -31,6 +31,7 @@ pyplot.rc('font', family='sans-serif')
 pyplot.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
                      'Lucida Grande, Bitstream Vera Sans'})
 
+from ufit.gui import logger
 from ufit.plotting import DataPlotter
 
 uipath = path.dirname(__file__)
@@ -196,6 +197,8 @@ class MPLToolbar(NavigationToolbar2QT):
             try:
                 self.canvas.print_figure(unicode(fname))
             except Exception as e:
+                # XXX
+                logger.exception('Error saving file')
                 QMessageBox.critical(self, 'Error saving file', str(e))
 
 

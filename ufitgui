@@ -35,10 +35,11 @@ splash.show()
 time.sleep(0.1)
 app.processEvents()
 
+from ufit.gui import logger
 from ufit.gui.main import UFitMain
 
 t1 = time.time()
-print 'import finished (%.3f s), starting up app...' % (t1-t0)
+logger.info('import finished (%.3f s), starting up app...' % (t1-t0))
 
 mainwindow = UFitMain()
 args = sys.argv[1:]
@@ -56,7 +57,7 @@ if len(args) == 1:
         mainwindow.dloader.set_template(datafile)
 
 t2 = time.time()
-print 'loading finished (%.3f s), main window showing...' % (t2-t1)
+logger.info('loading finished (%.3f s), main window showing...' % (t2-t1))
 mainwindow.show()
 splash.deleteLater()
 app.exec_()
