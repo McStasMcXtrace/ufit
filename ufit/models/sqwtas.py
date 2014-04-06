@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013, Georg Brandl.  All rights reserved.
+# Copyright (c) 2014, Georg Brandl.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -112,8 +112,10 @@ class ConvolvedScatteringLaw(Model):
             for i in range(len(CFGNAMES)):
                 init['cfg_' + CFGNAMES[i]] = str(cfg_orig[i])
 
+        # numba compat
+        arg_sqw = getattr(self._sqw, 'py_func', self._sqw)
         self._pvs = self._init_params(name,
-            ['NMC', 'bkgd'] + inspect.getargspec(self._sqw)[0][6:] +
+            ['NMC', 'bkgd'] + inspect.getargspec(arg_sqw)[0][6:] +
             instparnames, init)
         self._ninstpar = len(instparnames)
         self._resmat = resmat(cfg_orig, par_orig)
