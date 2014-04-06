@@ -67,18 +67,20 @@ class DataPlotter(object):
         axes = self.axes
         marker = self.marker_cycle.next() if self.symbols else ''
         ls = '-' if self.lines else ''
+        if 'label' not in kw:
+            kw['label'] = data.name
         if data.mask.all():
             eb = axes.errorbar(data.x_plot, data.y + offset, data.dy, ls=ls, marker=marker,
-                               ms=ms, label=data.name, picker=5, **kw)
+                               ms=ms, picker=5, **kw)
             color = eb[0].get_color()
         else:
             mask = data.mask
             eb = axes.errorbar(data.x_plot[mask], data.y[mask] + offset, data.dy[mask], ls=ls,
-                               marker=marker, ms=ms, label=data.name, picker=5, **kw)
+                               marker=marker, ms=ms, picker=5, **kw)
             color = eb[0].get_color()
+            kw['label'] = ''
             axes.errorbar(data.x_plot[~mask], data.y[~mask] + offset, data.dy[~mask], ls='',
-                          marker=marker, ms=ms, picker=5, mfc='white', mec=color,
-                          label='', **kw)
+                          marker=marker, ms=ms, picker=5, mfc='white', mec=color, **kw)
         if not multi:
             if data.fitmin is not None:
                 axes.axvline(data.fitmin, ls='-', color='gray')
@@ -119,14 +121,15 @@ class DataPlotter(object):
         xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xxp, yy + offset, 'g', lw=kw.pop('kw', 2),
-                       label=labels and 'fit' or '', **kw)
+        if 'label' not in kw:
+            kw['label'] = labels and 'fit' or ''
+        self.axes.plot(xxp, yy + offset, 'g', lw=kw.pop('kw', 2), **kw)
         for comp in model.get_components():
             if comp is model:
                 continue
             yy = comp.fcn(paramvalues, xx)
-            self.axes.plot(xxp, yy + offset, '-.', label=labels and comp.name or '',
-                           **kw)
+            kw['label'] = labels and comp.name or ''
+            self.axes.plot(xxp, yy + offset, '-.', **kw)
 
     def plot_model(self, model, data, labels=True, paramvalues=None,
                    offset=0, **kw):
@@ -137,8 +140,9 @@ class DataPlotter(object):
         xx = multi_linspace(data.x[imin], data.x[imax], nsamples)
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         yy = model.fcn(paramvalues, xx)
-        self.axes.plot(xxp, yy + offset, kw.pop('fmt', 'g'), lw=kw.pop('lw', 2),
-                       label=labels and 'fit' or '', **kw)
+        if 'label' not in kw:
+            kw['label'] = labels and 'fit' or ''
+        self.axes.plot(xxp, yy + offset, kw.pop('fmt', 'g'), lw=kw.pop('lw', 2), **kw)
 
     def plot_model_components(self, model, data, labels=True, paramvalues=None,
                               offset=0, **kw):
@@ -150,9 +154,8 @@ class DataPlotter(object):
         xxp = linspace(data.x_plot[imin], data.x_plot[imax], nsamples)
         for comp in model.get_components():
             yy = comp.fcn(paramvalues, xx)
-            self.axes.plot(xxp, yy + offset, kw.pop('fmt', '-.'),
-                           label=labels and comp.name or '',
-                           **kw)
+            kw['label'] = labels and comp.name or ''
+            self.axes.plot(xxp, yy + offset, kw.pop('fmt', '-.'), **kw)
 
     def plot_params(self, params, chisqr):
         s = []
