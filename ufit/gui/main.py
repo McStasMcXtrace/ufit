@@ -128,6 +128,10 @@ class DatasetPanel(QTabWidget):
             return
         self.canvas.draw()
 
+    def export_ascii(self, filename):
+        with open(filename, 'wb') as fp:
+            self.data.export_ascii(fp)
+
     def export_python(self, fp):
         fp.write('from ufit.lab import *\n')
         fp.write('\n')
@@ -358,8 +362,7 @@ class UFitMain(QMainWindow):
         if filename == '':
             return False
         expfilename = path_to_str(filename)
-        with open(expfilename, 'wb') as fp:
-            self.current_panel.data.export_ascii(fp)
+        self.current_panel.export_ascii(expfilename)
 
     @qtsig('')
     def on_actionExportFIT_triggered(self):

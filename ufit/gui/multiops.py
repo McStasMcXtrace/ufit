@@ -8,6 +8,8 @@
 
 """Multiple dataset operations panel."""
 
+from os import path
+
 from numpy import sqrt, mean, array
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
@@ -150,6 +152,11 @@ class MultiDataOps(QWidget):
     @qtsig('')
     def on_globalfitBtn_clicked(self):
         QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
+
+    def export_ascii(self, filename):
+        base, ext = path.splitext(filename)
+        for i, panel in enumerate(self.panels):
+            panel.export_ascii(base + '.%d' % i + ext)
 
 
 class ParamSetDialog(QDialog):
