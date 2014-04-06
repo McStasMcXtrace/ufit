@@ -1,5 +1,7 @@
 # ufit convolution model
 
+import re
+
 from numpy import convolve, exp, log, linspace
 
 from ufit.param import Param
@@ -7,6 +9,8 @@ from ufit.models.base import Model
 
 __all__ = ['GaussianConvolution']
 
+
+id_re = re.compile('[a-zA-Z][a-zA-Z0-9_]*$')
 
 class GaussianConvolution(Model):
     """Models a 1-D convolution with a Gaussian kernel.
@@ -16,9 +20,11 @@ class GaussianConvolution(Model):
     * `width` - FWHM of Gaussian kernel
     """
 
-    def __init__(self, model, width=1):
+    def __init__(self, model, width=1, name=None):
         self._model = model
-        if model.name:
+        if name is not None:
+            self.name = name
+        elif model.name and id_re.match(model.name):
             self.name = '%s_conv' % model.name
         else:
             self.name = 'conv'
