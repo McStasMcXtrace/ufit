@@ -57,6 +57,7 @@ class QIPythonWidget(RichIPythonWidget):
 class ConsoleWindow(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
+        self.setWindowTitle('ufit Python console')
         self.ipython = QIPythonWidget(
             '''\
 ufit interactive Python shell
@@ -73,4 +74,3 @@ Objects in the namespace:
         def redraw():
             parent.canvas.draw()
         self.connect(self.ipython, SIGNAL('replot'), redraw)
-
