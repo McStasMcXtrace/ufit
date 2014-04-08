@@ -38,6 +38,8 @@ from ufit.utils import extract_template
 
 pixmap = QPixmap(':/splash.png')
 splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
+splash.showMessage(u'Loading...' + u'\xa0' * 10 + '\n\n',
+                   Qt.AlignRight | Qt.AlignBottom)
 splash.show()
 time.sleep(0.1)
 with SettingGroup('main') as settings:

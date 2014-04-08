@@ -12,14 +12,14 @@ from os import path
 import cPickle as pickle
 from cStringIO import StringIO
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QModelIndex, \
+from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
     QByteArray, QRectF
-from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, \
+from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QPixmap, \
     QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
-    QPrintPreviewWidget, QPrintDialog, QListWidgetItem
+    QPrintPreviewWidget, QPrintDialog, QListWidgetItem, QSplashScreen
 from PyQt4.QtSvg import QSvgRenderer
 
-from ufit import backends
+from ufit import backends, __version__
 from ufit.gui import logger
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
     path_to_str
@@ -542,13 +542,11 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionAbout_triggered(self):
-        QMessageBox.information(self, 'About',
-            u'''\
-ufit, a neutron data fitting suite
-
-Written by Georg Brandl, 2013-2014.
-Contributions by Petr Cermak.
-''')
+        dlg = QDialog(self)
+        dlg.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+        loadUi(dlg, 'about.ui')
+        dlg.lbl.setText(dlg.lbl.text().replace('VERSION', __version__))
+        dlg.exec_()
 
     @qtsig('')
     def on_backend_action_triggered(self):
