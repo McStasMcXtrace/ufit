@@ -6,7 +6,7 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
-"""A list view and model for different datasets in the GUI."""
+"""A list view and model for different session items in the GUI."""
 
 # parts borrowed from M. Janoschek' nfit2 GUI
 
@@ -15,11 +15,11 @@ from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle, \
     QAbstractItemView
 
 
-class DataListView(QListView):
+class ItemListView(QListView):
 
     def __init__(self, parent):
         QListView.__init__(self, parent)
-        self.setItemDelegate(DataListDelegate(self))
+        self.setItemDelegate(ItemListDelegate(self))
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def selectionChanged(self, selected, deselected):
@@ -27,7 +27,7 @@ class DataListView(QListView):
         QListView.selectionChanged(self, selected, deselected)
 
 
-class DataListModel(QAbstractListModel):
+class ItemListModel(QAbstractListModel):
 
     def __init__(self, panels):
         QAbstractListModel.__init__(self)
@@ -55,7 +55,7 @@ class DataListModel(QAbstractListModel):
             return None
 
 
-class DataListDelegate(QStyledItemDelegate):
+class ItemListDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         text = index.model().data(index)

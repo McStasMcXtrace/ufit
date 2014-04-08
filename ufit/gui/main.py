@@ -28,7 +28,7 @@ from ufit.gui.dataops import DataOps
 from ufit.gui.multiops import MultiDataOps
 from ufit.gui.modelbuilder import ModelBuilder
 from ufit.gui.fitter import Fitter
-from ufit.gui.datalist import DataListModel
+from ufit.gui.itemlist import ItemListModel
 from ufit.gui.inspector import InspectorWindow
 
 SAVE_VERSION = 1
@@ -199,13 +199,13 @@ class UFitMain(QMainWindow):
         self.connect(self.multiops, SIGNAL('dirty'), self.set_dirty)
         self.stacker.addWidget(self.multiops)
 
-        self.datalistmodel = DataListModel(self.panels)
-        self.dataList.setModel(self.datalistmodel)
-        self.datalistmodel.reset()
-        self.dataList.addAction(self.actionMergeData)
-        self.dataList.addAction(self.actionRemoveData)
-        self.connect(self.dataList, SIGNAL('newSelection'),
-                     self.on_dataList_newSelection)
+        self.itemlistmodel = ItemListModel(self.panels)
+        self.itemList.setModel(self.itemlistmodel)
+        self.itemlistmodel.reset()
+        self.itemList.addAction(self.actionMergeData)
+        self.itemList.addAction(self.actionRemoveData)
+        self.connect(self.itemList, SIGNAL('newSelection'),
+                     self.on_itemList_newSelection)
 
         self.backend_group = QActionGroup(self)
         for backend in backends.available:
@@ -280,11 +280,11 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_loadBtn_clicked(self):
         self.select_new_panel(self.dloader)
-        self.dataList.setCurrentIndex(QModelIndex())
+        self.itemList.setCurrentIndex(QModelIndex())
 
     @qtsig('')
     def on_removeBtn_clicked(self):
-        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
         if not indlist:
             return
         if QMessageBox.question(self, 'ufit',
@@ -293,7 +293,7 @@ class UFitMain(QMainWindow):
             return
         new_panels = [p for i, p in enumerate(self.panels) if i not in indlist]
         self.panels[:] = new_panels
-        self.datalistmodel.reset()
+        self.itemlistmodel.reset()
         self.setWindowModified(True)
         self.on_loadBtn_clicked()
 
@@ -303,23 +303,23 @@ class UFitMain(QMainWindow):
         loadUi(dlg, 'reorder.ui')
         for i, panel in enumerate(self.panels):
             QListWidgetItem('%s - %s' % (panel.index, panel.title),
-                            dlg.dataList, i)
+                            dlg.itemList, i)
         if dlg.exec_():
             new_panels = []
-            for i in range(dlg.dataList.count()):
-                new_index = dlg.dataList.item(i).type()
+            for i in range(dlg.itemList.count()):
+                new_index = dlg.itemList.item(i).type()
                 panel = self.panels[new_index]
                 panel.index = i+1
                 panel.gen_htmldesc()
                 new_panels.append(panel)
             self.panels[:] = new_panels
-            self.datalistmodel.reset()
+            self.itemlistmodel.reset()
             self.setWindowModified(True)
 
-    def on_dataList_newSelection(self):
+    def on_itemList_newSelection(self):
         if self._loading:
             return
-        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
         if len(indlist) == 0:
             self.on_loadBtn_clicked()
         elif len(indlist) == 1:
@@ -337,7 +337,7 @@ class UFitMain(QMainWindow):
     def plot_multi(self, *ignored):
         # XXX better title
         self.canvas.plotter.reset()
-        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
         panels = [self.panels[i] for i in indlist]
         for p in panels:
             c = self.canvas.plotter.plot_data(p.data, multi=True)
@@ -350,16 +350,16 @@ class UFitMain(QMainWindow):
         panel = DatasetPanel(self, self.canvas, data, model, self.max_index)
         self.connect(panel, SIGNAL('dirty'), self.set_dirty)
         self.connect(panel, SIGNAL('newData'), self.handle_new_data)
-        self.connect(panel, SIGNAL('updateList'), self.datalistmodel.reset)
+        self.connect(panel, SIGNAL('updateList'), self.itemlistmodel.reset)
         self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
         self.panels.append(panel)
         self.setWindowModified(True)
         if not self._loading and update:
-            self.datalistmodel.reset()
-            self.dataList.setCurrentIndex(
-                self.datalistmodel.index(len(self.panels)-1, 0))
+            self.itemlistmodel.reset()
+            self.itemList.setCurrentIndex(
+                self.itemlistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
     def on_actionInspector_triggered(self):
@@ -491,7 +491,7 @@ class UFitMain(QMainWindow):
         for panel in self.panels[:]:
             self.stacker.removeWidget(panel)
         del self.panels[:]
-        self.datalistmodel.reset()
+        self.itemlistmodel.reset()
         self.max_index = 1
 
     @qtsig('')
@@ -542,9 +542,9 @@ class UFitMain(QMainWindow):
                 self.dloader.templateEdit.setText(info['template'])
             finally:
                 self._loading = False
-            self.datalistmodel.reset()
-            self.dataList.setCurrentIndex(
-                self.datalistmodel.index(len(self.panels)-1, 0))
+            self.itemlistmodel.reset()
+            self.itemList.setCurrentIndex(
+                self.itemlistmodel.index(len(self.panels)-1, 0))
             self.setWindowModified(False)
             self.setWindowTitle('ufit - %s[*]' % filename)
             self._add_recent_file(filename)
@@ -611,7 +611,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        indlist = [ind.row() for ind in self.dataList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
         if len(indlist) < 2:
             return
         dlg = QDialog(self)

@@ -84,7 +84,7 @@
          </widget>
         </item>
         <item>
-         <widget class="DataListView" name="dataList">
+         <widget class="ItemListView" name="itemList">
           <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
           </property>
@@ -374,9 +374,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DataListView</class>
+   <class>ItemListView</class>
    <extends>QListView</extends>
-   <header>ufit.gui.datalist</header>
+   <header>ufit.gui.itemlist</header>
   </customwidget>
  </customwidgets>
  <resources>
