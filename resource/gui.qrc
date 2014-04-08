@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>arrow-circle-double.png</file>
     <file>table-select-row.png</file>
     <file>splash.png</file>
     <file>printer.png</file>

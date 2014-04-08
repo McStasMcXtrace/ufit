@@ -12,12 +12,14 @@ import os
 from os import path
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QByteArray
-from PyQt4.QtGui import QMainWindow, QListWidgetItem, QVBoxLayout
+from PyQt4.QtGui import QMainWindow, QApplication, QListWidgetItem, \
+    QVBoxLayout, QFileDialog
 
 from ufit.data import Loader
 from ufit.utils import extract_template
 from ufit.gui import logger
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup, \
+    path_to_str
 
 
 class BrowseWindow(QMainWindow):
@@ -26,13 +28,11 @@ class BrowseWindow(QMainWindow):
         loadUi(self, 'browse.ui')
         self.logger = logger.getChild('browse')
 
-        self.dirBtn.hide()
+        self.rootdir = ''
         self.loader = Loader()
         self._data = {}
         self.canvas = MPLCanvas(self)
         self.canvas.plotter.lines = True
-        self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
-                              horizontalalignment='center')
         self.toolbar = MPLToolbar(self.canvas, self)
         self.toolbar.setObjectName('browsetoolbar')
         self.addToolBar(self.toolbar)
@@ -62,9 +62,24 @@ class BrowseWindow(QMainWindow):
             loadwin.emit(SIGNAL('newData'), data, False)
         loadwin.emit(SIGNAL('newData'), datas[-1])
 
+    @qtsig('')
+    def on_dirBtn_clicked(self):
+        newdir = QFileDialog.getExistingDirectory(self, 'New directory', self.rootdir)
+        self.set_directory(path_to_str(newdir))
+
+    @qtsig('')
+    def on_refreshBtn_clicked(self):
+        self.set_directory(self.rootdir)
+
     def set_directory(self, root):
         self.setWindowTitle('ufit browser - %s' % root)
+        self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
+                              horizontalalignment='center')
+        self.canvas.draw()
+        QApplication.processEvents()
+        self.rootdir = root
         files = os.listdir(root)
+        self.dataList.clear()
         for fn in sorted(files):
             fn = path.join(root, fn)
             if not path.isfile(fn):
