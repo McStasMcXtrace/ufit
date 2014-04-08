@@ -57,6 +57,10 @@ class MappingPanel(QFrame):
             self.set_datas(datas)
         self.set_settings(attrdict(settings or default_settings))
 
+    @property
+    def title(self):
+        return self.settings.title
+
     def set_index(self, index):
         self.index = index
         self.gen_htmldesc()
