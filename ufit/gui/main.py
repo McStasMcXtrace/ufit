@@ -31,8 +31,9 @@ from ufit.gui.fitter import Fitter
 from ufit.gui.datalist import DataListModel
 from ufit.gui.inspector import InspectorWindow
 
-
 SAVE_VERSION = 1
+max_recent_files = 6
+
 
 class DatasetPanel(QTabWidget):
     def __init__(self, parent, canvas, data, model, index):
@@ -226,6 +227,42 @@ class UFitMain(QMainWindow):
             self.splitter.restoreState(splitstate)
             vsplitstate = settings.value('vsplitstate', QByteArray())
             self.vsplitter.restoreState(vsplitstate)
+            self.recent_files = settings.value('recentfiles', []) or []
+
+        self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
+                     self.update_recent_file_menu)
+
+    def _add_recent_file(self, fname):
+        """Add to recent file list."""
+        if not fname:
+            return
+        if fname in self.recent_files:
+            self.recent_files.remove(fname)
+        self.recent_files.insert(0, fname)
+        if len(self.recent_files) > max_recent_files:
+            self.recent_files.pop(-1)
+
+    def update_recent_file_menu(self):
+        """Update recent file menu"""
+        recent_files = []
+        for fname in self.recent_files:
+            if not fname == self.filename and path.isfile(fname):
+                recent_files.append(fname)
+        self.menuRecent.clear()
+        if recent_files:
+            for i, fname in enumerate(recent_files):
+                action = QAction('%d - %s' % (i+1, fname), self)
+                self.connect(action, SIGNAL("triggered()"), self.load_session)
+                action.setData(fname)
+                self.menuRecent.addAction(action)
+        self.actionClearRecent.setEnabled(len(recent_files) > 0)
+        self.menuRecent.addSeparator()
+        self.menuRecent.addAction(self.actionClearRecent)
+
+    @qtsig('')
+    def on_actionClearRecent_triggered(self):
+        """Clear recent files list"""
+        self.recent_files = []
 
     def set_dirty(self):
         self.setWindowModified(True)
@@ -474,38 +511,48 @@ class UFitMain(QMainWindow):
         if self.filename:
             initialdir = path.dirname(self.filename)
         else:
-            initialdir = ''
+            with self.sgroup as settings:
+                initialdir = settings.value('loadfiledirectory', '')
         filename = QFileDialog.getOpenFileName(
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return
         self.filename = path_to_str(filename)
+        self.load_session(self.filename)
+
+    def load_session(self, filename=None):
+        if not filename:
+            # Recent files action
+            action = self.sender()
+            if isinstance(action, QAction):
+                filename = action.data()
+                self.filename = filename
         try:
-            self.load_session(self.filename)
+            self.clear_datasets()
+            info = pickle.load(open(filename, 'rb'))
+            if 'panels' in info:
+                info['version'] = 0
+                info['datasets'] = info.pop('panels')
+                info['template'] = ''
+            self._loading = True
+            try:
+                for data, model in info['datasets']:
+                    data.after_load()
+                    self.handle_new_data(data, False, model)
+                self.dloader.templateEdit.setText(info['template'])
+            finally:
+                self._loading = False
+            self.datalistmodel.reset()
+            self.dataList.setCurrentIndex(
+                self.datalistmodel.index(len(self.panels)-1, 0))
+            self.setWindowModified(False)
+            self.setWindowTitle('ufit - %s[*]' % filename)
+            self._add_recent_file(filename)
+            with self.sgroup as settings:
+                settings.setValue('loadfiledirectory', path.dirname(filename))
         except Exception, err:
             logger.exception('Loading session %r failed' % self.filename)
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
-
-    def load_session(self, filename):
-        self.clear_datasets()
-        info = pickle.load(open(filename, 'rb'))
-        if 'panels' in info:
-            info['version'] = 0
-            info['datasets'] = info.pop('panels')
-            info['template'] = ''
-        self._loading = True
-        try:
-            for data, model in info['datasets']:
-                data.after_load()
-                self.handle_new_data(data, False, model)
-            self.dloader.templateEdit.setText(info['template'])
-        finally:
-            self._loading = False
-        self.datalistmodel.reset()
-        self.dataList.setCurrentIndex(
-            self.datalistmodel.index(len(self.panels)-1, 0))
-        self.setWindowModified(False)
-        self.setWindowTitle('ufit - %s[*]' % self.filename)
 
     @qtsig('')
     def on_actionSave_triggered(self):
@@ -546,6 +593,7 @@ class UFitMain(QMainWindow):
         else:
             self.setWindowModified(False)
             self.setWindowTitle('ufit - %s[*]' % self.filename)
+            self._add_recent_file(self.filename)
             return True
 
     def save_session_inner(self, filename):
@@ -592,6 +640,7 @@ class UFitMain(QMainWindow):
             settings.setValue('windowstate', self.saveState())
             settings.setValue('splitstate', self.splitter.saveState())
             settings.setValue('vsplitstate', self.vsplitter.saveState())
+            settings.setValue('recentfiles', self.recent_files)
 
     @qtsig('')
     def on_actionAbout_triggered(self):

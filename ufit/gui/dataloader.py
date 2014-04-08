@@ -12,7 +12,7 @@ from os import path
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
-     QMainWindow, QSplitter, QApplication
+    QMainWindow, QSplitter, QApplication
 
 from ufit.data import data_formats, Loader
 from ufit.utils import extract_template
@@ -20,6 +20,7 @@ from ufit.gui import logger
 from ufit.gui.common import loadUi, path_to_str, str_to_path, \
     MPLCanvas, MPLToolbar
 from ufit.gui.browse import BrowseWindow
+from ufit.gui.common import SettingGroup
 
 
 class DataLoader(QWidget):
@@ -31,6 +32,14 @@ class DataLoader(QWidget):
         self.last_data = []
         self.loader = Loader()
         self.createUI(standalone)
+
+        self.sgroup = SettingGroup('main')
+
+        with self.sgroup as settings:
+            data_template_path = settings.value('last_data_template', '')
+            if data_template_path:
+                self.templateEdit.setText(data_template_path)
+                self.set_template(data_template_path, 0, silent=True)
 
     def createUI(self, standalone):
         loadUi(self, 'dataloader.ui')
@@ -91,23 +100,26 @@ into one set, as well as files 23 and 24.
             startdir = path.dirname(previous)
         else:
             startdir = '.'
-        fn = path_to_str(QFileDialog.getOpenFileName(self, 'Choose a file', startdir,
-                                                     'All files (*)'))
+        fn = path_to_str(QFileDialog.getOpenFileName(
+            self, 'Choose a file', startdir, 'All files (*)'))
         if not fn:
             return
-        self.set_template(fn)
-
-    def set_template(self, fn):
         dtempl, numor = extract_template(fn)
+        self.set_template(dtempl, numor)
+
+    def set_template(self, dtempl, numor, silent=True):
         self.templateEdit.setText(str_to_path(dtempl))
+        with self.sgroup as settings:
+            settings.setValue('last_data_template', dtempl)
         self.loader.template = dtempl
         try:
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            self.logger.exception('Could not read column names from file %r' % fn)
-            QMessageBox.information(self, 'Error',
-                                    'Could not read column names: %s' % e)
+            if not silent:
+                self.logger.exception('Could not read column names')
+                QMessageBox.information(self, 'Error',
+                                        'Could not read column names: %s' % e)
             return
         self.xcolBox.clear()
         self.xcolBox.addItem('auto')
@@ -150,14 +162,15 @@ into one set, as well as files 23 and 24.
         try:
             mscale = int(self.monscaleEdit.text())
         except Exception:
-            QMessageBox.information(self, 'Error', 'Monitor scale must be integer.')
+            QMessageBox.information(
+                self, 'Error', 'Monitor scale must be integer.')
             return
         dtempl = path_to_str(self.templateEdit.text())
         self.loader.template = dtempl
         numors = str(self.numorsEdit.text())
         try:
-            datas = self.loader.load_numors(numors, prec,
-                                            xcol, ycol, dycol, mcol, mscale, floatmerge)
+            datas = self.loader.load_numors(
+                numors, prec, xcol, ycol, dycol, mcol, mscale, floatmerge)
         except Exception, e:
             self.logger.exception('Error while loading data file')
             QMessageBox.information(self, 'Error', str(e))

@@ -6,6 +6,9 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
+__version__ = '0.99.8'
+
+
 def debug(str):
     if __debug__:
         print str

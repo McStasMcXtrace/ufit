@@ -24,9 +24,11 @@ def find_ui_files():
             res[root.replace('/', '.')] = uis
     return res
 
+import ufit
+
 setup(
     name = 'ufit',
-    version = '0.99.8',
+    version = ufit.__version__,
     license = 'GPL',
     author = 'Georg Brandl',
     author_email = 'georg.brandl@frm2.tum.de',

@@ -7,7 +7,6 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
-import sys
 import time
 import optparse
 from os import path
@@ -25,22 +24,32 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 
 import ufit.guiresource
+from ufit import __version__
+from ufit.gui.common import SettingGroup
 
 app = QApplication([])
 app.setOrganizationName('ufit')
 app.setApplicationName('gui')
 
+from ufit.gui import logger
+from ufit.gui.main import UFitMain
+from ufit.utils import extract_template
+
 pixmap = QPixmap(':/splash.png')
 splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
 splash.show()
 time.sleep(0.1)
+with SettingGroup('main') as settings:
+    if settings.value('current_version', '') != __version__:
+        settings.setValue('current_version', __version__)
+        # Execute here the actions to be performed only once after
+        # each update (there is nothing there for now, but it could
+        # be useful some day...)
+        logger.info('Upgrade to version %s finished' % __version__)
 app.processEvents()
 
-from ufit.gui import logger
-from ufit.gui.main import UFitMain
-
 t1 = time.time()
-logger.info('import finished (%.3f s), starting up app...' % (t1-t0))
+logger.info('Startup: import finished (%.3f s), starting GUI...' % (t1-t0))
 
 mainwindow = UFitMain()
 
@@ -66,12 +75,13 @@ if len(args) >= 1:
                                 'Error', 'Loading failed: %s' % err)
             mainwindow.filename = None
     else:
-        mainwindow.dloader.set_template(datafile)
+        dtempl, numor = extract_template(datafile)
+        mainwindow.dloader.set_template(dtempl, numor)
 mainwindow.show()
 if opts.browse:
     mainwindow.dloader.open_browser(opts.browse)
 
 t2 = time.time()
-logger.info('loading finished (%.3f s), main window opened' % (t2-t1))
+logger.info('Startup: loading finished (%.3f s), main window opened' % (t2-t1))
 splash.deleteLater()
 app.exec_()

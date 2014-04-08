@@ -3,3 +3,4 @@ syntax: glob
 build/
 docs/_build/
 test.ufit
+ufitgui.py

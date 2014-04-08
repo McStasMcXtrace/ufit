@@ -102,15 +102,21 @@
      <x>0</x>
      <y>0</y>
      <width>386</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuRecent">
+     <property name="title">
+      <string>&amp;Recent sessions</string>
+     </property>
+    </widget>
     <addaction name="actionNewSession"/>
     <addaction name="actionLoad"/>
+    <addaction name="menuRecent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
@@ -355,6 +361,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionClearRecent">
+   <property name="text">
+    <string>Clear this list</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear recent files list</string>
    </property>
   </action>
  </widget>
