@@ -212,7 +212,7 @@ class UFitMain(QMainWindow):
             self.select_new_panel(panel)
             panel.replot(panel.get_saved_limits())
             self.toolbar.update()
-            if self.inspector_window:
+            if self.inspector_window and isinstance(panel, DatasetPanel):
                 self.inspector_window.setDataPanel(panel)
         else:
             self.select_new_panel(self.multiops)
