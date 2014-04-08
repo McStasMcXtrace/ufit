@@ -9,6 +9,7 @@
 
 import sys
 import time
+import optparse
 from os import path
 
 t0 = time.time()
@@ -42,8 +43,16 @@ t1 = time.time()
 logger.info('import finished (%.3f s), starting up app...' % (t1-t0))
 
 mainwindow = UFitMain()
-args = sys.argv[1:]
-if len(args) == 1:
+
+parser = optparse.OptionParser(usage='''\
+Usage: %prog [-b directory] [.ufit file | data file]
+''')
+parser.add_option('-b', '--browse', action='store', metavar='DIR',
+                  help='open browse window in specified directory')
+
+opts, args = parser.parse_args()
+
+if len(args) >= 1:
     datafile = path.abspath(args[0])
     if datafile.endswith('.ufit'):
         try:
@@ -55,9 +64,11 @@ if len(args) == 1:
             mainwindow.filename = None
     else:
         mainwindow.dloader.set_template(datafile)
+mainwindow.show()
+if opts.browse:
+    mainwindow.dloader.open_browser(opts.browse)
 
 t2 = time.time()
-logger.info('loading finished (%.3f s), main window showing...' % (t2-t1))
-mainwindow.show()
+logger.info('loading finished (%.3f s), main window opened' % (t2-t1))
 splash.deleteLater()
 app.exec_()

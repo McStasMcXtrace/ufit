@@ -72,13 +72,17 @@ into one set, as well as files 23 and 24.
 * 10,11,12+13,14 loads four sets.
 ''')
 
-    @qtsig('')
-    def on_browseBtn_clicked(self):
+    def open_browser(self, directory):
         bwin = BrowseWindow(self)
         bwin.show()
         QApplication.processEvents()
+        bwin.set_directory(directory)
+        bwin.activateWindow()
+
+    @qtsig('')
+    def on_browseBtn_clicked(self):
         templ = path_to_str(self.templateEdit.text())
-        bwin.set_directory(path.dirname(templ))
+        self.open_browser(path.dirname(templ))
 
     @qtsig('')
     def on_settemplateBtn_clicked(self):
