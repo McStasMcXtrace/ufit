@@ -189,25 +189,12 @@ class DataPlotter(object):
         kwds['axes'] = self.canvas.axes
         kwds['figure'] = self.canvas.figure
         kwds['clear'] = False
-        self.image = mapping(*args, **kwds)
+        self.image = plot_mapping(*args, **kwds)
 
 
-def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
-            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
-            clear=True, colors=None, axes=None, title=None):
-    """
-
-    modes: 0 = image
-           1 = contour filled
-           2 = contour lines
-    """
+def bin_mapping(x, y, runs, usemask=True, log=False, xscale=1, yscale=1,
+                interpolate=100, minmax=None):
     from scipy.interpolate import griddata as griddata_sp
-    if figure is None:
-        figure = pl.gcf()
-    if clear:
-        figure.clf()
-    if axes is None:
-        axes = figure.gca()
     if usemask:
         xss = array(list(flatten(run['col_'+x][run.mask] for run in runs))) * xscale
         yss = array(list(flatten(run['col_'+y][run.mask] for run in runs))) * yscale
@@ -231,19 +218,35 @@ def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
     xi, yi = mgrid[min(xss):max(xss):interpolate,
                    min(yss):max(yss):interpolate]
     zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
+    return xss/xscale, yss/yscale, xi/xscale, yi/yscale, zi
+
+
+def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,
+                 colors=None, title=None, dots=True):
+    """
+
+    modes: 0 = image
+           1 = contour filled
+           2 = contour lines
+    """
+    if figure is None:
+        figure = pl.gcf()
+    if clear:
+        figure.clf()
+    if axes is None:
+        axes = figure.gca()
+    xss, yss, xi, yi, zi = mapdata
     if mode == 0:
         im = axes.imshow(zi.T, origin='lower', aspect='auto',
                          interpolation='nearest',
-                         extent=(xi[0][0]/xscale, xi[-1][-1]/xscale,
-                                 yi[0][0]/yscale, yi[-1][-1]/yscale))
+                         extent=(xi[0][0], xi[-1][-1], yi[0][0], yi[-1][-1]))
     else:
         fcn = axes.contourf if mode == 1 else axes.contour
         kwds = {}
         if colors:
             kwds = {'colors': colors}
-        im = fcn(xi/xscale, yi/yscale, zi, 20,
-                 extent=(xi[0][0]/xscale, xi[-1][-1]/xscale,
-                         yi[0][0]/yscale, yi[-1][-1]/yscale),
+        im = fcn(xi, yi, zi, 20,
+                 extent=(xi[0][0], xi[-1][-1], yi[0][0], yi[-1][-1]),
                  **kwds)
     axes.set_xlabel(x)
     axes.set_ylabel(y)
@@ -251,5 +254,16 @@ def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
         axes.set_title(title)
     figure.colorbar(im, ax=axes, use_gridspec=False)
     if dots:
-        axes.scatter(xss/xscale, yss/yscale, 0.1)
+        axes.scatter(xss, yss, 0.1)
     return im
+
+
+def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
+            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
+            clear=True, colors=None, axes=None, title=None):
+    mapdata = bin_mapping(
+        x, y, runs, usemask=usemask, log=log, xscale=xscale, yscale=yscale,
+        interpolate=interpolate, minmax=minmax)
+    return plot_mapping(
+        x, y, mapdata, figure=figure, axes=axes, clear=clear, mode=mode,
+        dots=dots, colors=colors, title=title)

@@ -16,6 +16,7 @@ from PyQt4.QtGui import QFrame, QMessageBox
 
 from ufit.data.dataset import Dataset
 from ufit.models.peaks import Gauss2D
+from ufit.plotting import bin_mapping
 from ufit.utils import attrdict
 from ufit.gui import logger
 from ufit.gui.common import loadUi
@@ -51,6 +52,7 @@ class MappingPanel(QFrame):
         self.logger = logger.getChild('mapping')
         self.canvas = canvas
         self.index = 0
+        self.mapdata = None
         if datas is not None:
             self.set_datas(datas)
         self.set_settings(attrdict(settings or default_settings))
@@ -132,19 +134,16 @@ class MappingPanel(QFrame):
     def on_buttonBox_clicked(self, button):
         """Apply button clicked."""
         self._update_settings()
+        self.rebuild_map(quiet=False)
         self.replot(quiet=False)
 
-    def replot(self, limits=None, quiet=True):
-        # XXX handle limits
-        # XXX do not rebin the mapping every time!
-        self.canvas.plotter.reset()
+    def rebuild_map(self, quiet=True):
         s = self.settings
         try:
-            self.canvas.plotter.plot_mapping(
-                s.xaxis, s.yaxis, self.datas, minmax=(s.zmin, s.zmax),
-                title=s.title,
-                log=s.logz, yscale=s.yscale, usemask=s.usemask,
-                interpolate=s.interp, mode=int(s.contour), dots=s.dots)
+            self.mapdata = bin_mapping(s.xaxis, s.yaxis, self.datas,
+                                       usemask=s.usemask, log=s.logz,
+                                       yscale=s.yscale, interpolate=s.interp,
+                                       minmax=(s.zmin, s.zmax))
         except Exception, err:
             self.logger.exception('While creating mapping')
             if not quiet:
@@ -152,6 +151,16 @@ class MappingPanel(QFrame):
                                     'Could not create mapping: %s (have you '
                                     'selected the right columns?)' % err)
             return
+
+    def replot(self, limits=None, quiet=True):
+        if not self.mapdata:
+            self.rebuild_map(quiet=quiet)
+        # XXX handle limits
+        self.canvas.plotter.reset()
+        s = self.settings
+        self.canvas.plotter.plot_mapping(
+            s.xaxis, s.yaxis, self.mapdata, title=s.title,
+            mode=int(s.contour), dots=s.dots)
         if s.gauss2d:
             self.fit_2dgauss(s.xaxis, s.yaxis)
         self.canvas.draw()
