@@ -7,6 +7,7 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
+import sys
 import time
 import optparse
 from os import path
@@ -47,6 +48,10 @@ with SettingGroup('main') as settings:
         # be useful some day...)
         logger.info('Upgrade to version %s finished' % __version__)
 app.processEvents()
+
+def log_unhandled(*exc_info):
+    logger.error('Unhandled exception in Qt callback', exc_info=exc_info)
+sys.excepthook = log_unhandled
 
 t1 = time.time()
 logger.info('Startup: import finished (%.3f s), starting GUI...' % (t1-t0))
