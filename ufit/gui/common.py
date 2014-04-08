@@ -89,6 +89,7 @@ class MPLCanvas(FigureCanvas):
             self.figure.tight_layout(pad=2)
         except Exception:
             pass
+        self.plotter.save_layout()
         self.draw()
         self.update()
         QWidget.resizeEvent(self, event)

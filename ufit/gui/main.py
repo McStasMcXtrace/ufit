@@ -28,9 +28,15 @@ from ufit.gui.multiops import MultiDataOps
 from ufit.gui.itemlist import ItemListModel
 from ufit.gui.inspector import InspectorWindow
 from ufit.gui.datasetitem import DatasetPanel
+from ufit.gui.mappingitem import MappingPanel
 
-SAVE_VERSION = 1
+SAVE_VERSION = 2
 max_recent_files = 6
+
+panel_types = {
+    'dataset': DatasetPanel,
+    'mapping': MappingPanel,
+}
 
 
 class UFitMain(QMainWindow):
@@ -71,8 +77,9 @@ class UFitMain(QMainWindow):
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
-        self.multiops = MultiDataOps(self)
+        self.multiops = MultiDataOps(self, self.canvas)
         self.connect(self.multiops, SIGNAL('newData'), self.handle_new_data)
+        self.connect(self.multiops, SIGNAL('newItem'), self.handle_new_item)
         self.connect(self.multiops, SIGNAL('replotRequest'), self.plot_multi)
         self.connect(self.multiops, SIGNAL('dirty'), self.set_dirty)
         self.stacker.addWidget(self.multiops)
@@ -146,7 +153,7 @@ class UFitMain(QMainWindow):
         self.setWindowModified(True)
 
     def select_new_panel(self, panel):
-        if isinstance(self.current_panel, DatasetPanel):
+        if hasattr(self.current_panel, 'save_limits'):
             self.current_panel.save_limits()
         self.current_panel = panel
         self.stacker.setCurrentWidget(self.current_panel)
@@ -166,7 +173,7 @@ class UFitMain(QMainWindow):
         if not indlist:
             return
         if QMessageBox.question(self, 'ufit',
-                                'OK to remove %d dataset(s)?' % len(indlist),
+                                'OK to remove %d item(s)?' % len(indlist),
                                 QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
             return
         new_panels = [p for i, p in enumerate(self.panels) if i not in indlist]
@@ -203,7 +210,7 @@ class UFitMain(QMainWindow):
         elif len(indlist) == 1:
             panel = self.panels[indlist[0]]
             self.select_new_panel(panel)
-            panel.replot(panel._limits)
+            panel.replot(panel.get_saved_limits())
             self.toolbar.update()
             if self.inspector_window:
                 self.inspector_window.setDataPanel(panel)
@@ -218,6 +225,8 @@ class UFitMain(QMainWindow):
         indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
         panels = [self.panels[i] for i in indlist]
         for p in panels:
+            if not isinstance(p, DatasetPanel):
+                continue
             c = self.canvas.plotter.plot_data(p.data, multi=True)
             self.canvas.plotter.plot_model(p.model, p.data, labels=False,
                                            color=c)
@@ -225,10 +234,14 @@ class UFitMain(QMainWindow):
         self.canvas.draw()
 
     def handle_new_data(self, data, update=True, model=None):
-        panel = DatasetPanel(self, self.canvas, data, model, self.max_index)
+        panel = DatasetPanel(self, self.canvas, data, model)
+        self.handle_new_item(panel, update=update)
+
+    def handle_new_item(self, panel, update=True):
         self.connect(panel, SIGNAL('dirty'), self.set_dirty)
         self.connect(panel, SIGNAL('newData'), self.handle_new_data)
         self.connect(panel, SIGNAL('updateList'), self.itemlistmodel.reset)
+        panel.set_index(self.max_index)
         self.max_index += 1
         self.stacker.addWidget(panel)
         self.stacker.setCurrentWidget(panel)
@@ -408,15 +421,22 @@ class UFitMain(QMainWindow):
         try:
             self.clear_datasets()
             info = pickle.load(open(filename, 'rb'))
-            if 'panels' in info:
-                info['version'] = 0
+            # upgrade from version 0 to 1
+            if 'version' not in info and 'panels' in info:
+                info['version'] = 1
                 info['datasets'] = info.pop('panels')
                 info['template'] = ''
+            # upgrade from version 1 to 2
+            if info['version'] == 1:
+                datasets = info.pop('datasets')
+                info['panels'] = [('dataset', d[0], d[1]) for d in datasets]
+                info['version'] = 2
             self._loading = True
             try:
-                for data, model in info['datasets']:
-                    data.after_load()
-                    self.handle_new_data(data, False, model)
+                for panelinfo in info['panels']:
+                    panelcls = panel_types[panelinfo[0]]
+                    panel = panelcls(self, self.canvas, *panelinfo[1:])
+                    self.handle_new_item(panel, update=False)
                 self.dloader.templateEdit.setText(info['template'])
             finally:
                 self._loading = False
@@ -477,7 +497,7 @@ class UFitMain(QMainWindow):
     def save_session_inner(self, filename):
         fp = open(filename, 'wb')
         info = {
-            'datasets': [(panel.data, panel.model) for panel in self.panels],
+            'panels': [panel.serialize() for panel in self.panels],
             'template': self.dloader.templateEdit.text(),
             'version':  SAVE_VERSION,
         }

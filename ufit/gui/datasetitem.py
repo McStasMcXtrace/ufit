@@ -18,8 +18,9 @@ from ufit.gui import logger
 
 
 class DatasetPanel(QTabWidget):
-    def __init__(self, parent, canvas, data, model, index):
+    def __init__(self, parent, canvas, data, model):
         QTabWidget.__init__(self, parent)
+        data.after_load()
         self.data = data
         self.dataops = DataOps(self, parent.panels)
         self.mbuilder = ModelBuilder(self)
@@ -27,7 +28,7 @@ class DatasetPanel(QTabWidget):
         self.model = model or self.mbuilder.default_model(data)
         self._limits = None
         self.picker_widget = None
-        self.index = index
+        self.index = 0
         self.title = ''
 
         self.canvas = canvas
@@ -50,7 +51,12 @@ class DatasetPanel(QTabWidget):
         self.addTab(self.fitter, 'Fitting')
         self.setCurrentWidget(self.mbuilder)
 
+    def set_index(self, index):
+        self.index = index
         self.gen_htmldesc()
+
+    def serialize(self):
+        return ('dataset', self.data, self.model)
 
     def update_htmldesc(self):
         self.gen_htmldesc()
@@ -99,6 +105,9 @@ class DatasetPanel(QTabWidget):
 
     def save_limits(self):
         self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
+
+    def get_saved_limits(self):
+        return self._limits
 
     def replot(self, limits=True, paramvalues=None):
         plotter = self.canvas.plotter

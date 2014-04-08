@@ -23,14 +23,14 @@
       </font>
      </property>
      <property name="text">
-      <string>Reorder datasets</string>
+      <string>Reorder items</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Drag and drop datasets to reorder them:</string>
+      <string>Drag and drop items to reorder them:</string>
      </property>
     </widget>
    </item>

@@ -16,22 +16,24 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QMessageBox
 
 from ufit.gui.common import loadUi
-from ufit.gui.mapping import MappingWindow
+from ufit.gui.mappingitem import MappingPanel
+from ufit.gui.datasetitem import DatasetPanel
 from ufit.data.merge import rebin
 from ufit.data.dataset import Dataset
 
 
 class MultiDataOps(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent, canvas):
         QWidget.__init__(self, parent)
         self.data = None
+        self.canvas = canvas
 
         loadUi(self, 'multiops.ui')
 
     def initialize(self, panels):
         self.panels = panels
-        self.datas = [p.data for p in panels]
+        self.datas = [p.data for p in panels if isinstance(p, DatasetPanel)]
         self.monscaleEdit.setText(str(int(mean([d.nscale for d in self.datas]))))
         self.onemodelBox.clear()
         self.onemodelBox.addItems(['%d' % p.index for p in panels])
@@ -145,9 +147,9 @@ class MultiDataOps(QWidget):
 
     @qtsig('')
     def on_mappingBtn_clicked(self):
-        wnd = MappingWindow(self)
-        wnd.set_datas([panel.data for panel in self.panels])
-        wnd.show()
+        mpanel = MappingPanel(self, self.canvas)
+        mpanel.set_datas([panel.data for panel in self.panels])
+        self.emit(SIGNAL('newItem'), mpanel)
 
     @qtsig('')
     def on_globalfitBtn_clicked(self):

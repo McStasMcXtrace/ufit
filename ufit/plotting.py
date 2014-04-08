@@ -41,7 +41,9 @@ class DataPlotter(object):
         if axes is None:
             axes = pl.gca()
         self.axes = axes
+        self.orig_axes_position = axes.get_position()
         self.canvas = canvas
+        self.image = None
         self.marker_cycle = cycle(self.markers)
         self.toolbar = toolbar
         self._limits = None
@@ -51,12 +53,19 @@ class DataPlotter(object):
     def draw(self):
         self.canvas.draw()
 
+    def save_layout(self):
+        self.orig_axes_position = self.axes.get_position()
+
     def reset(self, limits=None):
         if limits is True:
             self._limits = self.axes.get_xlim(), self.axes.get_ylim()
         else:
             self._limits = limits
         xscale, yscale = self.axes.get_xscale(), self.axes.get_yscale()
+        if self.image is not None:
+            self.canvas.figure.delaxes(self.image.colorbar.ax)
+            self.image = None
+        self.axes.set_position(self.orig_axes_position)
         self.axes.clear()
         self.axes.set_xscale(xscale)
         self.axes.set_yscale(yscale)
@@ -70,17 +79,19 @@ class DataPlotter(object):
         if 'label' not in kw:
             kw['label'] = data.name
         if data.mask.all():
-            eb = axes.errorbar(data.x_plot, data.y + offset, data.dy, ls=ls, marker=marker,
-                               ms=ms, picker=5, **kw)
+            eb = axes.errorbar(data.x_plot, data.y + offset, data.dy, ls=ls,
+                               marker=marker, ms=ms, picker=5, **kw)
             color = eb[0].get_color()
         else:
             mask = data.mask
-            eb = axes.errorbar(data.x_plot[mask], data.y[mask] + offset, data.dy[mask], ls=ls,
-                               marker=marker, ms=ms, picker=5, **kw)
+            eb = axes.errorbar(data.x_plot[mask], data.y[mask] + offset,
+                               data.dy[mask], ls=ls, marker=marker, ms=ms,
+                               picker=5, **kw)
             color = eb[0].get_color()
             kw['label'] = ''
-            axes.errorbar(data.x_plot[~mask], data.y[~mask] + offset, data.dy[~mask], ls='',
-                          marker=marker, ms=ms, picker=5, mfc='white', mec=color, **kw)
+            axes.errorbar(data.x_plot[~mask], data.y[~mask] + offset,
+                          data.dy[~mask], ls='', marker=marker, ms=ms,
+                          picker=5, mfc='white', mec=color, **kw)
         if not multi:
             if data.fitmin is not None:
                 axes.axvline(data.fitmin, ls='-', color='gray')
@@ -142,7 +153,8 @@ class DataPlotter(object):
         yy = model.fcn(paramvalues, xx)
         if 'label' not in kw:
             kw['label'] = labels and 'fit' or ''
-        self.axes.plot(xxp, yy + offset, kw.pop('fmt', 'g'), lw=kw.pop('lw', 2), **kw)
+        self.axes.plot(xxp, yy + offset, kw.pop('fmt', 'g'),
+                       lw=kw.pop('lw', 2), **kw)
 
     def plot_model_components(self, model, data, labels=True, paramvalues=None,
                               offset=0, **kw):
@@ -173,10 +185,16 @@ class DataPlotter(object):
                        verticalalignment='top', size='x-small',
                        transform=self.axes.transAxes, family='Monospace')
 
+    def plot_mapping(self, *args, **kwds):
+        kwds['axes'] = self.canvas.axes
+        kwds['figure'] = self.canvas.figure
+        kwds['clear'] = False
+        self.image = mapping(*args, **kwds)
+
 
 def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
             xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
-            clear=True, colors=None):
+            clear=True, colors=None, axes=None, title=None):
     """
 
     modes: 0 = image
@@ -188,7 +206,8 @@ def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
         figure = pl.gcf()
     if clear:
         figure.clf()
-    axes = figure.gca()
+    if axes is None:
+        axes = figure.gca()
     if usemask:
         xss = array(list(flatten(run['col_'+x][run.mask] for run in runs))) * xscale
         yss = array(list(flatten(run['col_'+y][run.mask] for run in runs))) * yscale
@@ -228,6 +247,9 @@ def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
                  **kwds)
     axes.set_xlabel(x)
     axes.set_ylabel(y)
-    figure.colorbar(im)
+    if title is not None:
+        axes.set_title(title)
+    figure.colorbar(im, ax=axes, use_gridspec=False)
     if dots:
         axes.scatter(xss/xscale, yss/yscale, 0.1)
+    return im
