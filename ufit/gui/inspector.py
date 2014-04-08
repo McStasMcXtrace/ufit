@@ -9,7 +9,7 @@
 """Metadata view window."""
 
 from PyQt4.QtCore import SIGNAL, QByteArray, Qt
-from PyQt4.QtGui import QMainWindow, QTableWidgetItem
+from PyQt4.QtGui import QMainWindow, QTableWidgetItem, QMessageBox
 
 from ufit.gui.common import loadUi, SettingGroup
 
@@ -61,7 +61,8 @@ class InspectorWindow(QMainWindow):
         try:
             new_value = eval(str(item.text()))
         except Exception:
-            pass
+            QMessageBox.error(self, 'Error', 'The new value is not a valid expression.')
+            return
         else:
             key = str(self.tbl.item(item.row(), 0).text())
             self._panel.data.meta[key] = new_value

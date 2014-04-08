@@ -17,6 +17,7 @@ from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
 from ufit.models import concrete_models, eval_model
 from ufit.models.corr import Background
 from ufit.models.peaks import GaussInt
+from ufit.gui import logger
 from ufit.gui.common import loadUi
 
 ident_re = re.compile('[a-zA-Z][a-zA-Z0-9_]*$')
@@ -26,6 +27,7 @@ class ModelBuilder(QWidget):
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
+        self.logger = logger.getChild('model')
         self.gauss_picking = 0
         self.gauss_peak_pos = 0, 0
         self.pick_model = None
@@ -181,6 +183,7 @@ class ModelBuilder(QWidget):
         try:
             model = eval_model(modeldef)
         except Exception, e:
+            self.logger.exception('Could not evaluate model')
             QMessageBox.information(self, 'Error',
                                     'Could not evaluate model: %s' % e)
             return

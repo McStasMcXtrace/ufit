@@ -111,7 +111,7 @@ class ConsoleFormatter(Formatter):
         if record.exc_info:
             # *not* caching exception text on the record, since it's
             # only a short version
-            s += '\n' + self.formatException(record.exc_info)
+            s += '\n' + self.formatException(record.exc_info).rstrip()
         return s
 
 handler = StreamHandler()

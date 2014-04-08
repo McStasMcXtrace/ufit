@@ -105,7 +105,7 @@ into one set, as well as files 23 and 24.
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            self.logger.exception('could not read column names from file %r' % fn)
+            self.logger.exception('Could not read column names from file %r' % fn)
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return
@@ -159,6 +159,7 @@ into one set, as well as files 23 and 24.
             datas = self.loader.load_numors(numors, prec,
                                             xcol, ycol, dycol, mcol, mscale, floatmerge)
         except Exception, e:
+            self.logger.exception('Error while loading data file')
             QMessageBox.information(self, 'Error', str(e))
             return
         if final:

@@ -165,6 +165,8 @@ class MPLToolbar(NavigationToolbar2QT):
         try:
             from ufit.gui.console import ConsoleWindow
         except ImportError:
+            logger.exception('Qt console window cannot be opened without '
+                             'IPython; import error was:')
             QMessageBox.information(self, 'ufit',
                 'Please install IPython with qtconsole to activate this function.')
             return

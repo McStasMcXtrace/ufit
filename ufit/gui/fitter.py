@@ -8,14 +8,12 @@
 
 """Data fitter panel."""
 
-import traceback
-
 from numpy import array, savetxt, linspace
 
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
-     QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
-     QComboBox, QKeySequence, QIcon
+    QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
+    QComboBox, QKeySequence, QIcon
 
 from ufit.param import prepare_params
 from ufit.gui import logger
@@ -265,7 +263,7 @@ class Fitter(QWidget):
         try:
             res = self.model.fit(self.data, **self.fit_kws)
         except Exception, e:
-            traceback.print_exc()
+            self.logger.exception('Error during fit')
             self.statusLabel.setText('Error during fit: %s' % e)
             return
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
@@ -321,7 +319,7 @@ class FitterMain(QMainWindow):
             plotter.plot_data(self.fitter.data)
             plotter.plot_model_full(self.fitter.model, self.fitter.data,
                                     paramvalues=paramvalues)
-        except Exception, e:
+        except Exception:
             self.logger.exception('Error while plotting')
         else:
             plotter.draw()

@@ -16,6 +16,7 @@ from PyQt4.QtGui import QMainWindow, QVBoxLayout, QDialogButtonBox, QMessageBox
 from ufit.data.dataset import Dataset
 from ufit.models.peaks import Gauss2D
 from ufit.plotting import mapping as plot_mapping
+from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar
 
 
@@ -30,6 +31,7 @@ class MappingWindow(QMainWindow):
     def __init__(self, parent):
         QMainWindow.__init__(self, parent)
         loadUi(self, 'mapping.ui')
+        self.logger = logger.getChild('mapping')
         self.canvas = MPLCanvas(self)
         self.toolbar = MPLToolbar(self.canvas, self)
         self.addToolBar(self.toolbar)
@@ -72,6 +74,7 @@ class MappingWindow(QMainWindow):
                          dots=self.dotsBox.isChecked(),
                          figure=self.canvas.figure)
         except Exception, err:
+            self.logger.exception('While creating mapping')
             QMessageBox.warning(self, 'Mapping error',
                                 'Could not create mapping: %s (have you '
                                 'selected the right columns?)' % err)

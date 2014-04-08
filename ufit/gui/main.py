@@ -126,8 +126,8 @@ class DatasetPanel(QTabWidget):
                                     paramvalues=paramvalues)
         except Exception:
             logger.exception('Error while plotting')
-            return
-        self.canvas.draw()
+        else:
+            self.canvas.draw()
 
     def export_ascii(self, filename):
         with open(filename, 'wb') as fp:
@@ -483,6 +483,7 @@ class UFitMain(QMainWindow):
         try:
             self.load_session(self.filename)
         except Exception, err:
+            logger.exception('Loading session %r failed' % self.filename)
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
 
     def load_session(self, filename):
@@ -520,6 +521,7 @@ class UFitMain(QMainWindow):
         try:
             self.save_session_inner(self.filename)
         except Exception, err:
+            logger.exception('Saving session failed')
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
         self.setWindowModified(False)
@@ -538,6 +540,7 @@ class UFitMain(QMainWindow):
         try:
             self.save_session_inner(self.filename)
         except Exception, err:
+            logger.exception('Saving session failed')
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
         else:
