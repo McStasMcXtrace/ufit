@@ -16,6 +16,7 @@ from PyQt4.QtGui import QMainWindow, QListWidgetItem, QVBoxLayout
 
 from ufit.data import Loader
 from ufit.utils import extract_template
+from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup
 
 
@@ -23,6 +24,8 @@ class BrowseWindow(QMainWindow):
     def __init__(self, parent):
         QMainWindow.__init__(self, parent)
         loadUi(self, 'browse.ui')
+        self.logger = logger.getChild('browse')
+
         self.dirBtn.hide()
         self.loader = Loader()
         self._data = {}
@@ -71,7 +74,7 @@ class BrowseWindow(QMainWindow):
                 self.loader.template = t
                 res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
             except Exception, e:
-                print e
+                self.logger.warning('While loading %r: %s' % (fn, e))
             else:
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s - %s' %

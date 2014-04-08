@@ -17,8 +17,9 @@ from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
      QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
      QComboBox, QKeySequence, QIcon
 
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 from ufit.param import prepare_params
+from ufit.gui import logger
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 
 def is_float(x):
     try:
@@ -32,6 +33,7 @@ class Fitter(QWidget):
 
     def __init__(self, parent, standalone=False, fit_kws={}):
         QWidget.__init__(self, parent)
+        self.logger = logger.getChild('fitter')
         self.picking = None
         self.last_result = None
         self.model = None
@@ -320,8 +322,7 @@ class FitterMain(QMainWindow):
             plotter.plot_model_full(self.fitter.model, self.fitter.data,
                                     paramvalues=paramvalues)
         except Exception, e:
-            traceback.print_exc()
-            print 'Error while plotting:', e
+            self.logger.exception('Error while plotting')
         else:
             plotter.draw()
 

@@ -197,7 +197,6 @@ class MPLToolbar(NavigationToolbar2QT):
             try:
                 self.canvas.print_figure(unicode(fname))
             except Exception as e:
-                # XXX
                 logger.exception('Error saving file')
                 QMessageBox.critical(self, 'Error saving file', str(e))
 

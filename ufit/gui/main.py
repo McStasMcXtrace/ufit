@@ -20,6 +20,7 @@ from PyQt4.QtGui import QMainWindow, QVBoxLayout, QTabWidget, QMessageBox, \
 from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends
+from ufit.gui import logger
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
     path_to_str
 from ufit.gui.dataloader import DataLoader
@@ -123,8 +124,8 @@ class DatasetPanel(QTabWidget):
             plotter.plot_data(self.data)
             plotter.plot_model_full(self.model, self.data,
                                     paramvalues=paramvalues)
-        except Exception, e:
-            print 'Error while plotting:', e
+        except Exception:
+            logger.exception('Error while plotting')
             return
         self.canvas.draw()
 

@@ -16,8 +16,9 @@ from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
 
 from ufit.data import data_formats, Loader
 from ufit.utils import extract_template
+from ufit.gui import logger
 from ufit.gui.common import loadUi, path_to_str, str_to_path, \
-     MPLCanvas, MPLToolbar
+    MPLCanvas, MPLToolbar
 from ufit.gui.browse import BrowseWindow
 
 
@@ -25,6 +26,7 @@ class DataLoader(QWidget):
 
     def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
+        self.logger = logger.getChild('loader')
         self.plotter = plotter
         self.last_data = []
         self.loader = Loader()
@@ -99,7 +101,7 @@ into one set, as well as files 23 and 24.
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            print e
+            self.logger.exception('could not read column names from file %r' % fn)
             QMessageBox.information(self, 'Error',
                                     'Could not read column names: %s' % e)
             return
