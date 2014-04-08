@@ -59,6 +59,10 @@
        <property name="text">
         <string>Make mapping</string>
        </property>
+       <property name="icon">
+        <iconset resource="../../resource/gui.qrc">
+         <normaloff>:/map.png</normaloff>:/map.png</iconset>
+       </property>
       </widget>
      </item>
      <item row="0" column="0" colspan="3">
@@ -242,7 +246,7 @@
        <item>
         <widget class="QPushButton" name="mergeBtn">
          <property name="text">
-          <string>Merg + Rebin</string>
+          <string>Merge + Rebin</string>
          </property>
         </widget>
        </item>
@@ -290,6 +294,8 @@
   <tabstop>globalfitBtn</tabstop>
   <tabstop>mappingBtn</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../../resource/gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -25,5 +25,6 @@
     <file>log-x.png</file>
     <file>log-y.png</file>
     <file>document.png</file>
+    <file>map.png</file>
   </qresource>
 </RCC>

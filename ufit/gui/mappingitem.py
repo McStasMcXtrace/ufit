@@ -114,7 +114,8 @@ class MappingPanel(QFrame):
         self.set_dirty()
 
     def gen_htmldesc(self):
-        self.htmldesc = '<big><b>%d</b></big> - %s<br>%s' % (
+        self.htmldesc = '<img src=":/map.png">&nbsp;&nbsp;<big><b>%d</b></big> ' \
+                        '- %s<br>%s' % (
             self.index, self.settings.title,
             ', '.join(d.name for d in self.datas))
 
