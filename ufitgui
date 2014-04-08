@@ -54,7 +54,10 @@ opts, args = parser.parse_args()
 
 if len(args) >= 1:
     datafile = path.abspath(args[0])
-    if datafile.endswith('.ufit'):
+    if path.isdir(datafile):
+        # directory given, treat it as -b argument (browse)
+        opts.browse = datafile
+    elif datafile.endswith('.ufit'):
         try:
             mainwindow.filename = datafile
             mainwindow.load_session(datafile)
