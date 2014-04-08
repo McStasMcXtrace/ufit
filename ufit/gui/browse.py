@@ -64,7 +64,8 @@ class BrowseWindow(QMainWindow):
 
     @qtsig('')
     def on_dirBtn_clicked(self):
-        newdir = QFileDialog.getExistingDirectory(self, 'New directory', self.rootdir)
+        newdir = QFileDialog.getExistingDirectory(self, 'New directory',
+                                                  self.rootdir)
         self.set_directory(path_to_str(newdir))
 
     @qtsig('')
