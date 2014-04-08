@@ -15,8 +15,10 @@ import os
 import time
 import traceback
 from os import path
-from logging import Formatter, StreamHandler, DEBUG, INFO, WARNING, root, \
-    getLogger
+from logging import Formatter, Handler, StreamHandler, DEBUG, INFO, WARNING, \
+    root, getLogger
+
+__all__ = ['getLogger']
 
 DATEFMT = '%H:%M:%S'
 
@@ -128,30 +130,22 @@ class LogfileHandler(StreamHandler):
     Logs to log files with a date stamp appended, and rollover on midnight.
     """
 
-    def __init__(self, directory, filenameprefix='ufit', filenamesuffix=None,
-                 dayfmt=DATESTAMP_FMT):
+    def __init__(self, directory, filenameprefix='ufit', dayfmt=DATESTAMP_FMT):
         if not path.isdir(directory):
             os.makedirs(directory)
         self._currentsymlink = path.join(directory, 'current')
-        self._filenameprefix = filenameprefix
-        self._filenamesuffix = filenamesuffix
         self._pathnameprefix = path.join(directory, filenameprefix)
         self._dayfmt = dayfmt
         # today's logfile name
-        if filenamesuffix:
-            basefn = self._pathnameprefix + '-' + time.strftime(dayfmt) + \
-                '-' + filenamesuffix + '.log'
-        else:
-            basefn = self._pathnameprefix + '-' + time.strftime(dayfmt) + '.log'
+        basefn = self._pathnameprefix + '-' + time.strftime(dayfmt) + '.log'
         self.baseFilename = path.abspath(basefn)
-        self.mode = 'a'
-        StreamHandler.__init__(self, self._open())
+        self.stream = None
+        Handler.__init__(self)   # don't open file yet
         # determine time of first midnight from now on
         t = time.localtime()
         self.rollover_at = time.mktime((t[0], t[1], t[2], 0, 0, 0,
                                         t[6], t[7], t[8])) + SECONDS_PER_DAY
         self.setFormatter(Formatter(LOGFMT, DATEFMT))
-        self.disabled = False
 
     def _open(self):
         # update 'current' symlink upon open
@@ -164,12 +158,9 @@ class LogfileHandler(StreamHandler):
         if hasattr(os, 'symlink'):
             os.symlink(path.basename(self.baseFilename), self._currentsymlink)
         # finally open the new logfile....
-        return open(self.baseFilename, self.mode)
+        return open(self.baseFilename, 'a')
 
-    def filter(self, record):
-        return not self.disabled
-
-    def emit(self, record): #pylint: disable=W0221
+    def emit(self, record):
         try:
             t = int(time.time())
             if t >= self.rollover_at:
@@ -180,36 +171,23 @@ class LogfileHandler(StreamHandler):
         except Exception:
             self.handleError(record)
 
-    def enable(self, enabled):
-        if enabled:
-            self.disabled = False
-            self.stream.close()
-            self.stream = self._open()
-        else:
-            self.disabled = True
-
     def close(self):
         self.acquire()
         try:
             if self.stream:
                 self.flush()
-                if hasattr(self.stream, 'close'):
-                    self.stream.close()
-                StreamHandler.close(self)
+                self.stream.close()
                 self.stream = None
+                Handler.close(self)
         finally:
             self.release()
 
     def doRollover(self):
-        self.stream.close()
-        if self._filenamesuffix:
-            self.baseFilename = '%s-%s-%s.log' % (
-                self._pathnameprefix, time.strftime(self._dayfmt),
-                self._filenamesuffix)
-        else:
-            self.baseFilename = self._pathnameprefix + '-' + \
-                time.strftime(self._dayfmt) + '.log'
-        self.stream = self._open()
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+        self.baseFilename = self._pathnameprefix + '-' + \
+                            time.strftime(self._dayfmt) + '.log'
         self.rollover_at += SECONDS_PER_DAY
 
 
