@@ -41,9 +41,10 @@ class DataPlotter(object):
         if axes is None:
             axes = pl.gca()
         self.axes = axes
-        self.orig_axes_position = axes.get_position()
+        self.orig_spspec = axes.get_subplotspec()
         self.canvas = canvas
         self.image = None
+        self.save_layout()
         self.marker_cycle = cycle(self.markers)
         self.toolbar = toolbar
         self._limits = None
@@ -65,7 +66,8 @@ class DataPlotter(object):
         if self.image is not None:
             self.canvas.figure.delaxes(self.image.colorbar.ax)
             self.image = None
-        self.axes.set_position(self.orig_axes_position)
+            self.axes.set_subplotspec(self.orig_spspec)
+            self.axes.set_position(self.orig_axes_position)
         self.axes.clear()
         self.axes.set_xscale(xscale)
         self.axes.set_yscale(yscale)
@@ -186,7 +188,7 @@ class DataPlotter(object):
                        transform=self.axes.transAxes, family='Monospace')
 
     def plot_mapping(self, *args, **kwds):
-        kwds['axes'] = self.canvas.axes
+        kwds['axes'] = self.axes
         kwds['figure'] = self.canvas.figure
         kwds['clear'] = False
         self.image = plot_mapping(*args, **kwds)
@@ -252,7 +254,7 @@ def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,
     axes.set_ylabel(y)
     if title is not None:
         axes.set_title(title)
-    figure.colorbar(im, ax=axes, use_gridspec=False)
+    figure.colorbar(im, ax=axes, fraction=0.05)
     if dots:
         axes.scatter(xss, yss, 0.1)
     return im
