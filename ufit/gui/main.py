@@ -85,12 +85,12 @@ class UFitMain(QMainWindow):
         self.stacker.addWidget(self.multiops)
 
         self.itemlistmodel = ItemListModel(self.panels)
-        self.itemList.setModel(self.itemlistmodel)
+        self.itemTree.setModel(self.itemlistmodel)
         self.itemlistmodel.reset()
-        self.itemList.addAction(self.actionMergeData)
-        self.itemList.addAction(self.actionRemoveData)
-        self.connect(self.itemList, SIGNAL('newSelection'),
-                     self.on_itemList_newSelection)
+        self.itemTree.addAction(self.actionMergeData)
+        self.itemTree.addAction(self.actionRemoveData)
+        self.connect(self.itemTree, SIGNAL('newSelection'),
+                     self.on_itemTree_newSelection)
 
         self.backend_group = QActionGroup(self)
         for backend in backends.available:
@@ -165,11 +165,11 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_loadBtn_clicked(self):
         self.select_new_panel(self.dloader)
-        self.itemList.setCurrentIndex(QModelIndex())
+        self.itemTree.setCurrentIndex(QModelIndex())
 
     @qtsig('')
     def on_removeBtn_clicked(self):
-        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
         if not indlist:
             return
         if QMessageBox.question(self, 'ufit',
@@ -201,10 +201,10 @@ class UFitMain(QMainWindow):
             self.itemlistmodel.reset()
             self.setWindowModified(True)
 
-    def on_itemList_newSelection(self):
+    def on_itemTree_newSelection(self):
         if self._loading:
             return
-        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
         if len(indlist) == 0:
             self.on_loadBtn_clicked()
         elif len(indlist) == 1:
@@ -222,7 +222,7 @@ class UFitMain(QMainWindow):
     def plot_multi(self, *ignored):
         # XXX better title
         self.canvas.plotter.reset()
-        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
         panels = [self.panels[i] for i in indlist]
         for p in panels:
             if not isinstance(p, DatasetPanel):
@@ -249,7 +249,7 @@ class UFitMain(QMainWindow):
         self.setWindowModified(True)
         if not self._loading and update:
             self.itemlistmodel.reset()
-            self.itemList.setCurrentIndex(
+            self.itemTree.setCurrentIndex(
                 self.itemlistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
@@ -441,7 +441,7 @@ class UFitMain(QMainWindow):
             finally:
                 self._loading = False
             self.itemlistmodel.reset()
-            self.itemList.setCurrentIndex(
+            self.itemTree.setCurrentIndex(
                 self.itemlistmodel.index(len(self.panels)-1, 0))
             self.setWindowModified(False)
             self.setWindowTitle('ufit - %s[*]' % filename)
@@ -509,7 +509,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        indlist = [ind.row() for ind in self.itemList.selectedIndexes()]
+        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
         if len(indlist) < 2:
             return
         dlg = QDialog(self)

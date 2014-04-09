@@ -10,31 +10,45 @@
 
 # parts borrowed from M. Janoschek' nfit2 GUI
 
-from PyQt4.QtCore import Qt, QSize, SIGNAL, QAbstractListModel, QModelIndex
-from PyQt4.QtGui import QListView, QStyledItemDelegate, QTextDocument, QStyle, \
+from PyQt4.QtCore import Qt, QSize, SIGNAL, QAbstractItemModel, QModelIndex
+from PyQt4.QtGui import QTreeView, QStyledItemDelegate, QTextDocument, QStyle, \
     QAbstractItemView
 
 
-class ItemListView(QListView):
+class ItemTreeView(QTreeView):
 
     def __init__(self, parent):
-        QListView.__init__(self, parent)
+        QTreeView.__init__(self, parent)
+        self.header().hide()
+        self.setRootIsDecorated(False)
+##        self.setStyleSheet("QTreeView::branch { display: none; }")
         self.setItemDelegate(ItemListDelegate(self))
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def selectionChanged(self, selected, deselected):
         self.emit(SIGNAL('newSelection'))
-        QListView.selectionChanged(self, selected, deselected)
+        QTreeView.selectionChanged(self, selected, deselected)
 
 
-class ItemListModel(QAbstractListModel):
+class ItemListModel(QAbstractItemModel):
 
     def __init__(self, panels):
-        QAbstractListModel.__init__(self)
+        QAbstractItemModel.__init__(self)
         self.panels = panels
 
+    def columnCount(self, parent=QModelIndex()):
+        return 1
+
     def rowCount(self, index=QModelIndex()):
+        if index.isValid():  # subitems
+            return 0
         return len(self.panels)
+
+    def index(self, row, column, parent=QModelIndex()):
+        return self.createIndex(row, column, row)
+
+    def parent(self, index):
+        return QModelIndex()
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < len(self.panels)):

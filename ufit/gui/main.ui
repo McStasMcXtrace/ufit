@@ -84,7 +84,7 @@
          </widget>
         </item>
         <item>
-         <widget class="ItemListView" name="itemList">
+         <widget class="ItemTreeView" name="itemTree">
           <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
           </property>
@@ -374,8 +374,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ItemListView</class>
-   <extends>QListView</extends>
+   <class>ItemTreeView</class>
+   <extends>QTreeView</extends>
    <header>ufit.gui.itemlist</header>
   </customwidget>
  </customwidgets>
