@@ -29,7 +29,7 @@ from ufit.gui.itemlist import ItemListModel
 from ufit.gui.inspector import InspectorWindow
 from ufit.gui.annotations import AnnotationWindow
 from ufit.gui.datasetitem import DatasetPanel, DatasetItem
-from ufit.gui.session import session, ItemGroup
+from ufit.gui.session import session, SessionItem, ItemGroup
 
 max_recent_files = 6
 
@@ -225,9 +225,7 @@ class UFitMain(QMainWindow):
         for group in session.groups:
             action = QAction(group.name, self)
             def move_to(group=group):
-                items = [index.internalPointer()
-                         for index in self.itemTree.selectedIndexes()]
-                items = [item for item in items if not isinstance(item, ItemGroup)]
+                items = self.selected_items()
                 if not items:
                     return
                 session.move_items(items, group)
@@ -247,9 +245,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionRemoveData_triggered(self):
-        items = [index.internalPointer()
-                 for index in self.itemTree.selectedIndexes()]
-        items = [item for item in items if not isinstance(item, ItemGroup)]
+        items = self.selected_items()
         if not items:
             return
         if QMessageBox.question(self, 'ufit',
@@ -282,10 +278,17 @@ class UFitMain(QMainWindow):
         session.reorder_groups(new_structure)
         self.itemTree.expandAll()
 
+    def selected_items(self, itemcls=SessionItem):
+        """Return a list of selected items that belong to the given class."""
+        items = (index.internalPointer()
+                 for index in self.itemTree.selectedIndexes())
+        if not itemcls:
+            # This will also return ItemGroup objects!
+            return list(items)
+        return [item for item in items if isinstance(item, itemcls)]
+
     def on_itemTree_newSelection(self):
-        items = [index.internalPointer()
-                 for index in self.itemTree.selectedIndexes()]
-        items = [item for item in items if not isinstance(item, ItemGroup)]
+        items = self.selected_items()
         if len(items) == 0:
             self.on_loadBtn_clicked()
         elif len(items) == 1:
@@ -310,9 +313,7 @@ class UFitMain(QMainWindow):
     def plot_multi(self, *ignored):
         # XXX better title
         self.canvas.plotter.reset()
-        items = [index.internalPointer()
-                 for index in self.itemTree.selectedIndexes()]
-        items = [item for item in items if isinstance(item, DatasetItem)]
+        items = self.selected_items(DatasetItem)
         for i in items:
             c = self.canvas.plotter.plot_data(i.data, multi=True)
             self.canvas.plotter.plot_model(i.model, i.data, labels=False,
@@ -395,9 +396,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportParams_triggered(self):
-        items = [index.internalPointer()
-                 for index in self.itemTree.selectedIndexes()]
-        items = [item for item in items if isinstance(item, DatasetItem)]
+        items = self.selected_items(DatasetItem)
         dlg = ParamExportDialog(self, items)
         if dlg.exec_() != QDialog.Accepted:
             return
@@ -539,9 +538,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        items = [index.internalPointer()
-                 for index in self.itemTree.selectedIndexes()
-                 if isinstance(index.internalPointer(), DatasetItem)]
+        items = self.selected_items(DatasetItem)
         if len(items) < 2:
             return
         dlg = QDialog(self)
