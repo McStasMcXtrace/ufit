@@ -15,6 +15,7 @@ from PyQt4.QtGui import QTreeView, QStyledItemDelegate, QTextDocument, QStyle, \
     QAbstractItemView, QListWidget, QListWidgetItem
 
 from ufit.gui.session import session, ItemGroup
+from ufit.gui.datasetitem import DatasetItem
 
 
 class ItemListWidget(QListWidget):
@@ -32,8 +33,10 @@ class ItemListWidget(QListWidget):
             for item in group.items:
                 i += 1
                 data2obj[i] = item
-                wi = QListWidgetItem('   %d - %s' % (item.index, item.title),
-                                     self, i)
+                itemstr = '   %d - %s' % (item.index, item.title)
+                if isinstance(item, DatasetItem):
+                    itemstr += ' (%s)' % item.data.meta.filedesc
+                wi = QListWidgetItem(itemstr, self, i)
                 if itemcls and not isinstance(item, itemcls):
                     wi.setFlags(Qt.NoItemFlags)
         return data2obj

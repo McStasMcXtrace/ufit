@@ -95,6 +95,7 @@ class UFitMain(QMainWindow):
         self.itemlistmodel.reset()
         self.itemTree.addAction(self.actionMergeData)
         self.itemTree.addAction(self.actionRemoveData)
+        self.itemTree.addAction(self.menuMoveToGroup.menuAction())
         self.connect(self.itemTree, SIGNAL('newSelection'),
                      self.on_itemTree_newSelection)
 
@@ -112,6 +113,7 @@ class UFitMain(QMainWindow):
 
         # manage button
         menu = QMenu(self)
+        menu.addAction(self.actionMergeData)
         menu.addAction(self.actionRemoveData)
         menu.addAction(self.actionReorder)
         menu.addSeparator()
