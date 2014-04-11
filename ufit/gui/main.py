@@ -22,6 +22,7 @@ from ufit import backends, __version__
 from ufit.gui import logger
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
     path_to_str
+from ufit.gui.dialogs import ParamExportDialog
 from ufit.gui.dataloader import DataLoader
 from ufit.gui.multiops import MultiDataOps
 from ufit.gui.itemlist import ItemListModel
@@ -344,44 +345,55 @@ class UFitMain(QMainWindow):
         QMessageBox.information(self, 'Info', 'The new style will be used '
                                 'the next time a plot is generated.')
 
-    @qtsig('')
-    def on_actionExportASCII_triggered(self):
+    def _get_export_filename(self, filter='ASCII text (*.txt)'):
         initialdir = session.props.get('lastexportdir', session.dirname)
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
         if filename == '':
-            return False
+            return ''
         expfilename = path_to_str(filename)
-        session.props.lastexportdir = path.dirname(filename)
-        self.current_panel.export_ascii(expfilename)
+        session.props.lastexportdir = path.dirname(expfilename)
+        return expfilename
+
+    @qtsig('')
+    def on_actionExportASCII_triggered(self):
+        expfilename = self._get_export_filename()
+        # XXX allow multiple selection
+        if expfilename:
+            self.current_panel.export_ascii(expfilename)
 
     @qtsig('')
     def on_actionExportFIT_triggered(self):
-        initialdir = session.props.get('lastexportdir', session.dirname)
-        filename = QFileDialog.getSaveFileName(
-            self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
-        if filename == '':
-            return False
-        expfilename = path_to_str(filename)
-        session.props.lastexportdir = path.dirname(filename)
-        with open(expfilename, 'wb') as fp:
-            self.current_panel.fitter.export_fits(fp)
-
-    @qtsig('')
-    def on_actionExportParams_triggered(self):
-        QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
+        expfilename = self._get_export_filename()
+        # XXX allow multiple selection
+        if expfilename:
+            with open(expfilename, 'wb') as fp:
+                self.current_panel.fitter.export_fits(fp)
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
-        initialdir = session.props.get('lastexportdir', session.dirname)
-        filename = QFileDialog.getSaveFileName(
-            self, 'Select export file name', initialdir, 'Python files (*.py)')
-        if filename == '':
-            return False
-        expfilename = path_to_str(filename)
-        session.props.lastexportdir = path.dirname(filename)
-        with open(expfilename, 'wb') as fp:
-            self.current_panel.export_python(fp)
+        expfilename = self._get_export_filename('Python files (*.py)')
+        # XXX allow multiple selection
+        if expfilename:
+            with open(expfilename, 'wb') as fp:
+                self.current_panel.export_python(fp)
+
+    @qtsig('')
+    def on_actionExportParams_triggered(self):
+        items = [index.internalPointer()
+                 for index in self.itemTree.selectedIndexes()]
+        items = [item for item in items if isinstance(item, DatasetItem)]
+        dlg = ParamExportDialog(self, items)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        expfilename = self._get_export_filename()
+        if expfilename:
+            try:
+                dlg.do_export(expfilename)
+            except Exception, e:
+                logger.exception('While exporting parameters')
+                QMessageBox.warning(self, 'Error', 'Could not export '
+                                    'parameters: %s' % e)
 
     @qtsig('')
     def on_actionPrint_triggered(self):

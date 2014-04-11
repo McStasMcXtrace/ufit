@@ -8,9 +8,9 @@
 
 """Multiple dataset operations panel."""
 
-from os import path
+from numpy import sqrt, mean
 
-from numpy import sqrt, mean, array
+from os import path
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QMessageBox
@@ -19,8 +19,8 @@ from ufit.gui.common import loadUi
 from ufit.gui.session import session
 from ufit.gui.mappingitem import MappingItem
 from ufit.gui.datasetitem import DatasetItem
+from ufit.gui.dialogs import ParamSetDialog
 from ufit.data.merge import rebin
-from ufit.data.dataset import Dataset
 
 
 class MultiDataOps(QWidget):
@@ -158,63 +158,3 @@ class MultiDataOps(QWidget):
         base, ext = path.splitext(filename)
         for i, item in enumerate(self.items):
             item.export_ascii(base + '.%d' % i + ext)
-
-
-class ParamSetDialog(QDialog):
-    def __init__(self, parent, items):
-        QDialog.__init__(self, parent)
-        loadUi(self, 'paramset.ui')
-        self.new_data = None
-        self.items = items
-        self.xaxisList.populate(items)
-        self.yaxisList.populate(items)
-        self._auto_name = ''
-
-    def _gen_name(self):
-        xi = self.xaxisList.currentItem()
-        yi = self.yaxisList.currentItem()
-        if self.nameBox.text() != self._auto_name:
-            return
-        auto_name = ''
-        if xi:
-            auto_name += xi.text().strip()
-        if yi:
-            auto_name += ' vs. ' + yi.text().strip()
-        self._auto_name = auto_name
-        self.nameBox.setText(auto_name)
-
-    def on_xaxisList_itemSelectionChanged(self):
-        self._gen_name()
-
-    def on_yaxisList_itemSelectionChanged(self):
-        self._gen_name()
-
-    def exec_(self):
-        res = QDialog.exec_(self)
-        if res != QDialog.Accepted:
-            return res
-        xx, yy, dy = [], [], []
-        xp = yp = False
-        xv = self.xaxisList.currentItem().text().strip()
-        if self.xaxisList.currentItem().type() == 1:
-            xp = True
-        yv = self.yaxisList.currentItem().text().strip()
-        if self.yaxisList.currentItem().type() == 1:
-            yp = True
-
-        for item in self.items:
-            if xp:
-                xx.append(item.model.paramdict[xv].value)
-            else:
-                xx.append(item.data.meta[xv])
-            if yp:
-                yy.append(item.model.paramdict[yv].value)
-                dy.append(item.model.paramdict[yv].error)
-            else:
-                yy.append(item.data.meta[yv])
-                dy.append(1)
-        xx, yy, dy = map(array, [xx, yy, dy])
-
-        self.new_data = Dataset.from_arrays(str(self.nameBox.text()),
-                                            xx, yy, dy, xcol=xv, ycol=yv)
-        return res

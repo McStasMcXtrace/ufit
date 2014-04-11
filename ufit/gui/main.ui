@@ -346,6 +346,9 @@
    <property name="text">
     <string>Export parameters as ASCII...</string>
    </property>
+   <property name="toolTip">
+    <string>Export parameters (and data values) as ASCII</string>
+   </property>
   </action>
   <action name="actionSavePlot">
    <property name="icon">
