@@ -32,6 +32,7 @@ pyplot.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
                      'Lucida Grande, Bitstream Vera Sans'})
 
 from ufit.gui import logger
+from ufit.gui.session import session
 from ufit.plotting import DataPlotter
 
 uipath = path.dirname(__file__)
@@ -176,7 +177,7 @@ class MPLToolbar(NavigationToolbar2QT):
         w.ipython.pushVariables({
             'fig': self.canvas.figure,
             'ax': self.canvas.figure.gca(),
-            'D': self.canvas.main.panels,
+            'D': [item for group in session.groups for item in group.items],
         })
         w.show()
 

@@ -53,26 +53,44 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="reorderBtn">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="manageBtn">
             <property name="text">
-             <string>Reorder</string>
+             <string>Manage   </string>
             </property>
             <property name="icon">
              <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/arrow-switch.png</normaloff>:/arrow-switch.png</iconset>
+              <normaloff>:/gear.png</normaloff>:/gear.png</iconset>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="removeBtn">
-            <property name="text">
-             <string>Remove</string>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-            <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/cross.png</normaloff>:/cross.png</iconset>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
             </property>
-           </widget>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>1</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -88,6 +106,9 @@
           <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
           </property>
+          <property name="indentation">
+           <number>14</number>
+          </property>
          </widget>
         </item>
        </layout>
@@ -102,7 +123,7 @@
      <x>0</x>
      <y>0</y>
      <width>386</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -135,6 +156,7 @@
     <addaction name="actionLoadData"/>
     <addaction name="actionRemoveData"/>
     <addaction name="actionMergeData"/>
+    <addaction name="actionReorder"/>
     <addaction name="separator"/>
     <addaction name="actionExportASCII"/>
     <addaction name="actionExportFIT"/>
@@ -369,6 +391,24 @@
    </property>
    <property name="toolTip">
     <string>Clear recent files list</string>
+   </property>
+  </action>
+  <action name="actionReorder">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/arrow-switch.png</normaloff>:/arrow-switch.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reorder</string>
+   </property>
+  </action>
+  <action name="actionNewGroup">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/drawer--plus.png</normaloff>:/drawer--plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>New group...</string>
    </property>
   </action>
  </widget>

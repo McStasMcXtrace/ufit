@@ -11,7 +11,7 @@
 import os
 from os import path
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QByteArray
+from PyQt4.QtCore import pyqtSignature as qtsig, QByteArray
 from PyQt4.QtGui import QMainWindow, QApplication, QListWidgetItem, \
     QVBoxLayout, QFileDialog
 
@@ -20,6 +20,8 @@ from ufit.utils import extract_template
 from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup, \
     path_to_str
+from ufit.gui.session import session
+from ufit.gui.datasetitem import DatasetItem
 
 
 class BrowseWindow(QMainWindow):
@@ -57,10 +59,9 @@ class BrowseWindow(QMainWindow):
         datas = [self._data[item.type()] for item in self.dataList.selectedItems()]
         if not datas:
             return
-        loadwin = self.parent()
-        for data in datas[:-1]:
-            loadwin.emit(SIGNAL('newData'), data, False)
-        loadwin.emit(SIGNAL('newData'), datas[-1])
+        items = [DatasetItem(data) for data in datas]
+        # XXX which group
+        session.add_items(items)
 
     @qtsig('')
     def on_dirBtn_clicked(self):

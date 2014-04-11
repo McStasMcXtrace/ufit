@@ -14,14 +14,16 @@ from PyQt4.QtCore import Qt, QSize, SIGNAL, QAbstractItemModel, QModelIndex
 from PyQt4.QtGui import QTreeView, QStyledItemDelegate, QTextDocument, QStyle, \
     QAbstractItemView
 
+from ufit.gui.session import session, ItemGroup
+
 
 class ItemTreeView(QTreeView):
 
     def __init__(self, parent):
         QTreeView.__init__(self, parent)
         self.header().hide()
-        self.setRootIsDecorated(False)
-##        self.setStyleSheet("QTreeView::branch { display: none; }")
+        #self.setRootIsDecorated(False)
+        #self.setStyleSheet("QTreeView::branch { display: none; }")
         self.setItemDelegate(ItemListDelegate(self))
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
@@ -32,30 +34,41 @@ class ItemTreeView(QTreeView):
 
 class ItemListModel(QAbstractItemModel):
 
-    def __init__(self, panels):
+    def __init__(self):
         QAbstractItemModel.__init__(self)
-        self.panels = panels
+        self.connect(session, SIGNAL('itemsUpdated'), self.reset)
+        self.groups = session.groups
 
     def columnCount(self, parent=QModelIndex()):
         return 1
 
     def rowCount(self, index=QModelIndex()):
-        if index.isValid():  # subitems
+        if index.isValid():   # data items
+            obj = index.internalPointer()
+            if isinstance(obj, ItemGroup):
+                return len(self.groups[index.row()].items)
             return 0
-        return len(self.panels)
+        return len(self.groups)
 
     def index(self, row, column, parent=QModelIndex()):
-        return self.createIndex(row, column, row)
+        if parent.isValid():  # data items
+            group = parent.internalPointer()
+            return self.createIndex(row, column, group.items[row])
+        return self.createIndex(row, column, self.groups[row])
 
     def parent(self, index):
-        return QModelIndex()
+        obj = index.internalPointer()
+        if isinstance(obj, ItemGroup):
+            return QModelIndex()
+        group = obj.group
+        return self.createIndex(self.groups.index(group), 0, group)
 
     def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid() or not (0 <= index.row() < len(self.panels)):
+        if not index.isValid():
             return None
-        nr = index.row()
+        obj = index.internalPointer()
         if role == Qt.DisplayRole:
-            return self.panels[nr].as_html()
+            return obj.htmldesc
         elif role == Qt.TextAlignmentRole:
             return int(Qt.AlignLeft|Qt.AlignVCenter)
         return None
