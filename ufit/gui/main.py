@@ -346,22 +346,24 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportASCII_triggered(self):
-        initialdir = session.dirname
+        initialdir = session.props.get('lastexportdir', session.dirname)
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
         if filename == '':
             return False
         expfilename = path_to_str(filename)
+        session.props.lastexportdir = path.dirname(filename)
         self.current_panel.export_ascii(expfilename)
 
     @qtsig('')
     def on_actionExportFIT_triggered(self):
-        initialdir = session.dirname
+        initialdir = session.props.get('lastexportdir', session.dirname)
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
         if filename == '':
             return False
         expfilename = path_to_str(filename)
+        session.props.lastexportdir = path.dirname(filename)
         with open(expfilename, 'wb') as fp:
             self.current_panel.fitter.export_fits(fp)
 
@@ -371,12 +373,13 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
-        initialdir = session.dirname
+        initialdir = session.props.get('lastexportdir', session.dirname)
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'Python files (*.py)')
         if filename == '':
             return False
         expfilename = path_to_str(filename)
+        session.props.lastexportdir = path.dirname(filename)
         with open(expfilename, 'wb') as fp:
             self.current_panel.export_python(fp)
 
