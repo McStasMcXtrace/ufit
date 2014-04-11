@@ -31,9 +31,9 @@ class QIPythonWidget(RichIPythonWidget):
             kernel_manager.shutdown_kernel()
             self.emit(SIGNAL('close'))
         self.exit_requested.connect(stop)
-        def replot():
-            self.emit(SIGNAL('replot'))
-        self.executed.connect(replot)
+        def redraw():
+            self.emit(SIGNAL('redraw'))
+        self.executed.connect(redraw)
 
     def pushVariables(self, variableDict):
         """Given a dictionary containing name / value pairs, push those
@@ -65,12 +65,10 @@ ufit interactive Python shell
 Objects in the namespace:
 * fig -- figure of the main viewport
 * ax  -- current axes of the main viewport
-* D   -- list of datasets
+* D   -- list of dataset items
             ''',
             self)
         self.setCentralWidget(self.ipython)
 
         self.connect(self.ipython, SIGNAL('close'), self.close)
-        def redraw():
-            parent.canvas.draw()
-        self.connect(self.ipython, SIGNAL('replot'), redraw)
+        self.connect(self.ipython, SIGNAL('redraw'), parent.canvas.draw)

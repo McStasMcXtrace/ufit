@@ -13,25 +13,27 @@ from numpy import sqrt, ones
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QListWidgetItem, QMessageBox
 
-from ufit.gui.common import loadUi
 from ufit.data.merge import rebin, floatmerge
+from ufit.gui.common import loadUi
+from ufit.gui.session import session
 
 
 class DataOps(QWidget):
 
-    def __init__(self, parent, panellist):
+    def __init__(self, parent):
         QWidget.__init__(self, parent)
+        self.item = None
         self.data = None
         self.picking = None
         self.picked_points = []
-        self.panellist = panellist
 
         loadUi(self, 'dataops.ui')
         self.pickedLbl.hide()
 
-    def initialize(self, data, model):
-        self.data = data
-        self.model = model
+    def initialize(self, item):
+        self.data = item.data
+        self.model = item.model
+        self.item = item
         if self.data.fitmin is not None:
             self.limitminEdit.setText('%.5g' % self.data.fitmin)
         if self.data.fitmax is not None:
@@ -55,8 +57,8 @@ class DataOps(QWidget):
     @qtsig('')
     def on_badResetBtn_clicked(self):
         self.data.reset_mask()
-        self.emit(SIGNAL('replotRequest'))
-        self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), None)
+        session.set_dirty()
 
     @qtsig('')
     def on_badPointsBtn_clicked(self):
@@ -85,15 +87,15 @@ class DataOps(QWidget):
         except ValueError:
             limitmax = None
         self.data.fitmin, self.data.fitmax = limitmin, limitmax
-        self.emit(SIGNAL('replotRequest'))
-        self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), None)
+        session.set_dirty()
 
     def removeBadPoints(self, points):
         """'Remove' bad data points (just mask them out)."""
         for point in points:
             self.data.mask[self.data.x == point] = False
-        self.emit(SIGNAL('replotRequest'))
-        self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), None)
+        session.set_dirty()
 
     @qtsig('')
     def on_rebinBtn_clicked(self):
@@ -108,7 +110,7 @@ class DataOps(QWidget):
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_floatmergeBtn_clicked(self):
@@ -123,14 +125,14 @@ class DataOps(QWidget):
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_cloneBtn_clicked(self):
         new_data = self.data.copy()
         new_model = self.model.copy()
-        self.emit(SIGNAL('newData'), new_data, True, new_model)
-        self.emit(SIGNAL('dirty'))
+        from ufit.gui.datasetitem import DatasetItem
+        session.add_item(DatasetItem(new_data, new_model), self.item.group)
 
     @qtsig('')
     def on_mulBtn_clicked(self):
@@ -143,7 +145,7 @@ class DataOps(QWidget):
         self.data.dy *= const
         self.data.dy_raw *= const
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_addBtn_clicked(self):
@@ -154,7 +156,7 @@ class DataOps(QWidget):
         self.data.y += const
         self.data.y_raw += const * self.data.norm
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_shiftBtn_clicked(self):
@@ -164,7 +166,7 @@ class DataOps(QWidget):
             return
         self.data.x += const
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_monscaleBtn_clicked(self):
@@ -178,26 +180,27 @@ class DataOps(QWidget):
         self.data.dy = sqrt(self.data.y_raw)/self.data.norm
         self.data.yaxis = self.data.ycol + ' / %s %s' % (const, self.data.ncol)
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_titleBtn_clicked(self):
         self.data.meta.title = str(self.titleEdit.text())
         self.emit(SIGNAL('titleChanged'))
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
         self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')
     def on_nameBtn_clicked(self):
         self.data.name = str(self.nameEdit.text())
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
         self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')
     def on_subtractBtn_clicked(self):
         dlg = QDialog(self)
         loadUi(dlg, 'subtract.ui')
-        for i, p in enumerate(self.panellist):
+        # XXX
+        for i, p in enumerate(session.items):
             QListWidgetItem('%d' % p.index, dlg.setList, i)
         if dlg.exec_() != QDialog.Accepted:
             return
@@ -209,7 +212,8 @@ class DataOps(QWidget):
         except ValueError:
             QMessageBox.warning(self, 'Error', 'Please enter a valid precision.')
             return
-        bkgd_data = self.panellist[items[0].type()].data
+        # XXX
+        bkgd_data = session.items[items[0].type()].data
         if not dlg.destructBox.isChecked():
             new_data = self.data.copy()
         else:
@@ -238,7 +242,8 @@ class DataOps(QWidget):
 
         if not dlg.destructBox.isChecked():
             new_model = self.model.copy()
-            self.emit(SIGNAL('newData'), new_data, True, new_model)
+            from ufit.gui.datasetitem import DatasetItem
+            session.add_item(DatasetItem(new_data, new_model), self.item.group)
         else:
             self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+            session.set_dirty()

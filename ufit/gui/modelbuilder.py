@@ -65,8 +65,7 @@ class ModelBuilder(QWidget):
         self.gauss_picked_points = []
         self.modeldefStacker.setCurrentIndex(1)
         self.pick_model = Background(bkgd=self.data.y.min())
-        self.modeldefEdit.setText(self.pick_model.get_description())
-        self.emit(SIGNAL('newModel'), self.pick_model, False)
+        self.emit(SIGNAL('newModel'), self.pick_model, True, False)
 
     def on_canvas_pick(self, event):
         if not self.gauss_picking:
@@ -83,8 +82,7 @@ class ModelBuilder(QWidget):
             fwhm = abs(pos - event.xdata) * 2
             self.pick_model += GaussInt('p%02d' % (self.gauss_picking/2),
                                         pos=pos, int=fwhm*ampl*2.5, fwhm=fwhm)
-            self.emit(SIGNAL('newModel'), self.pick_model, False)
-            self.modeldefEdit.setText(self.pick_model.get_description())
+            self.emit(SIGNAL('newModel'), self.pick_model, True, False)
         self.gauss_picking += 1
 
     def _finish_picking(self):
@@ -152,23 +150,6 @@ class ModelBuilder(QWidget):
         tc = self.modeldefEdit.textCursor()
         tc.movePosition(QTextCursor.End)
         tc.insertText(prefix + code)
-
-    def default_model(self, data):
-        ymin = data.y.min()
-        ymaxidx = data.y.argmax()
-        ymax = data.y[ymaxidx]
-        xmax = data.x[ymaxidx]
-        overhalf = data.x[data.y > (ymax + ymin)/2.]
-        if len(overhalf) >= 2:
-            xwidth = abs(overhalf[0] - overhalf[-1]) or 0.1
-        else:
-            xwidth = 0.1
-        new_model = eval_model('Background() + Gauss(\'peak\')')
-        new_model.params[0].value = ymin
-        new_model.params[1].value = xmax
-        new_model.params[2].value = ymax-ymin
-        new_model.params[3].value = xwidth
-        return new_model
 
     def initialize(self, data, model):
         self.model = model

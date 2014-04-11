@@ -21,6 +21,8 @@ from ufit.gui.common import loadUi, path_to_str, str_to_path, \
     MPLCanvas, MPLToolbar
 from ufit.gui.browse import BrowseWindow
 from ufit.gui.common import SettingGroup
+from ufit.gui.datasetitem import DatasetItem
+from ufit.gui.session import session
 
 
 class DataLoader(QWidget):
@@ -34,6 +36,11 @@ class DataLoader(QWidget):
         self.createUI(standalone)
 
         self.sgroup = SettingGroup('main')
+
+        self.connect(session, SIGNAL('propsRequested'),
+                     self.on_session_propsRequested)
+        self.connect(session, SIGNAL('propsUpdated'),
+                     self.on_session_propsUpdated)
 
         with self.sgroup as settings:
             data_template_path = settings.value('last_data_template', '')
@@ -49,6 +56,13 @@ class DataLoader(QWidget):
 
         self.buttonBox.addButton(QDialogButtonBox.Open)
         self.buttonBox.addButton('Preview', QDialogButtonBox.NoRole)
+
+    def on_session_propsRequested(self):
+        session.props.template = self.templateEdit.text()
+
+    def on_session_propsUpdated(self):
+        if 'template' in session.props:
+            self.templateEdit.setText(session.props.template)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
@@ -177,9 +191,9 @@ into one set, as well as files 23 and 24.
             return
         if final:
             self.last_data = datas
-            for data in datas[:-1]:
-                self.emit(SIGNAL('newData'), data, False)
-            self.emit(SIGNAL('newData'), datas[-1])
+            items = [DatasetItem(data) for data in datas]
+            # XXX which group
+            session.add_items(items)
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()

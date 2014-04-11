@@ -26,5 +26,7 @@
     <file>log-y.png</file>
     <file>document.png</file>
     <file>map.png</file>
+    <file>gear.png</file>
+    <file>drawer--plus.png</file>
   </qresource>
 </RCC>

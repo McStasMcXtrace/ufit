@@ -18,6 +18,8 @@ from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
 from ufit.param import prepare_params
 from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
+from ufit.gui.session import session
+
 
 def is_float(x):
     try:
@@ -187,7 +189,7 @@ class Fitter(QWidget):
             p.pmax = float(pmax.text()) if pmax.text() else None
             p.delta = float(delta.text()) if delta.text() else 0
         self.update_enables()
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     def restore_from_params(self, other_params):
         for p in self.model.params:
@@ -207,7 +209,7 @@ class Fitter(QWidget):
             ctls[5].setText(p0.pmin is not None and '%.5g' % p0.pmin or '')
             ctls[6].setText(p0.pmax is not None and '%.5g' % p0.pmax or '')
             ctls[7].setText(p0.delta and '%.5g' % p0.delta or '')
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
         self.do_plot()
 
     def save_original_params(self):
@@ -243,13 +245,13 @@ class Fitter(QWidget):
                 ctls = self.param_controls[p]
                 if not p.expr:
                     ctls[1].setText('%.5g' % p.value)
-            self.emit(SIGNAL('dirty'))
+            session.set_dirty()
             self.do_plot()
         self._pick_finished = callback
 
     def do_plot(self, *ignored):
         self.update_from_controls()
-        self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('replotRequest'), None)
 
     def do_fit(self):
         if self.picking:
@@ -274,8 +276,8 @@ class Fitter(QWidget):
             self.param_controls[p][1].setText('%.5g' % p.value)
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
 
-        self.emit(SIGNAL('replotRequest'), True, res.paramvalues)
-        self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), True)
+        session.set_dirty()
 
         self.last_result = res
 
@@ -312,13 +314,12 @@ class FitterMain(QMainWindow):
         self.setCentralWidget(layout)
         self.setWindowTitle('Fitting: data %s' % data.name)
 
-    def replot(self, limits=True, paramvalues=None):
+    def replot(self, limits=True):
         plotter = self.canvas.plotter
         plotter.reset(limits=limits)
         try:
             plotter.plot_data(self.fitter.data)
-            plotter.plot_model_full(self.fitter.model, self.fitter.data,
-                                    paramvalues=paramvalues)
+            plotter.plot_model_full(self.fitter.model, self.fitter.data)
         except Exception:
             self.logger.exception('Error while plotting')
         else:

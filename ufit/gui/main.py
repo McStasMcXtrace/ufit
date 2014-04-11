@@ -9,14 +9,13 @@
 """Main window for the standalone GUI."""
 
 from os import path
-import cPickle as pickle
 from cStringIO import StringIO
 
 from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
     QByteArray, QRectF
-from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QPixmap, \
+from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, \
     QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
-    QPrintPreviewWidget, QPrintDialog, QListWidgetItem, QSplashScreen
+    QPrintPreviewWidget, QPrintDialog, QListWidgetItem, QInputDialog
 from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends, __version__
@@ -27,33 +26,28 @@ from ufit.gui.dataloader import DataLoader
 from ufit.gui.multiops import MultiDataOps
 from ufit.gui.itemlist import ItemListModel
 from ufit.gui.inspector import InspectorWindow
-from ufit.gui.datasetitem import DatasetPanel
-from ufit.gui.mappingitem import MappingPanel
+from ufit.gui.datasetitem import DatasetPanel, DatasetItem
+from ufit.gui.session import session, ItemGroup
 
-SAVE_VERSION = 2
 max_recent_files = 6
-
-panel_types = {
-    'dataset': DatasetPanel,
-    'mapping': MappingPanel,
-}
 
 
 class UFitMain(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
-        self._loading = False
+        self.itempanels = {}
         self.current_panel = None
-        self.panels = []
-        self.filename = None
-        self.sgroup = SettingGroup('main')
-        self.max_index = 1
-        self.printer = None  # delay construction; takes half a second
-        self.print_width = 0
         self.inspector_window = None
 
+        self.sgroup = SettingGroup('main')
+        self.printer = None  # delay construction; takes half a second
+        self.print_width = 0
+
         loadUi(self, 'main.ui')
+
+        self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
+                     self.update_recent_file_menu)
 
         # XXX add an annotations tab
 
@@ -71,20 +65,27 @@ class UFitMain(QMainWindow):
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)
 
+        # session events
+        self.connect(session, SIGNAL('itemsUpdated'),
+                     self.on_session_itemsUpdated)
+        self.connect(session, SIGNAL('itemAdded'), self.on_session_itemAdded)
+        self.connect(session, SIGNAL('filenameChanged'),
+                     self.on_session_filenameChanged)
+        self.connect(session, SIGNAL('dirtyChanged'),
+                     self.on_session_dirtyChanged)
+
         # create data loader
         self.dloader = DataLoader(self, self.canvas.plotter)
-        self.connect(self.dloader, SIGNAL('newData'), self.handle_new_data)
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
+        # create panel for multiple-data operations
         self.multiops = MultiDataOps(self, self.canvas)
-        self.connect(self.multiops, SIGNAL('newData'), self.handle_new_data)
-        self.connect(self.multiops, SIGNAL('newItem'), self.handle_new_item)
         self.connect(self.multiops, SIGNAL('replotRequest'), self.plot_multi)
-        self.connect(self.multiops, SIGNAL('dirty'), self.set_dirty)
         self.stacker.addWidget(self.multiops)
 
-        self.itemlistmodel = ItemListModel(self.panels)
+        # create item model
+        self.itemlistmodel = ItemListModel()
         self.itemTree.setModel(self.itemlistmodel)
         self.itemlistmodel.reset()
         self.itemTree.addAction(self.actionMergeData)
@@ -92,6 +93,7 @@ class UFitMain(QMainWindow):
         self.connect(self.itemTree, SIGNAL('newSelection'),
                      self.on_itemTree_newSelection)
 
+        # backend selector
         self.backend_group = QActionGroup(self)
         for backend in backends.available:
             action = QAction(backend.backend_name, self)
@@ -103,6 +105,15 @@ class UFitMain(QMainWindow):
             self.connect(action, SIGNAL('triggered()'),
                          self.on_backend_action_triggered)
 
+        # manage button
+        menu = QMenu(self)
+        menu.addAction(self.actionRemoveData)
+        menu.addAction(self.actionReorder)
+        menu.addSeparator()
+        menu.addAction(self.actionNewGroup)
+        self.manageBtn.setMenu(menu)
+
+        # restore window state
         with self.sgroup as settings:
             geometry = settings.value('geometry', QByteArray())
             self.restoreGeometry(geometry)
@@ -114,8 +125,30 @@ class UFitMain(QMainWindow):
             self.vsplitter.restoreState(vsplitstate)
             self.recent_files = settings.value('recentfiles', []) or []
 
-        self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
-                     self.update_recent_file_menu)
+    def on_session_itemsUpdated(self):
+        # remove all panels whose item has vanished
+        for item, panel in self.itempanels.items():
+            if item not in session.all_items:
+                self.stacker.removeWidget(panel)
+                del self.itempanels[item]
+        self.itemlistmodel.reset()
+
+    def on_session_itemAdded(self, item):
+        # a single item has been added, show it
+        groupidx = session.groups.index(item.group)
+        groupidx = self.itemlistmodel.index(groupidx, 0)
+        self.itemTree.setCurrentIndex(
+            self.itemlistmodel.index(len(item.group.items)-1, 0, groupidx))
+
+    def on_session_filenameChanged(self):
+        if session.filename:
+            self.setWindowTitle('ufit - %s[*]' % session.filename)
+            self._add_recent_file(session.filename)
+        else:
+            self.setWindowTitle('ufit[*]')
+
+    def on_session_dirtyChanged(self, dirty):
+        self.setWindowModified(dirty)
 
     def _add_recent_file(self, fname):
         """Add to recent file list."""
@@ -131,7 +164,7 @@ class UFitMain(QMainWindow):
         """Update recent file menu"""
         recent_files = []
         for fname in self.recent_files:
-            if not fname == self.filename and path.isfile(fname):
+            if fname != session.filename and path.isfile(fname):
                 recent_files.append(fname)
         self.menuRecent.clear()
         if recent_files:
@@ -149,9 +182,6 @@ class UFitMain(QMainWindow):
         """Clear recent files list"""
         self.recent_files = []
 
-    def set_dirty(self):
-        self.setWindowModified(True)
-
     def select_new_panel(self, panel):
         if hasattr(self.current_panel, 'save_limits'):
             self.current_panel.save_limits()
@@ -168,22 +198,29 @@ class UFitMain(QMainWindow):
         self.itemTree.setCurrentIndex(QModelIndex())
 
     @qtsig('')
-    def on_removeBtn_clicked(self):
-        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
-        if not indlist:
+    def on_actionNewGroup_triggered(self):
+        name = QInputDialog.getText(self, 'ufit', 'Please enter a name '
+                                    'for the new group:')[0]
+        if not name:
             return
-        if QMessageBox.question(self, 'ufit',
-                                'OK to remove %d item(s)?' % len(indlist),
-                                QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
-            return
-        new_panels = [p for i, p in enumerate(self.panels) if i not in indlist]
-        self.panels[:] = new_panels
-        self.itemlistmodel.reset()
-        self.setWindowModified(True)
-        self.on_loadBtn_clicked()
+        session.add_group(name)
 
     @qtsig('')
-    def on_reorderBtn_clicked(self):
+    def on_actionRemoveData_triggered(self):
+        items = [index.internalPointer()
+                 for index in self.itemTree.selectedIndexes()]
+        items = [item for item in items if not isinstance(item, ItemGroup)]
+        if not items:
+            return
+        if QMessageBox.question(self, 'ufit',
+                                'OK to remove %d item(s)?' % len(items),
+                                QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
+            return
+        session.remove_items(items)
+
+    @qtsig('')
+    def on_actionReorder_triggered(self):
+        # XXX
         dlg = QDialog(self)
         loadUi(dlg, 'reorder.ui')
         for i, panel in enumerate(self.panels):
@@ -198,59 +235,44 @@ class UFitMain(QMainWindow):
                 panel.gen_htmldesc()
                 new_panels.append(panel)
             self.panels[:] = new_panels
-            self.itemlistmodel.reset()
-            self.setWindowModified(True)
 
     def on_itemTree_newSelection(self):
-        if self._loading:
-            return
-        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
-        if len(indlist) == 0:
+        items = [index.internalPointer()
+                 for index in self.itemTree.selectedIndexes()]
+        items = [item for item in items if not isinstance(item, ItemGroup)]
+        if len(items) == 0:
             self.on_loadBtn_clicked()
-        elif len(indlist) == 1:
-            panel = self.panels[indlist[0]]
+        elif len(items) == 1:
+            item = items[0]
+            if item not in self.itempanels:
+                panel = self.itempanels[item] = \
+                        item.create_panel(self, self.canvas)
+                self.stacker.addWidget(panel)
+            else:
+                panel = self.itempanels[item]
             self.select_new_panel(panel)
-            panel.replot(panel.get_saved_limits())
+            panel.plot(panel.get_saved_limits())
             self.toolbar.update()
-            if self.inspector_window and isinstance(panel, DatasetPanel):
-                self.inspector_window.setDataPanel(panel)
+            if self.inspector_window and isinstance(item, DatasetItem):
+                self.inspector_window.setDataset(item.data)
         else:
             self.select_new_panel(self.multiops)
             self.plot_multi()
-            self.multiops.initialize([self.panels[i] for i in indlist])
+            self.multiops.initialize(
+                [i for i in items if isinstance(i, DatasetItem)])
 
     def plot_multi(self, *ignored):
         # XXX better title
         self.canvas.plotter.reset()
-        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
-        panels = [self.panels[i] for i in indlist]
-        for p in panels:
-            if not isinstance(p, DatasetPanel):
-                continue
-            c = self.canvas.plotter.plot_data(p.data, multi=True)
-            self.canvas.plotter.plot_model(p.model, p.data, labels=False,
+        items = [index.internalPointer()
+                 for index in self.itemTree.selectedIndexes()]
+        items = [item for item in items if isinstance(item, DatasetItem)]
+        for i in items:
+            c = self.canvas.plotter.plot_data(i.data, multi=True)
+            self.canvas.plotter.plot_model(i.model, i.data, labels=False,
                                            color=c)
         self.canvas.plotter.plot_finish()
         self.canvas.draw()
-
-    def handle_new_data(self, data, update=True, model=None):
-        panel = DatasetPanel(self, self.canvas, data, model)
-        self.handle_new_item(panel, update=update)
-
-    def handle_new_item(self, panel, update=True):
-        self.connect(panel, SIGNAL('dirty'), self.set_dirty)
-        self.connect(panel, SIGNAL('newData'), self.handle_new_data)
-        self.connect(panel, SIGNAL('updateList'), self.itemlistmodel.reset)
-        panel.set_index(self.max_index)
-        self.max_index += 1
-        self.stacker.addWidget(panel)
-        self.stacker.setCurrentWidget(panel)
-        self.panels.append(panel)
-        self.setWindowModified(True)
-        if not self._loading and update:
-            self.itemlistmodel.reset()
-            self.itemTree.setCurrentIndex(
-                self.itemlistmodel.index(len(self.panels)-1, 0))
 
     @qtsig('')
     def on_actionInspector_triggered(self):
@@ -258,12 +280,13 @@ class UFitMain(QMainWindow):
             self.inspector_window.activateWindow()
             return
         self.inspector_window = InspectorWindow(self)
-        self.connect(self.inspector_window, SIGNAL('dirty'), self.set_dirty)
         def deref():
             self.inspector_window = None
+        self.connect(self.inspector_window, SIGNAL('replotRequest'),
+                     lambda: self.current_panel.plot(True))
         self.connect(self.inspector_window, SIGNAL('closed'), deref)
         if isinstance(self.current_panel, DatasetPanel):
-            self.inspector_window.setDataPanel(self.current_panel)
+            self.inspector_window.setDataset(self.current_panel.item.data)
         self.inspector_window.show()
 
     @qtsig('')
@@ -282,10 +305,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportASCII_triggered(self):
-        if self.filename:
-            initialdir = path.dirname(self.filename)
-        else:
-            initialdir = ''
+        initialdir = session.dirname
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
         if filename == '':
@@ -295,10 +315,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportFIT_triggered(self):
-        if self.filename:
-            initialdir = path.dirname(self.filename)
-        else:
-            initialdir = ''
+        initialdir = session.dirname
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
         if filename == '':
@@ -313,10 +330,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
-        if self.filename:
-            initialdir = path.dirname(self.filename)
-        else:
-            initialdir = ''
+        initialdir = session.dirname
         filename = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, 'Python files (*.py)')
         if filename == '':
@@ -378,38 +392,26 @@ class UFitMain(QMainWindow):
             return True
         return False
 
-    def clear_datasets(self):
-        for panel in self.panels[:]:
-            self.stacker.removeWidget(panel)
-        del self.panels[:]
-        self.itemlistmodel.reset()
-        self.max_index = 1
-
     @qtsig('')
     def on_actionNewSession_triggered(self):
         if not self.check_save():
             return
-        self.clear_datasets()
-        self.filename = None
-        self.setWindowModified(False)
-        self.setWindowTitle('ufit[*]')
+        session.clear()
         self.on_loadBtn_clicked()
 
     @qtsig('')
     def on_actionLoad_triggered(self):
         if not self.check_save():
             return
-        if self.filename:
-            initialdir = path.dirname(self.filename)
-        else:
+        initialdir = session.dirname
+        if not initialdir:
             with self.sgroup as settings:
                 initialdir = settings.value('loadfiledirectory', '')
         filename = QFileDialog.getOpenFileName(
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return
-        self.filename = path_to_str(filename)
-        self.load_session(self.filename)
+        self.load_session(path_to_str(filename))
 
     def load_session(self, filename=None):
         if not filename:
@@ -417,40 +419,15 @@ class UFitMain(QMainWindow):
             action = self.sender()
             if isinstance(action, QAction):
                 filename = action.data()
-                self.filename = filename
         try:
-            self.clear_datasets()
-            info = pickle.load(open(filename, 'rb'))
-            # upgrade from version 0 to 1
-            if 'version' not in info and 'panels' in info:
-                info['version'] = 1
-                info['datasets'] = info.pop('panels')
-                info['template'] = ''
-            # upgrade from version 1 to 2
-            if info['version'] == 1:
-                datasets = info.pop('datasets')
-                info['panels'] = [('dataset', d[0], d[1]) for d in datasets]
-                info['version'] = 2
-            self._loading = True
-            try:
-                for panelinfo in info['panels']:
-                    panelcls = panel_types[panelinfo[0]]
-                    panel = panelcls(self, self.canvas, *panelinfo[1:])
-                    self.handle_new_item(panel, update=False)
-                self.dloader.templateEdit.setText(info['template'])
-            finally:
-                self._loading = False
-            self.itemlistmodel.reset()
-            self.itemTree.setCurrentIndex(
-                self.itemlistmodel.index(len(self.panels)-1, 0))
-            self.setWindowModified(False)
-            self.setWindowTitle('ufit - %s[*]' % filename)
-            self._add_recent_file(filename)
+            session.load(filename)
             with self.sgroup as settings:
                 settings.setValue('loadfiledirectory', path.dirname(filename))
         except Exception, err:
-            logger.exception('Loading session %r failed' % self.filename)
+            logger.exception('Loading session %r failed' % filename)
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
+        else:
+            self.itemTree.expandAll()
 
     @qtsig('')
     def on_actionSave_triggered(self):
@@ -461,56 +438,37 @@ class UFitMain(QMainWindow):
         self.save_session_as()
 
     def save_session(self):
-        if self.filename is None:
+        if session.filename is None:
             return self.save_session_as()
         try:
-            self.save_session_inner(self.filename)
+            session.save()
         except Exception, err:
             logger.exception('Saving session failed')
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
-        self.setWindowModified(False)
         return True
 
     def save_session_as(self):
-        if self.filename:
-            initialdir = path.dirname(self.filename)
-        else:
-            initialdir = ''
+        initialdir = session.dirname
         filename = QFileDialog.getSaveFileName(
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return False
-        self.filename = path_to_str(filename)
+        session.set_filename(path_to_str(filename))
         try:
-            self.save_session_inner(self.filename)
+            session.save()
         except Exception, err:
             logger.exception('Saving session failed')
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
-        else:
-            self.setWindowModified(False)
-            self.setWindowTitle('ufit - %s[*]' % self.filename)
-            self._add_recent_file(self.filename)
-            return True
-
-    def save_session_inner(self, filename):
-        fp = open(filename, 'wb')
-        info = {
-            'panels': [panel.serialize() for panel in self.panels],
-            'template': self.dloader.templateEdit.text(),
-            'version':  SAVE_VERSION,
-        }
-        pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
-
-    @qtsig('')
-    def on_actionRemoveData_triggered(self):
-        self.on_removeBtn_clicked()
+        return True
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        indlist = [ind.row() for ind in self.itemTree.selectedIndexes()]
-        if len(indlist) < 2:
+        items = [index.internalPointer()
+                 for index in self.itemTree.selectedIndexes()
+                 if isinstance(index.internalPointer(), DatasetItem)]
+        if len(items) < 2:
             return
         dlg = QDialog(self)
         loadUi(dlg, 'rebin.ui')
@@ -519,10 +477,9 @@ class UFitMain(QMainWindow):
                 precision = float(dlg.precisionEdit.text())
             except ValueError:
                 return
-            datalist = [p.data for i, p in enumerate(self.panels)
-                        if i in indlist]
+            datalist = [i.data for i in items]
             new_data = datalist[0].merge(precision, *datalist[1:])
-            self.handle_new_data(new_data)
+            session.add_item(DatasetItem(new_data), self.items[-1].group)
 
     @qtsig('')
     def on_actionQuit_triggered(self):

@@ -185,8 +185,6 @@ class Model(object):
         # be changed on the fly
         success, msg, chi2 = backends.backend.do_fit(data, self.fcn,
                                                      self.params, kw)
-        # second run makes it better...
-#        success, msg, chi2 = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg, chi2)

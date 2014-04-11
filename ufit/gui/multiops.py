@@ -16,8 +16,9 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QMessageBox
 
 from ufit.gui.common import loadUi
-from ufit.gui.mappingitem import MappingPanel
-from ufit.gui.datasetitem import DatasetPanel
+from ufit.gui.session import session
+from ufit.gui.mappingitem import MappingItem
+from ufit.gui.datasetitem import DatasetItem
 from ufit.data.merge import rebin
 from ufit.data.dataset import Dataset
 
@@ -31,12 +32,12 @@ class MultiDataOps(QWidget):
 
         loadUi(self, 'multiops.ui')
 
-    def initialize(self, panels):
-        self.panels = panels
-        self.datas = [p.data for p in panels if isinstance(p, DatasetPanel)]
+    def initialize(self, items):
+        self.items = [i for i in items if isinstance(i, DatasetItem)]
+        self.datas = [i.data for i in self.items]
         self.monscaleEdit.setText(str(int(mean([d.nscale for d in self.datas]))))
         self.onemodelBox.clear()
-        self.onemodelBox.addItems(['%d' % p.index for p in panels])
+        self.onemodelBox.addItems(['%d' % i.index for i in self.items])
 
     @qtsig('')
     def on_rebinBtn_clicked(self):
@@ -52,7 +53,7 @@ class MultiDataOps(QWidget):
                           data.nscale, name=data.name,
                           sources=data.sources)
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     @qtsig('')
     def on_mulBtn_clicked(self):
@@ -66,7 +67,7 @@ class MultiDataOps(QWidget):
             data.dy *= const
             data.dy_raw *= const
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty(True)
 
     @qtsig('')
     def on_addBtn_clicked(self):
@@ -78,7 +79,7 @@ class MultiDataOps(QWidget):
             data.y += const
             data.y_raw += const * data.norm
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty(True)
 
     @qtsig('')
     def on_shiftBtn_clicked(self):
@@ -89,7 +90,7 @@ class MultiDataOps(QWidget):
         for data in self.datas:
             data.x += const
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty(True)
 
     @qtsig('')
     def on_monscaleBtn_clicked(self):
@@ -103,7 +104,7 @@ class MultiDataOps(QWidget):
             data.y = data.y_raw/data.norm
             data.dy = sqrt(data.y_raw)/data.norm
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty(True)
 
     @qtsig('')
     def on_mergeBtn_clicked(self):
@@ -113,7 +114,7 @@ class MultiDataOps(QWidget):
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
         new_data = self.datas[0].merge(precision, *self.datas[1:])
-        self.emit(SIGNAL('newData'), new_data)
+        session.add_item(DatasetItem(new_data), self.items[-1].group)
 
     @qtsig('')
     def on_floatMergeBtn_clicked(self):
@@ -123,33 +124,31 @@ class MultiDataOps(QWidget):
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
         new_data = self.datas[0].merge(precision, floatmerge=True, *self.datas[1:])
-        self.emit(SIGNAL('newData'), new_data)
+        session.add_item(DatasetItem(new_data), self.items[-1].group)
 
     @qtsig('')
     def on_onemodelBtn_clicked(self):
         which = self.onemodelBox.currentIndex()
         if which < 0:
             return
-        model = self.panels[which].model
-        for i, panel in enumerate(self.panels):
+        model = self.items[which].model
+        for i, item in enumerate(self.items):
             if i == which:
                 continue
-            panel.handle_new_model(model.copy(), keep_paramvalues=False)
+            item.change_model(model.copy())
         self.emit(SIGNAL('replotRequest'), None)
-        self.emit(SIGNAL('dirty'))
 
     @qtsig('')
     def on_paramsetBtn_clicked(self):
-        dlg = ParamSetDialog(self, self.panels)
+        dlg = ParamSetDialog(self, self.items)
         if dlg.exec_() != QDialog.Accepted:
             return
-        self.emit(SIGNAL('newData'), dlg.new_data)
+        session.add_item(DatasetItem(dlg.new_data), self.items[-1].group)
 
     @qtsig('')
     def on_mappingBtn_clicked(self):
-        mpanel = MappingPanel(self, self.canvas)
-        mpanel.set_datas([panel.data for panel in self.panels])
-        self.emit(SIGNAL('newItem'), mpanel)
+        item = MappingItem([item.data for item in self.items], None)
+        session.add_item(item, self.items[-1].group)
 
     @qtsig('')
     def on_globalfitBtn_clicked(self):
@@ -157,23 +156,23 @@ class MultiDataOps(QWidget):
 
     def export_ascii(self, filename):
         base, ext = path.splitext(filename)
-        for i, panel in enumerate(self.panels):
-            panel.export_ascii(base + '.%d' % i + ext)
+        for i, item in enumerate(self.items):
+            item.export_ascii(base + '.%d' % i + ext)
 
 
 class ParamSetDialog(QDialog):
-    def __init__(self, parent, panels):
+    def __init__(self, parent, items):
         QDialog.__init__(self, parent)
         loadUi(self, 'paramset.ui')
         self.new_data = None
-        self.panels = panels
+        self.items = items
 
         allvalues = set()
-        for panel in panels:
-            if not panel.model or not panel.data:
+        for item in items:
+            if not item.model or not item.data:
                 return
-            values = set([p.name + ' (parameter)' for p in panel.model.params] +
-                         [mname + ' (from data)' for mname in panel.data.meta if
+            values = set([i.name + ' (parameter)' for i in item.model.params] +
+                         [mname + ' (from data)' for mname in item.data.meta if
                           not mname.startswith('col_')])
             if not allvalues:
                 allvalues = values
@@ -199,16 +198,16 @@ class ParamSetDialog(QDialog):
             yp = True
         yv = yv[:-12]
 
-        for panel in self.panels:
+        for item in self.items:
             if xp:
-                xx.append(panel.model.paramdict[xv].value)
+                xx.append(item.model.paramdict[xv].value)
             else:
-                xx.append(panel.data.meta[xv])
+                xx.append(item.data.meta[xv])
             if yp:
-                yy.append(panel.model.paramdict[yv].value)
-                dy.append(panel.model.paramdict[yv].error)
+                yy.append(item.model.paramdict[yv].value)
+                dy.append(item.model.paramdict[yv].error)
             else:
-                yy.append(panel.data.meta[yv])
+                yy.append(item.data.meta[yv])
                 dy.append(1)
         xx, yy, dy = map(array, [xx, yy, dy])
 
