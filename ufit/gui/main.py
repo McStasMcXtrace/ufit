@@ -9,14 +9,11 @@
 """Main window for the standalone GUI."""
 
 from os import path
-from cStringIO import StringIO
 
 from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
-    QByteArray, QRectF
+    QByteArray
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
-    QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
-    QPrintPreviewWidget, QPrintDialog, QInputDialog
-from PyQt4.QtSvg import QSvgRenderer
+    QFileDialog, QDialog, QAction, QActionGroup, QInputDialog
 
 from ufit import backends, __version__
 from ufit.gui import logger
@@ -44,9 +41,6 @@ class UFitMain(QMainWindow):
         self.annotation_window = None
 
         self.sgroup = SettingGroup('main')
-        self.printer = None  # delay construction; takes half a second
-        self.print_width = 0
-
         loadUi(self, 'main.ui')
 
         self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
@@ -68,8 +62,8 @@ class UFitMain(QMainWindow):
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         self.toolbar = MPLToolbar(self.canvas, self)
         self.toolbar.setObjectName('mainplottoolbar')
-        self.connect(self.toolbar, SIGNAL('printRequested'),
-                     self.on_actionPrint_triggered)
+        self.connect(self.toolbar, SIGNAL('popoutRequested'),
+                     self.on_actionPopOut_triggered)
         self.addToolBar(self.toolbar)
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)
@@ -310,16 +304,16 @@ class UFitMain(QMainWindow):
             self.multiops.initialize(
                 [i for i in items if isinstance(i, DatasetItem)])
 
-    def plot_multi(self, *ignored):
+    def plot_multi(self, *ignored, **kwds):
+        canvas = kwds.get('canvas', self.canvas)
         # XXX better title
-        self.canvas.plotter.reset()
+        canvas.plotter.reset()
         items = self.selected_items(DatasetItem)
         for i in items:
-            c = self.canvas.plotter.plot_data(i.data, multi=True)
-            self.canvas.plotter.plot_model(i.model, i.data, labels=False,
-                                           color=c)
-        self.canvas.plotter.plot_finish()
-        self.canvas.draw()
+            c = canvas.plotter.plot_data(i.data, multi=True)
+            canvas.plotter.plot_model(i.model, i.data, labels=False, color=c)
+        canvas.plotter.plot_finish()
+        canvas.draw()
 
     @qtsig('')
     def on_actionInspector_triggered(self):
@@ -406,37 +400,20 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionPrint_triggered(self):
-        sio = StringIO()
-        self.canvas.print_figure(sio, format='svg')
-        svg = QSvgRenderer(QByteArray(sio.getvalue()))
-        sz = svg.defaultSize()
-        aspect = sz.width()/float(sz.height())
+        self.canvas.print_()
 
-        if self.printer is None:
-            self.printer = QPrinter(QPrinter.HighResolution)
-            self.printer.setOrientation(QPrinter.Landscape)
-
-        dlg = QDialog(self)
-        loadUi(dlg, 'printpreview.ui')
-        dlg.width.setValue(self.print_width or 500)
-        ppw = QPrintPreviewWidget(self.printer, dlg)
-        dlg.layout().insertWidget(1, ppw)
-        def render(printer):
-            height = printer.height() * (dlg.width.value()/1000.)
-            width = aspect * height
-            painter = QPainter(printer)
-            svg.render(painter, QRectF(0, 0, width, height))
-        def sliderchanged(newval):
-            ppw.updatePreview()
-        self.connect(ppw, SIGNAL('paintRequested(QPrinter *)'), render)
-        self.connect(dlg.width, SIGNAL('valueChanged(int)'), sliderchanged)
-        if dlg.exec_() != QDialog.Accepted:
-            return
-        self.print_width = dlg.width.value()
-        pdlg = QPrintDialog(self.printer, self)
-        if pdlg.exec_() != QDialog.Accepted:
-            return
-        render(self.printer)
+    @qtsig('')
+    def on_actionPopOut_triggered(self):
+        new_win = QMainWindow()
+        canvas = MPLCanvas(new_win)
+        toolbar = MPLToolbar(canvas, new_win)
+        new_win.addToolBar(toolbar)
+        new_win.setCentralWidget(canvas)
+        if self.current_panel is self.multiops:
+            self.plot_multi(canvas=canvas)
+        else:
+            self.current_panel.plot(limits=None, canvas=canvas)
+        new_win.show()
 
     @qtsig('')
     def on_actionSavePlot_triggered(self):

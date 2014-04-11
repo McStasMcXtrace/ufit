@@ -10,11 +10,13 @@
 
 import sys
 from os import path
+from cStringIO import StringIO
 
 from PyQt4 import uic
-from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
+from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt, QRectF, QByteArray
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-    QMessageBox
+    QMessageBox, QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, QDialog
+from PyQt4.QtSvg import QSvgRenderer
 
 from matplotlib.backends.backend_qt4agg import \
     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
@@ -52,6 +54,8 @@ class MPLCanvas(FigureCanvas):
     def __init__(self, parent, width=10, height=6, dpi=72):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
+        self.printer = None
+        self.print_width = 0
         self.main = parent
         self.axes = fig.add_subplot(111)
         self.plotter = DataPlotter(self, self.axes)
@@ -95,6 +99,39 @@ class MPLCanvas(FigureCanvas):
         self.update()
         QWidget.resizeEvent(self, event)
 
+    def print_(self):
+        sio = StringIO()
+        self.print_figure(sio, format='svg')
+        svg = QSvgRenderer(QByteArray(sio.getvalue()))
+        sz = svg.defaultSize()
+        aspect = sz.width()/float(sz.height())
+
+        if self.printer is None:
+            self.printer = QPrinter(QPrinter.HighResolution)
+            self.printer.setOrientation(QPrinter.Landscape)
+
+        dlg = QDialog(self)
+        loadUi(dlg, 'printpreview.ui')
+        dlg.width.setValue(self.print_width or 500)
+        ppw = QPrintPreviewWidget(self.printer, dlg)
+        dlg.layout().insertWidget(1, ppw)
+        def render(printer):
+            height = printer.height() * (dlg.width.value()/1000.)
+            width = aspect * height
+            painter = QPainter(printer)
+            svg.render(painter, QRectF(0, 0, width, height))
+        def sliderchanged(newval):
+            ppw.updatePreview()
+        self.connect(ppw, SIGNAL('paintRequested(QPrinter *)'), render)
+        self.connect(dlg.width, SIGNAL('valueChanged(int)'), sliderchanged)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        self.print_width = dlg.width.value()
+        pdlg = QPrintDialog(self.printer, self)
+        if pdlg.exec_() != QDialog.Accepted:
+            return
+        render(self.printer)
+
 
 class MPLToolbar(NavigationToolbar2QT):
 
@@ -109,6 +146,7 @@ class MPLToolbar(NavigationToolbar2QT):
         'pyconsole.png':    'terminal--arrow.png',
         'log-x.png':        'log-x.png',
         'log-y.png':        'log-y.png',
+        'exwindow.png':    'chart--arrow.png',
     }
 
     toolitems = list(NavigationToolbar2QT.toolitems)
@@ -118,6 +156,8 @@ class MPLToolbar(NavigationToolbar2QT):
     toolitems.insert(2, (None, None, None, None))
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
+    toolitems.append(('Pop out', 'Show the figure in a separate window',
+                      'exwindow', 'popout_callback'))
     toolitems.append(('Execute', 'Show Python console', 'pyconsole',
                       'exec_callback'))
 
@@ -161,7 +201,10 @@ class MPLToolbar(NavigationToolbar2QT):
         self.canvas.draw()
 
     def print_callback(self):
-        self.emit(SIGNAL('printRequested'))
+        self.canvas.print_()
+
+    def popout_callback(self):
+        self.emit(SIGNAL('popoutRequested'))
 
     def exec_callback(self):
         try:

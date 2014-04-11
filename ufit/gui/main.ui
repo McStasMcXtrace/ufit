@@ -179,6 +179,7 @@
     </property>
     <addaction name="actionSavePlot"/>
     <addaction name="actionPrint"/>
+    <addaction name="actionPopOut"/>
     <addaction name="separator"/>
     <addaction name="actionUnzoom"/>
     <addaction name="actionDrawSymbols"/>
@@ -425,6 +426,15 @@
    </property>
    <property name="text">
     <string>&amp;Annotations</string>
+   </property>
+  </action>
+  <action name="actionPopOut">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/chart--arrow.png</normaloff>:/chart--arrow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show in a new &amp;window</string>
    </property>
   </action>
  </widget>
