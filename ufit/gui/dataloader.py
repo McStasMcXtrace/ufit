@@ -21,7 +21,6 @@ from ufit.gui.common import loadUi, path_to_str, str_to_path, \
     MPLCanvas, MPLToolbar
 from ufit.gui.browse import BrowseWindow
 from ufit.gui.common import SettingGroup
-from ufit.gui.datasetitem import DatasetItem
 from ufit.gui.session import session
 
 
@@ -37,6 +36,7 @@ class DataLoader(QWidget):
 
         self.sgroup = SettingGroup('main')
 
+        # These will not do anything in standalone mode, but do not hurt.
         self.connect(session, SIGNAL('propsRequested'),
                      self.on_session_propsRequested)
         self.connect(session, SIGNAL('propsUpdated'),
@@ -191,9 +191,7 @@ into one set, as well as files 23 and 24.
             return
         if final:
             self.last_data = datas
-            items = [DatasetItem(data) for data in datas]
-            # XXX which group
-            session.add_items(items)
+            self.emit(SIGNAL('newDatas'), datas)
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()
