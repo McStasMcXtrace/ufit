@@ -1,4 +1,12 @@
-# data merging
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Data merging routines."""
 
 from numpy import arange, ones, zeros, sqrt, array
 
@@ -16,7 +24,7 @@ def rebin(data, binsize):
     x, y, dy, n = data.T
 
     # calculate new x values
-    
+
     halfbinsize = binsize/2.
     stops = arange(x.min() - (x.min() % binsize) - binsize,
                    x.max() - (x.max() % binsize) + 2*binsize,
@@ -75,7 +83,7 @@ def floatmerge(data, binsize):
 
     # sort data
     data = data[data[:,0].argsort()]
-    
+
     lastvals = None
     tomerge =  []
     newlist =  []
