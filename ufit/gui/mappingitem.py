@@ -64,7 +64,7 @@ class MappingItem(SessionItem):
                         '- %s<br>%s' % (
             self.index, self.settings.title,
             ', '.join(d.name for d in self.datas))
-        session.emit(SIGNAL('itemsUpdated'))
+        session.emit(SIGNAL('itemUpdated'), self)
 
 
 class MappingPanel(QFrame):

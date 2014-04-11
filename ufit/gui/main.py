@@ -15,7 +15,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
     QByteArray, QRectF
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
     QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
-    QPrintPreviewWidget, QPrintDialog, QListWidgetItem, QInputDialog
+    QPrintPreviewWidget, QPrintDialog, QInputDialog
 from PyQt4.QtSvg import QSvgRenderer
 
 from ufit import backends, __version__
@@ -145,10 +145,7 @@ class UFitMain(QMainWindow):
 
     def on_session_itemAdded(self, item):
         # a single item has been added, show it
-        groupidx = session.groups.index(item.group)
-        groupidx = self.itemlistmodel.index(groupidx, 0)
-        self.itemTree.setCurrentIndex(
-            self.itemlistmodel.index(len(item.group.items)-1, 0, groupidx))
+        self.itemTree.setCurrentIndex(self.itemlistmodel.index_for_item(item))
 
     def on_session_filenameChanged(self):
         if session.filename:
@@ -226,6 +223,7 @@ class UFitMain(QMainWindow):
                 if not items:
                     return
                 session.move_items(items, group)
+                self.itemTree.expandAll()
             self.connect(action, SIGNAL('triggered()'), move_to)
             self.menuMoveToGroup.addAction(action)
 
@@ -241,6 +239,7 @@ class UFitMain(QMainWindow):
                                 QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
             return
         session.remove_items(items)
+        self.itemTree.expandAll()
 
     @qtsig('')
     def on_actionReorder_triggered(self):
@@ -263,6 +262,7 @@ class UFitMain(QMainWindow):
                     return
                 new_structure[-1][1].append(obj)
         session.reorder_groups(new_structure)
+        self.itemTree.expandAll()
 
     def on_itemTree_newSelection(self):
         items = [index.internalPointer()

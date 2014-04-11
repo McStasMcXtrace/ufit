@@ -169,9 +169,10 @@ class _Session(QObject):
         self.emit(SIGNAL('dirtyChanged'), False)
 
     def add_group(self, name):
-        self.groups.append(ItemGroup(name))
+        group = ItemGroup(name)
+        self.groups.append(group)
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
+        self.emit(SIGNAL('groupAdded'), group)
 
     def remove_group(self, group):
         self.groups.remove(group)
@@ -187,7 +188,6 @@ class _Session(QObject):
         group.items.append(item)
         item.set_group(group, len(group.items))
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
         self.emit(SIGNAL('itemAdded'), item)
 
     def add_items(self, items, group=None):

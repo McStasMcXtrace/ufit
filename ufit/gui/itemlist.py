@@ -59,7 +59,28 @@ class ItemListModel(QAbstractItemModel):
     def __init__(self):
         QAbstractItemModel.__init__(self)
         self.connect(session, SIGNAL('itemsUpdated'), self.reset)
+        self.connect(session, SIGNAL('itemUpdated'), self.on_session_itemUpdated)
+        self.connect(session, SIGNAL('itemAdded'), self.on_session_itemAdded)
+        self.connect(session, SIGNAL('groupAdded'), self.on_session_groupAdded)
         self.groups = session.groups
+
+    def index_for_item(self, item):
+        groupidx = session.groups.index(item.group)
+        groupidx = self.index(groupidx, 0)
+        return self.index(item.group.items.index(item), 0, groupidx)
+
+    def on_session_itemUpdated(self, item):
+        index = self.index_for_item(item)
+        self.dataChanged.emit(index, index)
+
+    def on_session_itemAdded(self, item):
+        itemrow = item.group.items.index(item)
+        self.rowsInserted.emit(self.index(self.groups.index(item.group), 0),
+                               itemrow, itemrow)
+
+    def on_session_groupAdded(self, group):
+        itemrow = self.groups.index(group)
+        self.rowsInserted.emit(QModelIndex(), itemrow, itemrow)
 
     def columnCount(self, parent=QModelIndex()):
         return 1
