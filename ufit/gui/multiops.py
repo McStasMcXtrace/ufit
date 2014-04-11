@@ -166,22 +166,28 @@ class ParamSetDialog(QDialog):
         loadUi(self, 'paramset.ui')
         self.new_data = None
         self.items = items
+        self.xaxisList.populate(items)
+        self.yaxisList.populate(items)
+        self._auto_name = ''
 
-        allvalues = set()
-        for item in items:
-            if not item.model or not item.data:
-                return
-            values = set([i.name + ' (parameter)' for i in item.model.params] +
-                         [mname + ' (from data)' for mname in item.data.meta if
-                          not mname.startswith('col_')])
-            if not allvalues:
-                allvalues = values
-            else:
-                allvalues &= values
+    def _gen_name(self):
+        xi = self.xaxisList.currentItem()
+        yi = self.yaxisList.currentItem()
+        if self.nameBox.text() != self._auto_name:
+            return
+        auto_name = ''
+        if xi:
+            auto_name += xi.text().strip()
+        if yi:
+            auto_name += ' vs. ' + yi.text().strip()
+        self._auto_name = auto_name
+        self.nameBox.setText(auto_name)
 
-        allvalues = sorted(allvalues)
-        self.xvalueBox.addItems(allvalues)
-        self.yvalueBox.addItems(allvalues)
+    def on_xaxisList_itemSelectionChanged(self):
+        self._gen_name()
+
+    def on_yaxisList_itemSelectionChanged(self):
+        self._gen_name()
 
     def exec_(self):
         res = QDialog.exec_(self)
@@ -189,14 +195,12 @@ class ParamSetDialog(QDialog):
             return res
         xx, yy, dy = [], [], []
         xp = yp = False
-        xv = str(self.xvalueBox.currentText())
-        if xv.endswith(' (parameter)'):
+        xv = self.xaxisList.currentItem().text().strip()
+        if self.xaxisList.currentItem().type() == 1:
             xp = True
-        xv = xv[:-12]
-        yv = str(self.yvalueBox.currentText())
-        if yv.endswith(' (parameter)'):
+        yv = self.yaxisList.currentItem().text().strip()
+        if self.yaxisList.currentItem().type() == 1:
             yp = True
-        yv = yv[:-12]
 
         for item in self.items:
             if xp:
