@@ -158,3 +158,13 @@ class MultiDataOps(QWidget):
         base, ext = path.splitext(filename)
         for i, item in enumerate(self.items):
             item.export_ascii(base + '.%d' % i + ext)
+
+    def export_fits(self, filename):
+        base, ext = path.splitext(filename)
+        for i, item in enumerate(self.items):
+            item.export_fits(base + '.%d' % i + ext)
+
+    def export_python(self, filename):
+        base, ext = path.splitext(filename)
+        for i, item in enumerate(self.items):
+            item.export_python(base + '.%d' % i + ext)

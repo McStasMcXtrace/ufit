@@ -8,6 +8,8 @@
 
 """Session item for datasets and corresponding GUI."""
 
+from numpy import savetxt, array, linspace
+
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QTabWidget
 
@@ -17,6 +19,7 @@ from ufit.gui.dataops import DataOps
 from ufit.gui.fitter import Fitter
 from ufit.gui.session import session, SessionItem
 from ufit.gui import logger
+from ufit.param import prepare_params
 
 
 def default_model(data):
@@ -69,13 +72,14 @@ class DatasetItem(SessionItem):
             ('<br><small>%s</small>' % '<br>'.join(self.data.sources))
         session.emit(SIGNAL('itemsUpdated'))
 
-    def export_python(self, fp):
-        fp.write('from ufit.lab import *\n')
-        fp.write('\n')
-        self.data.export_python(fp, 'data')
-        fp.write('\n')
-        self.model.export_python(fp, 'model')
-        fp.write('''\
+    def export_python(self, filename):
+        with open(filename, 'wb') as fp:
+            fp.write('from ufit.lab import *\n')
+            fp.write('\n')
+            self.data.export_python(fp, 'data')
+            fp.write('\n')
+            self.model.export_python(fp, 'model')
+            fp.write('''\
 ## just plot current values
 data.plot()
 model.plot_components(data)
@@ -92,6 +96,17 @@ show()
     def export_ascii(self, filename):
         with open(filename, 'wb') as fp:
             self.data.export_ascii(fp)
+
+    def export_fits(self, filename):
+        xx = linspace(self.data.x.min(), self.data.x.max(), 1000)
+        paramvalues = prepare_params(self.model.params, self.data.meta)[3]
+        yy = self.model.fcn(paramvalues, xx)
+        yys = []
+        for comp in self.model.get_components():
+              if comp is self.model:
+                  continue
+              yys.append(comp.fcn(paramvalues, xx))
+        savetxt(filename, array([xx, yy] + yys).T)
 
 
 class DatasetPanel(QTabWidget):
@@ -162,3 +177,12 @@ class DatasetPanel(QTabWidget):
             logger.exception('Error while plotting')
         else:
             canvas.draw()
+
+    def export_ascii(self, filename):
+        self.item.export_ascii(filename)
+
+    def export_fits(self, filename):
+        self.item.export_fits(filename)
+
+    def export_python(self, filename):
+        self.item.export_python(filename)

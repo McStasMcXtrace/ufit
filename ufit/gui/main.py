@@ -364,7 +364,7 @@ class UFitMain(QMainWindow):
     def _get_export_filename(self, filter='ASCII text (*.txt)'):
         initialdir = session.props.get('lastexportdir', session.dirname)
         filename = QFileDialog.getSaveFileName(
-            self, 'Select export file name', initialdir, 'ASCII text (*.txt)')
+            self, 'Select export file name', initialdir, filter)
         if filename == '':
             return ''
         expfilename = path_to_str(filename)
@@ -374,25 +374,20 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_actionExportASCII_triggered(self):
         expfilename = self._get_export_filename()
-        # XXX allow multiple selection
         if expfilename:
             self.current_panel.export_ascii(expfilename)
 
     @qtsig('')
     def on_actionExportFIT_triggered(self):
         expfilename = self._get_export_filename()
-        # XXX allow multiple selection
         if expfilename:
-            with open(expfilename, 'wb') as fp:
-                self.current_panel.fitter.export_fits(fp)
+            self.current_panel.export_fits(expfilename)
 
     @qtsig('')
     def on_actionExportPython_triggered(self):
         expfilename = self._get_export_filename('Python files (*.py)')
-        # XXX allow multiple selection
         if expfilename:
-            with open(expfilename, 'wb') as fp:
-                self.current_panel.export_python(fp)
+            self.current_panel.export_python(expfilename)
 
     @qtsig('')
     def on_actionExportParams_triggered(self):

@@ -51,13 +51,14 @@ class SessionItem(QObject):
         """Need a special __reduce__ since we don't want to pickle the panel."""
         raise NotImplementedError('implement __reduce__')
 
-    # XXX why once fp, once filename?
-
-    def export_python(self, fp):
+    def export_python(self, filename):
         """Export item as Python code."""
 
     def export_ascii(self, filename):
-        """Export item as ASCII data."""
+        """Export item data as ASCII data."""
+
+    def export_fits(self, filename):
+        """Export fits as ASCII data."""
 
 
 class ItemGroup(object):
