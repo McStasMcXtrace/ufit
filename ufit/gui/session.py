@@ -24,7 +24,7 @@ SAVE_VERSION = 3
 class SessionItem(QObject):
     """Represents an "item" in the item list of a session."""
 
-    def __init__(self, id=None):
+    def __init__(self):
         QObject.__init__(self)
         self.group = None
         self.index = -1
@@ -61,10 +61,14 @@ class SessionItem(QObject):
 
 
 class ItemGroup(object):
-    def __init__(self, name, id=None):
+    def __init__(self, name):
         self.name = name
         self.items = []
-        self.htmldesc = '<b>%s</b>' % name
+        self.after_load()
+
+    def after_load(self):
+        self.htmldesc = '<img src=":/drawer.png">&nbsp;&nbsp;<b>%s</b>' % \
+                        self.name
 
 
 class _Session(QObject):
@@ -145,6 +149,7 @@ class _Session(QObject):
         self.filename = filename
         # reassign indices (also to regenerate descriptions)
         for group in self.groups:
+            group.after_load()
             for i, item in enumerate(group.items):
                 item.set_group(group, i + 1)
                 item.after_load()

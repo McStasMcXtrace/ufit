@@ -5,6 +5,7 @@
     <file>splash.png</file>
     <file>printer.png</file>
     <file>arrow-join.png</file>
+    <file>notebook.png</file>
     <file>notebook--plus.png</file>
     <file>document-export.png</file>
     <file>cross-button.png</file>
@@ -27,6 +28,7 @@
     <file>document.png</file>
     <file>map.png</file>
     <file>gear.png</file>
+    <file>drawer.png</file>
     <file>drawer--plus.png</file>
     <file>drawer-open.png</file>
   </qresource>
