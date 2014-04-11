@@ -20,17 +20,22 @@ from ufit.gui.session import session, ItemGroup
 class ItemListWidget(QListWidget):
     """Static view of all items, without model."""
 
-    def populate(self):
+    def populate(self, itemcls=None):
         data2obj = {}
         i = 0
         for group in session.groups:
             i += 1
             data2obj[i] = group
-            QListWidgetItem('Group: ' + group.name, self, i)
+            wi = QListWidgetItem('Group: ' + group.name, self, i)
+            if itemcls:
+                wi.setFlags(Qt.NoItemFlags) # make it unselectable
             for item in group.items:
                 i += 1
                 data2obj[i] = item
-                QListWidgetItem('   %d - %s' % (item.index, item.title), self, i)
+                wi = QListWidgetItem('   %d - %s' % (item.index, item.title),
+                                     self, i)
+                if itemcls and not isinstance(item, itemcls):
+                    wi.setFlags(Qt.NoItemFlags)
         return data2obj
 
 

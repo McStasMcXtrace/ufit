@@ -197,23 +197,21 @@ class DataOps(QWidget):
 
     @qtsig('')
     def on_subtractBtn_clicked(self):
+        from ufit.gui.datasetitem import DatasetItem
         dlg = QDialog(self)
         loadUi(dlg, 'subtract.ui')
-        # XXX
-        for i, p in enumerate(session.items):
-            QListWidgetItem('%d' % p.index, dlg.setList, i)
+        data2obj = dlg.setList.populate(DatasetItem)
         if dlg.exec_() != QDialog.Accepted:
             return
-        items = dlg.setList.selectedItems()
-        if not items:
+        witems = dlg.setList.selectedItems()
+        if not witems:
             return
         try:
             prec = float(dlg.precisionEdit.text())
         except ValueError:
             QMessageBox.warning(self, 'Error', 'Please enter a valid precision.')
             return
-        # XXX
-        bkgd_data = session.items[items[0].type()].data
+        bkgd_data = data2obj[witems[0].type()].data
         if not dlg.destructBox.isChecked():
             new_data = self.data.copy()
         else:

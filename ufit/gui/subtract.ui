@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="setList"/>
+    <widget class="ItemListWidget" name="setList"/>
    </item>
    <item>
     <widget class="QCheckBox" name="destructBox">
@@ -61,6 +61,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ItemListWidget</class>
+   <extends>QListWidget</extends>
+   <header>ufit.gui.itemlist</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>setList</tabstop>
   <tabstop>destructBox</tabstop>
