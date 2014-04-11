@@ -28,5 +28,6 @@
     <file>map.png</file>
     <file>gear.png</file>
     <file>drawer--plus.png</file>
+    <file>drawer-open.png</file>
   </qresource>
 </RCC>

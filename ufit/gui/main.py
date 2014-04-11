@@ -13,7 +13,7 @@ from cStringIO import StringIO
 
 from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
     QByteArray, QRectF
-from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, \
+from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
     QFileDialog, QDialog, QPainter, QAction, QActionGroup, QPrinter, \
     QPrintPreviewWidget, QPrintDialog, QListWidgetItem, QInputDialog
 from PyQt4.QtSvg import QSvgRenderer
@@ -47,7 +47,11 @@ class UFitMain(QMainWindow):
         loadUi(self, 'main.ui')
 
         self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
-                     self.update_recent_file_menu)
+                     self.on_menuRecent_aboutToShow)
+        self.menuMoveToGroup = QMenu('Move to group', self)
+        self.menuMoveToGroup.setIcon(QIcon(':/drawer-open.png'))
+        self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
+                     self.on_menuMoveToGroup_aboutToShow)
 
         # XXX add an annotations tab
 
@@ -111,6 +115,7 @@ class UFitMain(QMainWindow):
         menu.addAction(self.actionReorder)
         menu.addSeparator()
         menu.addAction(self.actionNewGroup)
+        menu.addMenu(self.menuMoveToGroup)
         self.manageBtn.setMenu(menu)
 
         # restore window state
@@ -160,7 +165,7 @@ class UFitMain(QMainWindow):
         if len(self.recent_files) > max_recent_files:
             self.recent_files.pop(-1)
 
-    def update_recent_file_menu(self):
+    def on_menuRecent_aboutToShow(self):
         """Update recent file menu"""
         recent_files = []
         for fname in self.recent_files:
@@ -204,6 +209,20 @@ class UFitMain(QMainWindow):
         if not name:
             return
         session.add_group(name)
+
+    def on_menuMoveToGroup_aboutToShow(self):
+        self.menuMoveToGroup.clear()
+        for group in session.groups:
+            action = QAction(group.name, self)
+            def move_to(group=group):
+                items = [index.internalPointer()
+                         for index in self.itemTree.selectedIndexes()]
+                items = [item for item in items if not isinstance(item, ItemGroup)]
+                if not items:
+                    return
+                session.move_items(items, group)
+            self.connect(action, SIGNAL('triggered()'), move_to)
+            self.menuMoveToGroup.addAction(action)
 
     @qtsig('')
     def on_actionRemoveData_triggered(self):

@@ -5,7 +5,7 @@ SHELL=/bin/bash
 RCC = pyrcc4
 
 resource:
-	-$(RCC) -o ufit/guiresource.py resources/gui.qrc
+	-$(RCC) -o ufit/guiresource.py resource/gui.qrc
 
 clean:
 	rm -rf build
