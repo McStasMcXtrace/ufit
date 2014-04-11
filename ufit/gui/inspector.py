@@ -52,6 +52,9 @@ class InspectorWindow(QMainWindow):
         self._updating = False
 
     def closeEvent(self, event):
+        with self.sgroup as settings:
+            settings.setValue('geometry', self.saveGeometry())
+            settings.setValue('windowstate', self.saveState())
         self.emit(SIGNAL('closed'))
         return QMainWindow.closeEvent(self, event)
 

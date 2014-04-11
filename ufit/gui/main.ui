@@ -154,9 +154,11 @@
      <string>&amp;Datasets</string>
     </property>
     <addaction name="actionLoadData"/>
+    <addaction name="separator"/>
     <addaction name="actionRemoveData"/>
     <addaction name="actionMergeData"/>
     <addaction name="actionReorder"/>
+    <addaction name="actionNewGroup"/>
     <addaction name="separator"/>
     <addaction name="actionExportASCII"/>
     <addaction name="actionExportFIT"/>
@@ -164,6 +166,7 @@
     <addaction name="actionExportPython"/>
     <addaction name="separator"/>
     <addaction name="actionInspector"/>
+    <addaction name="actionAnnotations"/>
    </widget>
    <widget class="QMenu" name="menuBackend">
     <property name="title">
@@ -203,6 +206,7 @@
    <addaction name="separator"/>
    <addaction name="actionLoadData"/>
    <addaction name="actionInspector"/>
+   <addaction name="actionAnnotations"/>
   </widget>
   <action name="actionLoad">
    <property name="icon">
@@ -367,7 +371,7 @@
      <normaloff>:/table-select-row.png</normaloff>:/table-select-row.png</iconset>
    </property>
    <property name="text">
-    <string>Data inspector</string>
+    <string>Data &amp;inspector</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
@@ -409,6 +413,15 @@
    </property>
    <property name="text">
     <string>New group...</string>
+   </property>
+  </action>
+  <action name="actionAnnotations">
+   <property name="icon">
+    <iconset resource="../../resource/gui.qrc">
+     <normaloff>:/script-php.png</normaloff>:/script-php.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Annotations</string>
    </property>
   </action>
  </widget>

@@ -26,6 +26,7 @@ from ufit.gui.dataloader import DataLoader
 from ufit.gui.multiops import MultiDataOps
 from ufit.gui.itemlist import ItemListModel
 from ufit.gui.inspector import InspectorWindow
+from ufit.gui.annotations import AnnotationWindow
 from ufit.gui.datasetitem import DatasetPanel, DatasetItem
 from ufit.gui.session import session, ItemGroup
 
@@ -39,6 +40,7 @@ class UFitMain(QMainWindow):
         self.itempanels = {}
         self.current_panel = None
         self.inspector_window = None
+        self.annotation_window = None
 
         self.sgroup = SettingGroup('main')
         self.printer = None  # delay construction; takes half a second
@@ -52,8 +54,6 @@ class UFitMain(QMainWindow):
         self.menuMoveToGroup.setIcon(QIcon(':/drawer-open.png'))
         self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
                      self.on_menuMoveToGroup_aboutToShow)
-
-        # XXX add an annotations tab
 
         # populate plot view
         layout2 = QVBoxLayout()
@@ -320,6 +320,17 @@ class UFitMain(QMainWindow):
         self.inspector_window.show()
 
     @qtsig('')
+    def on_actionAnnotations_triggered(self):
+        if self.annotation_window:
+            self.annotation_window.activateWindow()
+            return
+        self.annotation_window = AnnotationWindow(self)
+        def deref():
+            self.annotation_window = None
+        self.connect(self.annotation_window, SIGNAL('closed'), deref)
+        self.annotation_window.show()
+
+    @qtsig('')
     def on_actionLoadData_triggered(self):
         self.on_loadBtn_clicked()
 
@@ -458,6 +469,9 @@ class UFitMain(QMainWindow):
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
         else:
             self.itemTree.expandAll()
+            # if there are annotations, show the window automatically
+            if session.props.get('annotations'):
+                self.on_actionAnnotations_triggered()
 
     @qtsig('')
     def on_actionSave_triggered(self):

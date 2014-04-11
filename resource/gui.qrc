@@ -31,5 +31,6 @@
     <file>drawer.png</file>
     <file>drawer--plus.png</file>
     <file>drawer-open.png</file>
+    <file>script-php.png</file>
   </qresource>
 </RCC>
