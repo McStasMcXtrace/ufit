@@ -229,6 +229,16 @@ class _Session(QObject):
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
 
+    def reorder_groups(self, new_structure):
+        del self.groups[:]
+        for group, items in new_structure:
+            self.groups.append(group)
+            group.items[:] = items
+            for i, item in enumerate(items):
+                item.set_group(group, i + 1)
+        self.set_dirty()
+        self.emit(SIGNAL('itemsUpdated'))
+
     def set_dirty(self):
         self.emit(SIGNAL('dirtyChanged'), True)
 

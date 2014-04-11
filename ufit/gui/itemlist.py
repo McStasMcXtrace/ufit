@@ -12,9 +12,26 @@
 
 from PyQt4.QtCore import Qt, QSize, SIGNAL, QAbstractItemModel, QModelIndex
 from PyQt4.QtGui import QTreeView, QStyledItemDelegate, QTextDocument, QStyle, \
-    QAbstractItemView
+    QAbstractItemView, QListWidget, QListWidgetItem
 
 from ufit.gui.session import session, ItemGroup
+
+
+class ItemListWidget(QListWidget):
+    """Static view of all items, without model."""
+
+    def populate(self):
+        data2obj = {}
+        i = 0
+        for group in session.groups:
+            i += 1
+            data2obj[i] = group
+            QListWidgetItem('Group: ' + group.name, self, i)
+            for item in group.items:
+                i += 1
+                data2obj[i] = item
+                QListWidgetItem('   %d - %s' % (item.index, item.title), self, i)
+        return data2obj
 
 
 class ItemTreeView(QTreeView):

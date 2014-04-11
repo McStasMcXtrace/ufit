@@ -80,6 +80,7 @@ class UFitMain(QMainWindow):
 
         # create data loader
         self.dloader = DataLoader(self, self.canvas.plotter)
+        self.connect(self.dloader, SIGNAL('newDatas'), self.on_dloader_newDatas)
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
@@ -130,13 +131,17 @@ class UFitMain(QMainWindow):
             self.vsplitter.restoreState(vsplitstate)
             self.recent_files = settings.value('recentfiles', []) or []
 
+    def on_dloader_newDatas(self, datas):
+        # XXX which group
+        items = [DatasetItem(data) for data in datas]
+        session.add_items(items)
+
     def on_session_itemsUpdated(self):
         # remove all panels whose item has vanished
         for item, panel in self.itempanels.items():
             if item not in session.all_items:
                 self.stacker.removeWidget(panel)
                 del self.itempanels[item]
-        self.itemlistmodel.reset()
 
     def on_session_itemAdded(self, item):
         # a single item has been added, show it
@@ -239,21 +244,25 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionReorder_triggered(self):
-        # XXX
         dlg = QDialog(self)
         loadUi(dlg, 'reorder.ui')
-        for i, panel in enumerate(self.panels):
-            QListWidgetItem('%s - %s' % (panel.index, panel.title),
-                            dlg.itemList, i)
-        if dlg.exec_():
-            new_panels = []
-            for i in range(dlg.itemList.count()):
-                new_index = dlg.itemList.item(i).type()
-                panel = self.panels[new_index]
-                panel.index = i+1
-                panel.gen_htmldesc()
-                new_panels.append(panel)
-            self.panels[:] = new_panels
+        data2obj = dlg.itemList.populate()
+        if not dlg.exec_():
+            return
+        new_structure = []
+        for i in range(dlg.itemList.count()):
+            new_index = dlg.itemList.item(i).type()
+            obj = data2obj[new_index]
+            if isinstance(obj, ItemGroup):
+                new_structure.append((obj, []))
+            else:
+                if not new_structure:
+                    QMessageBox.warning(self, 'ufit',
+                                        'Reordering invalid: every data item '
+                                        'must be below a group')
+                    return
+                new_structure[-1][1].append(obj)
+        session.reorder_groups(new_structure)
 
     def on_itemTree_newSelection(self):
         items = [index.internalPointer()
