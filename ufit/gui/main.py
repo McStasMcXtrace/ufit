@@ -51,10 +51,14 @@ class UFitMain(QMainWindow):
 
         self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
                      self.on_menuRecent_aboutToShow)
-        self.menuMoveToGroup = QMenu('Move to group', self)
+        self.menuMoveToGroup = QMenu('Move selected to group', self)
         self.menuMoveToGroup.setIcon(QIcon(':/drawer-open.png'))
         self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
                      self.on_menuMoveToGroup_aboutToShow)
+        self.menuRemoveGroup = QMenu('Remove group', self)
+        self.menuRemoveGroup.setIcon(QIcon(':/drawer--minus.png'))
+        self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
+                     self.on_menuRemoveGroup_aboutToShow)
 
         # populate plot view
         layout2 = QVBoxLayout()
@@ -120,6 +124,7 @@ class UFitMain(QMainWindow):
         menu.addSeparator()
         menu.addAction(self.actionNewGroup)
         menu.addMenu(self.menuMoveToGroup)
+        menu.addMenu(self.menuRemoveGroup)
         self.manageBtn.setMenu(menu)
 
         # restore window state
@@ -229,6 +234,16 @@ class UFitMain(QMainWindow):
                 self.itemTree.expandAll()
             self.connect(action, SIGNAL('triggered()'), move_to)
             self.menuMoveToGroup.addAction(action)
+
+    def on_menuRemoveGroup_aboutToShow(self):
+        self.menuRemoveGroup.clear()
+        for group in session.groups:
+            action = QAction(group.name, self)
+            def remove(group=group):
+                session.remove_group(group)
+                self.itemTree.expandAll()
+            self.connect(action, SIGNAL('triggered()'), remove)
+            self.menuRemoveGroup.addAction(action)
 
     @qtsig('')
     def on_actionRemoveData_triggered(self):
