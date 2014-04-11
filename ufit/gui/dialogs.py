@@ -95,10 +95,10 @@ class ParamSetDialog(QDialog):
         if self.nameBox.text() != self._auto_name:
             return
         auto_name = ''
-        if xi:
-            auto_name += xi.text().strip()
         if yi:
-            auto_name += ' vs. ' + yi.text().strip()
+            auto_name += yi.text().strip()
+        if xi:
+            auto_name += ' vs. ' + xi.text().strip()
         self._auto_name = auto_name
         self.nameBox.setText(auto_name)
 
