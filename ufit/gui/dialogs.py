@@ -8,7 +8,7 @@
 
 """Various dialogs."""
 
-from numpy import array, savetxt
+from numpy import array, savetxt, nan
 
 from PyQt4.QtCore import pyqtSignature as qtsig
 from PyQt4.QtGui import QDialog, QListWidgetItem
@@ -21,7 +21,7 @@ class ParamExportDialog(QDialog):
     def __init__(self, parent, items):
         QDialog.__init__(self, parent)
         loadUi(self, 'paramselect.ui')
-        self.availList.populate(items)
+        self.availList.populate(items, intersect=False)
         self.items = items
 
     def on_availList_itemDoubleClicked(self, item):
@@ -47,15 +47,24 @@ class ParamExportDialog(QDialog):
                     for i in range(self.selectList.count())]
         coltypes = [self.selectList.item(i).type()
                     for i in range(self.selectList.count())]
+        errors = self.errorBox.isChecked()
         for item in self.items:
             drow = []
             for coltype, name in zip(coltypes, colnames):
                 if coltype == 1:   # parameter
-                    drow.append(item.model[name].value)
-                    if self.errorBox.isChecked():
-                        drow.append(item.model[name].error)
+                    if name in item.model.paramdict:
+                        drow.append(item.model[name].value)
+                        if errors:
+                            drow.append(item.model[name].error)
+                    else:
+                        drow.append(nan)
+                        if errors:
+                            drow.append(nan)
                 else:    # data value
-                    drow.append(item.data.meta[name])
+                    if name in item.data.meta:
+                        drow.append(item.data.meta[name])
+                    else:
+                        drow.append(nan)
             data.append(drow)
         data = array(data)
         if self.headerBox.isChecked():
