@@ -13,7 +13,9 @@ from os import path
 from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
     QByteArray
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
-    QFileDialog, QDialog, QAction, QActionGroup, QInputDialog
+    QFileDialog, QDialog, QAction, QActionGroup, QInputDialog, QSplitter, QLabel
+
+import matplotlib
 
 from ufit import backends, __version__
 from ufit.gui import logger
@@ -408,7 +410,23 @@ class UFitMain(QMainWindow):
         canvas = MPLCanvas(new_win)
         toolbar = MPLToolbar(canvas, new_win)
         new_win.addToolBar(toolbar)
-        new_win.setCentralWidget(canvas)
+        splitter = QSplitter(Qt.Vertical, new_win)
+        splitter.addWidget(canvas)
+        try:
+            from ufit.gui.console import QIPythonWidget
+        except ImportError:
+            lbl = QLabel('Please install IPython with qtconsole to '
+                         'activate the console part of this window.', new_win)
+            splitter.addWidget(lbl)
+        else:
+            iw = QIPythonWidget('interactive pylab plotting prompt', new_win)
+            iw.pushVariables({'ax': canvas.axes})
+            iw.executeCommand('from ufit.lab import *')
+            iw.executeCommand('sca(ax)')
+            iw.setFocus()
+            self.connect(iw, SIGNAL('redraw'), canvas.draw_idle)
+            splitter.addWidget(iw)
+        new_win.setCentralWidget(splitter)
         if self.current_panel is self.multiops:
             self.plot_multi(canvas=canvas)
         else:
