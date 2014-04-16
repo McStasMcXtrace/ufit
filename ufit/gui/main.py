@@ -284,13 +284,12 @@ class UFitMain(QMainWindow):
         return [item for item in items if isinstance(item, itemcls)]
 
     def on_itemTree_newSelection(self):
-        nallitems = len(self.itemTree.selectedIndexes())
-        items = self.selected_items()
-        if nallitems == 0:
+        items = self.selected_items(None)
+        if len(items) == 1 and isinstance(items[0], ItemGroup):
+            # a group is selected -- act as if we selected all items
+            items = items[0].items
+        if len(items) == 0:
             self.on_loadBtn_clicked()
-        elif len(items) == 0:
-            # a group is selected
-            pass
         elif len(items) == 1:
             item = items[0]
             if item not in self.itempanels:
