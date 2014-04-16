@@ -41,6 +41,10 @@ class DataLoader(QWidget):
                      self.on_session_propsRequested)
         self.connect(session, SIGNAL('propsUpdated'),
                      self.on_session_propsUpdated)
+        self.connect(session, SIGNAL('itemsUpdated'),
+                     self.on_session_itemsUpdated)
+        self.connect(session, SIGNAL('groupAdded'),
+                     self.on_session_itemsUpdated)
 
         with self.sgroup as settings:
             data_template_path = settings.value('last_data_template', '')
@@ -63,6 +67,12 @@ class DataLoader(QWidget):
     def on_session_propsUpdated(self):
         if 'template' in session.props:
             self.templateEdit.setText(session.props.template)
+
+    def on_session_itemsUpdated(self):
+        # list of groups may have changed
+        self.groupBox.clear()
+        for group in session.groups:
+            self.groupBox.addItem(group.name)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
@@ -191,7 +201,7 @@ into one set, as well as files 23 and 24.
             return
         if final:
             self.last_data = datas
-            self.emit(SIGNAL('newDatas'), datas)
+            self.emit(SIGNAL('newDatas'), datas, self.groupBox.currentText())
             self.emit(SIGNAL('closeRequest'))
         else:
             self.plotter.reset()
@@ -202,7 +212,7 @@ into one set, as well as files 23 and 24.
                 xlabels.add(data.xaxis)
                 ylabels.add(data.yaxis)
                 titles.add(data.title)
-                if isinstance(data, ImageData):  # plot only one
+                if isinstance(data, ImageData):  # XXX this plots only one
                     self.plotter.plot_image(data, multi=True)
                     break
                 else:
@@ -224,6 +234,9 @@ class DataLoaderMain(QMainWindow):
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         self.dloader = DataLoader(self, self.canvas.plotter, standalone=True)
+        self.dloader.groupBox.hide()
+        self.dloader.groupBoxLbl.hide()
+        self.dloader.groupBoxDesc.hide()
         self.dloader.initialize()
         self.connect(self.dloader, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.dloader)

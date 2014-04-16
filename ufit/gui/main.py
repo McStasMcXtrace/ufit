@@ -130,15 +130,21 @@ class UFitMain(QMainWindow):
             self.vsplitter.restoreState(vsplitstate)
             self.recent_files = settings.value('recentfiles', []) or []
 
-    def on_dloader_newDatas(self, datas):
-        # XXX which group
+    def on_dloader_newDatas(self, datas, ingroup):
+        for group in session.groups:
+            if group.name == ingroup:
+                break
+        else:
+            group = session.add_group(ingroup)
         items = []
         for data in datas:
             if isinstance(data, ScanData):
                 items.append(ScanDataItem(data))
             elif isinstance(data, ImageData):
                 items.append(ImageDataItem(data))
-        session.add_items(items)
+            else:
+                logger.warning('unknown data type: %s' % data)
+        session.add_items(items, group)
 
     def on_session_itemsUpdated(self):
         # remove all panels whose item has vanished

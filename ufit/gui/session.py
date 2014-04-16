@@ -180,6 +180,7 @@ class _Session(QObject):
         self.groups.append(group)
         self.set_dirty()
         self.emit(SIGNAL('groupAdded'), group)
+        return group
 
     def remove_group(self, group):
         self.groups.remove(group)
