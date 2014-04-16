@@ -150,8 +150,9 @@ class Loader(object):
         for part1 in parts1:
             if '-' in part1:
                 a, b = map(toint, part1.split('-'))
-                datasets.extend(self.load(n, xcol, ycol, dycol, ncol, nscale).merge(binsize, floatmerge=floatmerge)
-                                for n in range(a, b+1))
+                datasets.extend(
+                    self.load(n, xcol, ycol, dycol, ncol, nscale).merge(
+                        binsize, floatmerge=floatmerge) for n in range(a, b+1))
             else:
                 parts2 = part1.split('+')
                 inner = []
@@ -160,10 +161,12 @@ class Loader(object):
                         a, b = map(toint, part2.split('>'))
                         ds = [self.load(n, xcol, ycol, dycol, ncol, nscale)
                               for n in range(a, b+1)]
-                        inner.append(ds[0].merge(binsize, *ds[1:], floatmerge=floatmerge))
+                        inner.append(ds[0].merge(binsize, *ds[1:],
+                                                 floatmerge=floatmerge))
                     else:
                         inner.append(
                             self.load(toint(part2), xcol, ycol, dycol,
                                       ncol, nscale))
-                datasets.append(inner[0].merge(binsize, *inner[1:], floatmerge=floatmerge))
+                datasets.append(inner[0].merge(binsize, *inner[1:],
+                                               floatmerge=floatmerge))
         return DatasetList(datasets)
