@@ -112,7 +112,7 @@ class DataPlotter(object):
         if ylabel is not None:
             axes.set_ylabel(ylabel)
         if title is not None:
-            axes.set_title(title)
+            axes.set_title(title, size='medium')
         axes.legend(prop={'size': 'small'})
         axes.grid(True)
         if self._limits:

@@ -27,6 +27,8 @@ from ufit.gui.common import loadUi
 
 class ImageDataItem(SessionItem):
 
+    itemtype = 'image'
+
     def __init__(self, data):
         self.data = data
         SessionItem.__init__(self)
@@ -147,7 +149,7 @@ class ImageMultiPanel(QWidget):
         canvas.plotter.reset(ImageDataPanel.image_limits)
         sumdata = reduce(operator.add, self.datas[1:], self.datas[0])
         canvas.plotter.plot_image(sumdata)
-        canvas.plotter.plot_finish()
+        canvas.plotter.plot_finish(title='sum over %d images' % len(self.datas))
         for box in self.boxes:
             x1, y1, x2, y2 = box.x1Box.value(), box.y1Box.value(), \
                              box.x2Box.value(), box.y2Box.value()
@@ -180,6 +182,7 @@ class ImageMultiPanel(QWidget):
             del self.boxes[index]
             item = self.boxLayout.takeAt(index)
             item.widget().deleteLater()
+            self.plot(False)
         self.connect(box.x1Box, SIGNAL('valueChanged(int)'), boxchange)
         self.connect(box.x2Box, SIGNAL('valueChanged(int)'), boxchange)
         self.connect(box.y1Box, SIGNAL('valueChanged(int)'), boxchange)
@@ -203,10 +206,12 @@ class ImageMultiPanel(QWidget):
                            for data in self.datas])
             dydata = array([sqrt((data.darr[x1:x2, y1:y2]**2).sum())
                             for data in self.datas])
+            yname = 'box counts'
             if boxnorm:
                 factor = 1. / ((y2 - y1) * (x2 - x1))
                 ydata *= factor
                 dydata *= factor
+                yname = 'box counts (norm)'
             scan = ScanData.from_arrays(name, xdata, ydata, dydata,
-                                        xcol=xname, ycol='box counts')
+                                        xcol=xname, ycol=yname)
             session.add_item(ScanDataItem(scan))
