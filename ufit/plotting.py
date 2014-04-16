@@ -69,6 +69,7 @@ class DataPlotter(object):
             self.axes.set_subplotspec(self.orig_spspec)
             self.axes.set_position(self.orig_axes_position)
         self.axes.clear()
+        self.axes.set_aspect('auto')
         self.axes.set_xscale(xscale)
         self.axes.set_yscale(yscale)
         self.marker_cycle = cycle(self.markers)

@@ -202,7 +202,7 @@ class MultiDataOps(QWidget):
     def __init__(self, parent, canvas):
         QWidget.__init__(self, parent)
         self.canvas = canvas
-        self.connect(self, SIGNAL('replotRequest'), self.plot_multi)
+        self.connect(self, SIGNAL('replotRequest'), self.plot)
 
         loadUi(self, 'multiops.ui')
 

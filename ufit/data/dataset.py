@@ -11,7 +11,7 @@
 import copy
 import operator
 
-from numpy import array, concatenate, ones, broadcast_arrays, savetxt
+from numpy import array, concatenate, ones, broadcast_arrays, savetxt, sqrt
 
 from ufit.utils import attrdict
 from ufit.data.merge import rebin, floatmerge
@@ -252,11 +252,16 @@ class ImageData(DataBase):
         self.xaxis = 'pixels X'
         self.yaxis = 'pixels Y'
 
+    def __reduce__(self):
+        # avoid storing both arr and arr_raw in the pickle files
+        return (self.__class__, (self.meta, self.arr, self.darr, self.norm,
+                                 self.nscale, self.name, self.sources))
+
     def __add__(self, other):
         if not isinstance(other, ImageData):
             raise TypeError
         return self.__class__(self.meta, self.arr_raw + other.arr_raw,
-                              self.darr_raw + other.darr_raw,
+                              sqrt(self.darr_raw**2 + other.darr_raw**2),
                               self.norm_raw + other.norm_raw,
                               self.nscale, name=self.name + '+' + other.name,
                               sources=self.sources + other.sources)
@@ -267,7 +272,7 @@ class ImageData(DataBase):
         scaled_arr = other.arr / other.nscale * self.nscale
         scaled_darr = other.darr / other.nscale * self.nscale
         return self.__class__(self.meta, self.arr_raw - scaled_arr,
-                              self.darr_raw + scaled_darr,
+                              sqrt(self.darr_raw**2 + scaled_darr**2),
                               self.norm_raw, self.nscale,
                               name=self.name + '-' + other.name,
                               sources=self.sources + other.sources)

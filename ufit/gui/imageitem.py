@@ -10,12 +10,19 @@
 
 import operator
 
-from PyQt4.QtCore import SIGNAL
+from numpy import sqrt, array, arange
+
+from PyQt4.QtCore import SIGNAL, pyqtSignature as qtsig
 from PyQt4.QtGui import QTabWidget, QWidget
 
+from matplotlib.patches import Rectangle
+
+from ufit.data.dataset import ScanData
+from ufit.gui import logger
 from ufit.gui.dataops import DataOps
 from ufit.gui.session import session, SessionItem
-from ufit.gui import logger
+from ufit.gui.scanitem import ScanDataItem
+from ufit.gui.common import loadUi
 
 
 class ImageDataItem(SessionItem):
@@ -117,10 +124,21 @@ class ImageMultiPanel(QWidget):
     def __init__(self, parent, canvas):
         QWidget.__init__(self, parent)
         self.canvas = canvas
+        self.boxes = []
+        loadUi(self, 'imageops.ui')
 
     def initialize(self, items):
         self.items = [i for i in items if isinstance(i, ImageDataItem)]
         self.datas = [i.data for i in self.items]
+        xparams = set()
+        for data in self.datas:
+            if not xparams:
+                xparams.update(data.meta)
+            xparams.intersection_update(data.meta)
+        self.boxes = []
+        self.xparamBox.clear()
+        xparams = ['image #'] + sorted(xparams)
+        self.xparamBox.addItems(xparams)
 
     def plot(self, limits=True, canvas=None):
         canvas = canvas or self.canvas
@@ -129,8 +147,52 @@ class ImageMultiPanel(QWidget):
         sumdata = reduce(operator.add, self.datas[1:], self.datas[0])
         canvas.plotter.plot_image(sumdata)
         canvas.plotter.plot_finish()
+        for box in self.boxes:
+            x1, y1, x2, y2 = box.x1Box.value(), box.y1Box.value(), \
+                             box.x2Box.value(), box.y2Box.value()
+            canvas.plotter.axes.add_patch(
+                Rectangle((x1, y1), x2-x1, y2-y1, fill=False, color='yellow'))
         canvas.draw()
 
     def save_limits(self):
         ImageDataPanel.image_limits = self.canvas.axes.get_xlim(), \
                                       self.canvas.axes.get_ylim()
+
+    @qtsig('')
+    def on_addboxBtn_clicked(self):
+        x1, x2 = map(int, self.canvas.axes.get_xlim())
+        y1, y2 = map(int, self.canvas.axes.get_ylim())
+        box = QWidget(self)
+        loadUi(box, 'box.ui')
+        self.boxLayout.insertWidget(self.boxLayout.count()-1, box)
+        self.boxes.append(box)
+        box.nameBox.setText('Box %d' % len(self.boxes))
+        box.x1Box.setValue(x1)
+        box.x2Box.setValue(x2)
+        box.y1Box.setValue(y1)
+        box.y2Box.setValue(y2)
+        def boxchange(v):
+            self.plot(False)
+        self.connect(box.x1Box, SIGNAL('valueChanged(int)'), boxchange)
+        self.connect(box.x2Box, SIGNAL('valueChanged(int)'), boxchange)
+        self.connect(box.y1Box, SIGNAL('valueChanged(int)'), boxchange)
+        self.connect(box.y2Box, SIGNAL('valueChanged(int)'), boxchange)
+        self.plot(False)
+
+    @qtsig('')
+    def on_integrateBtn_clicked(self):
+        xname = self.xparamBox.currentText()
+        if xname == 'image #':
+            xdata = arange(1, len(self.datas)+1)
+        else:
+            xdata = array([data.meta[xname] for data in self.datas])
+        for box in self.boxes:
+            x1, y1, x2, y2 = box.x1Box.value(), box.y1Box.value(), \
+                             box.x2Box.value(), box.y2Box.value()
+            name = box.nameBox.text()
+            ydata = array([data.arr[x1:x2, y1:y2].sum() for data in self.datas])
+            dydata = array([sqrt((data.darr[x1:x2, y1:y2]**2).sum())
+                            for data in self.datas])
+            scan = ScanData.from_arrays(name, xdata, ydata, dydata,
+                                        xcol=xname, ycol=name)
+            session.add_item(ScanDataItem(scan))
