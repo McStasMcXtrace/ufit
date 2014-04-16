@@ -193,12 +193,13 @@ class DataPlotter(object):
         kwds['clear'] = False
         self.image = plot_mapping(*args, **kwds)
 
-    def plot_image(self, imgdata):
+    def plot_image(self, imgdata, multi=False):
         axes = self.axes
-        norm = getattr(self.canvas, 'logz', False) and LogNorm() or None
+        norm = getattr(self.canvas, 'logz', False) and LogNorm(vmin=0.1) or None
         axes.imshow(imgdata.arr, origin='lower', aspect='equal',
                     interpolation='nearest', norm=norm)
-        self.plot_finish(imgdata.xaxis, imgdata.yaxis, imgdata.title)
+        if not multi:
+            self.plot_finish(imgdata.xaxis, imgdata.yaxis, imgdata.title)
 
 
 def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,

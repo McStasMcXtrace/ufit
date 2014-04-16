@@ -203,7 +203,7 @@ into one set, as well as files 23 and 24.
                 ylabels.add(data.yaxis)
                 titles.add(data.title)
                 if isinstance(data, ImageData):  # plot only one
-                    self.plotter.plot_image(data)
+                    self.plotter.plot_image(data, multi=True)
                     break
                 else:
                     self.plotter.plot_data(data, multi=True)

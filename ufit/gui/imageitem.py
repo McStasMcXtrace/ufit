@@ -59,6 +59,9 @@ class ImageDataItem(SessionItem):
 
 
 class ImageDataPanel(QTabWidget):
+
+    image_limits = None
+
     def __init__(self, parent, canvas, item):
         QTabWidget.__init__(self, parent)
         self.item = item
@@ -81,10 +84,12 @@ class ImageDataPanel(QTabWidget):
             self.picker_widget.on_canvas_pick(event)
 
     def save_limits(self):
-        self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
+        # global limits for all images
+        ImageDataPanel.image_limits = self.canvas.axes.get_xlim(), \
+                                      self.canvas.axes.get_ylim()
 
     def get_saved_limits(self):
-        return self._limits
+        return ImageDataPanel.image_limits
 
     def plot(self, limits=True, canvas=None):
         canvas = canvas or self.canvas
@@ -120,8 +125,12 @@ class ImageMultiPanel(QWidget):
     def plot(self, limits=True, canvas=None):
         canvas = canvas or self.canvas
         # XXX better title
-        canvas.plotter.reset()
+        canvas.plotter.reset(ImageDataPanel.image_limits)
         sumdata = reduce(operator.add, self.datas[1:], self.datas[0])
         canvas.plotter.plot_image(sumdata)
         canvas.plotter.plot_finish()
         canvas.draw()
+
+    def save_limits(self):
+        ImageDataPanel.image_limits = self.canvas.axes.get_xlim(), \
+                                      self.canvas.axes.get_ylim()
