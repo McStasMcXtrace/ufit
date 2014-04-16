@@ -48,6 +48,8 @@ def default_model(data):
 
 class ScanDataItem(SessionItem):
 
+    itemtype = 'scan'
+
     def __init__(self, data, model=None):
         self.data = data
         self.model = model or default_model(data)

@@ -65,11 +65,12 @@ class ItemGroup(object):
     def __init__(self, name):
         self.name = name
         self.items = []
-        self.after_load()
+        self.update_htmldesc()
 
-    def after_load(self):
-        self.htmldesc = '<img src=":/drawer.png">&nbsp;&nbsp;<b>%s</b>' % \
-                        self.name
+    def update_htmldesc(self):
+        nitems = len(self.items)
+        self.htmldesc = '<img src=":/drawer.png">&nbsp;&nbsp;<b>%s</b>' \
+                        ' &ndash; %d items' % (self.name, nitems)
 
 
 class _Session(QObject):
@@ -150,11 +151,11 @@ class _Session(QObject):
         self.filename = filename
         # reassign indices (also to regenerate descriptions)
         for group in self.groups:
-            group.after_load()
             for i, item in enumerate(group.items):
                 item.set_group(group, i + 1)
                 item.after_load()
                 self.all_items.add(item)
+            group.update_htmldesc()
         # let GUI elements update from propsdata
         self.emit(SIGNAL('itemsUpdated'))
         self.emit(SIGNAL('propsUpdated'))

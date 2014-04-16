@@ -47,6 +47,9 @@ default_settings = {
 
 
 class MappingItem(SessionItem):
+
+    itemtype = 'mapping'
+
     def __init__(self, datas, settings):
         self.datas = datas
         self.settings = attrdict(settings or default_settings)
