@@ -47,7 +47,8 @@ class ImageDataItem(SessionItem):
         title = self.data.title
         # XXX self.dataops.titleEdit.setText(title)
         self.title = title
-        self.htmldesc = '<big><b>%s</b></big>' % self.index + \
+        self.htmldesc = '<img src=":/image-sunset.png">&nbsp;&nbsp;' \
+            '<big><b>%s</b></big>' % self.index + \
             (title and ' - %s' % title or '') + \
             (self.data.environment and
              '<br>%s' % ', '.join(self.data.environment) or '') + \
