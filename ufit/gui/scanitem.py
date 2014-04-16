@@ -215,12 +215,18 @@ class MultiDataOps(QWidget):
 
     def plot(self, limits=True, canvas=None):
         canvas = canvas or self.canvas
-        # XXX better title
+        xlabels = set()
+        ylabels = set()
+        titles = set()
         canvas.plotter.reset()
         for i in self.items:
             c = canvas.plotter.plot_data(i.data, multi=True)
             canvas.plotter.plot_model(i.model, i.data, labels=False, color=c)
-        canvas.plotter.plot_finish()
+            xlabels.add(i.data.xaxis)
+            ylabels.add(i.data.yaxis)
+            titles.add(i.data.title)
+        canvas.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
+                                   ', '.join(titles))
         canvas.draw()
 
     @qtsig('')
