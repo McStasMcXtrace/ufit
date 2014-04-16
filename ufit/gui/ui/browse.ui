@@ -56,7 +56,7 @@
              <string>Load</string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
             </property>
            </widget>
@@ -67,7 +67,7 @@
              <string>Refresh</string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/arrow-circle-double.png</normaloff>:/arrow-circle-double.png</iconset>
             </property>
            </widget>
@@ -78,7 +78,7 @@
              <string>Change directory...</string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
             </property>
            </widget>
@@ -116,7 +116,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../../resource/gui.qrc"/>
+  <include location="../../../resource/gui.qrc"/>
  </resources>
  <connections/>
 </ui>

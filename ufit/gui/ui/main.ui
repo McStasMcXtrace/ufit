@@ -47,7 +47,7 @@
              <string>Load new data</string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
             </property>
            </widget>
@@ -71,7 +71,7 @@
              <string>Manage   </string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/gear.png</normaloff>:/gear.png</iconset>
             </property>
            </widget>
@@ -211,7 +211,7 @@
   </widget>
   <action name="actionLoad">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
    </property>
    <property name="text">
@@ -223,7 +223,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/disk-black.png</normaloff>:/disk-black.png</iconset>
    </property>
    <property name="text">
@@ -235,7 +235,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/question-white.png</normaloff>:/question-white.png</iconset>
    </property>
    <property name="text">
@@ -244,7 +244,7 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/cross-button.png</normaloff>:/cross-button.png</iconset>
    </property>
    <property name="text">
@@ -256,7 +256,7 @@
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/disks-black.png</normaloff>:/disks-black.png</iconset>
    </property>
    <property name="text">
@@ -268,7 +268,7 @@
   </action>
   <action name="actionLoadData">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
    </property>
    <property name="text">
@@ -288,7 +288,7 @@
   </action>
   <action name="actionRemoveData">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/cross.png</normaloff>:/cross.png</iconset>
    </property>
    <property name="text">
@@ -297,7 +297,7 @@
   </action>
   <action name="actionMergeData">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/arrow-join.png</normaloff>:/arrow-join.png</iconset>
    </property>
    <property name="text">
@@ -317,7 +317,7 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/printer.png</normaloff>:/printer.png</iconset>
    </property>
    <property name="text">
@@ -326,7 +326,7 @@
   </action>
   <action name="actionExportASCII">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/document-export.png</normaloff>:/document-export.png</iconset>
    </property>
    <property name="text">
@@ -353,7 +353,7 @@
   </action>
   <action name="actionSavePlot">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/document-pdf.png</normaloff>:/document-pdf.png</iconset>
    </property>
    <property name="text">
@@ -362,7 +362,7 @@
   </action>
   <action name="actionUnzoom">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/home.png</normaloff>:/home.png</iconset>
    </property>
    <property name="text">
@@ -371,7 +371,7 @@
   </action>
   <action name="actionInspector">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/table-select-row.png</normaloff>:/table-select-row.png</iconset>
    </property>
    <property name="text">
@@ -383,7 +383,7 @@
   </action>
   <action name="actionNewSession">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/document.png</normaloff>:/document.png</iconset>
    </property>
    <property name="text">
@@ -403,7 +403,7 @@
   </action>
   <action name="actionReorder">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/arrow-switch.png</normaloff>:/arrow-switch.png</iconset>
    </property>
    <property name="text">
@@ -412,7 +412,7 @@
   </action>
   <action name="actionNewGroup">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/drawer--plus.png</normaloff>:/drawer--plus.png</iconset>
    </property>
    <property name="text">
@@ -421,7 +421,7 @@
   </action>
   <action name="actionAnnotations">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/script-php.png</normaloff>:/script-php.png</iconset>
    </property>
    <property name="text">
@@ -430,7 +430,7 @@
   </action>
   <action name="actionPopOut">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/chart--arrow.png</normaloff>:/chart--arrow.png</iconset>
    </property>
    <property name="text">
@@ -446,7 +446,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resource/gui.qrc"/>
+  <include location="../../../resource/gui.qrc"/>
  </resources>
  <connections/>
 </ui>

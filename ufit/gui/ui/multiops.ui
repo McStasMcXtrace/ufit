@@ -60,7 +60,7 @@
         <string>Make mapping</string>
        </property>
        <property name="icon">
-        <iconset resource="../../resource/gui.qrc">
+        <iconset resource="../../../resource/gui.qrc">
          <normaloff>:/map.png</normaloff>:/map.png</iconset>
        </property>
       </widget>
@@ -295,7 +295,7 @@
   <tabstop>mappingBtn</tabstop>
  </tabstops>
  <resources>
-  <include location="../../resource/gui.qrc"/>
+  <include location="../../../resource/gui.qrc"/>
  </resources>
  <connections/>
 </ui>

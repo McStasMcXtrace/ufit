@@ -40,7 +40,7 @@ from ufit.plotting import DataPlotter
 
 uipath = path.dirname(__file__)
 
-def loadUi(widget, uiname, subdir=''):
+def loadUi(widget, uiname, subdir='ui'):
     uic.loadUi(path.join(uipath, subdir, uiname), widget)
 
 def path_to_str(qstring):
