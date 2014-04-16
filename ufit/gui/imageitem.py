@@ -133,9 +133,9 @@ class ImageMultiPanel(QWidget):
         xparams = set()
         for data in self.datas:
             if not xparams:
-                xparams.update(data.meta)
-            xparams.intersection_update(data.meta)
-        self.boxes = []
+                xparams.update(k for k in data.meta if isinstance(data.meta[k], float))
+            xparams.intersection_update(k for k in data.meta
+                                        if isinstance(data.meta[k], float))
         self.xparamBox.clear()
         xparams = ['image #'] + sorted(xparams)
         self.xparamBox.addItems(xparams)
@@ -164,6 +164,7 @@ class ImageMultiPanel(QWidget):
         y1, y2 = map(int, self.canvas.axes.get_ylim())
         box = QWidget(self)
         loadUi(box, 'box.ui')
+        # there's always a stretcher at the bottom
         self.boxLayout.insertWidget(self.boxLayout.count()-1, box)
         self.boxes.append(box)
         box.nameBox.setText('Box %d' % len(self.boxes))
@@ -173,26 +174,38 @@ class ImageMultiPanel(QWidget):
         box.y2Box.setValue(y2)
         def boxchange(v):
             self.plot(False)
+        def boxremove(box=box):
+            index = self.boxes.index(box)
+            del self.boxes[index]
+            item = self.boxLayout.takeAt(index)
+            item.widget().deleteLater()
         self.connect(box.x1Box, SIGNAL('valueChanged(int)'), boxchange)
         self.connect(box.x2Box, SIGNAL('valueChanged(int)'), boxchange)
         self.connect(box.y1Box, SIGNAL('valueChanged(int)'), boxchange)
         self.connect(box.y2Box, SIGNAL('valueChanged(int)'), boxchange)
+        self.connect(box.delBtn, SIGNAL('clicked()'), boxremove)
         self.plot(False)
 
     @qtsig('')
     def on_integrateBtn_clicked(self):
         xname = self.xparamBox.currentText()
         if xname == 'image #':
-            xdata = arange(1, len(self.datas)+1)
+            xdata = arange(1, len(self.datas) + 1)
         else:
             xdata = array([data.meta[xname] for data in self.datas])
+        boxnorm = self.boxNormBox.isChecked()
         for box in self.boxes:
             x1, y1, x2, y2 = box.x1Box.value(), box.y1Box.value(), \
                              box.x2Box.value(), box.y2Box.value()
             name = box.nameBox.text()
-            ydata = array([data.arr[x1:x2, y1:y2].sum() for data in self.datas])
+            ydata = array([data.arr[x1:x2, y1:y2].sum()
+                           for data in self.datas])
             dydata = array([sqrt((data.darr[x1:x2, y1:y2]**2).sum())
                             for data in self.datas])
+            if boxnorm:
+                factor = 1. / ((y2 - y1) * (x2 - x1))
+                ydata *= factor
+                dydata *= factor
             scan = ScanData.from_arrays(name, xdata, ydata, dydata,
-                                        xcol=xname, ycol=name)
+                                        xcol=xname, ycol='box counts')
             session.add_item(ScanDataItem(scan))
