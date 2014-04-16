@@ -37,6 +37,7 @@ class UFitMain(QMainWindow):
         QMainWindow.__init__(self)
 
         self.itempanels = {}
+        self.multipanels = {}
         self.current_panel = None
         self.inspector_window = None
         self.annotation_window = None
@@ -304,12 +305,16 @@ class UFitMain(QMainWindow):
             if self.inspector_window and isinstance(item, ScanDataItem):
                 self.inspector_window.setDataset(item.data)
         else:
-            self.multi_panel = items[0].create_multi_panel(self, self.canvas)
-            self.multi_panel.initialize(items)
-            # XXX it is never removed!
-            self.stacker.addWidget(self.multi_panel)
-            self.select_new_panel(self.multi_panel)
-            self.multi_panel.plot()
+            paneltype = type(items[0])
+            if paneltype not in self.multipanels:
+                panel = self.multipanels[paneltype] = \
+                        items[0].create_multi_panel(self, self.canvas)
+                self.stacker.addWidget(panel)
+            else:
+                panel = self.multipanels[paneltype]
+            panel.initialize(items)
+            self.select_new_panel(panel)
+            panel.plot()
 
     @qtsig('')
     def on_actionInspector_triggered(self):
