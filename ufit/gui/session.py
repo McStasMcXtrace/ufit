@@ -193,6 +193,7 @@ class _Session(QObject):
             group = self.groups[-1]
         self.all_items.add(item)
         group.items.append(item)
+        group.update_htmldesc()
         item.set_group(group, len(group.items))
         self.set_dirty()
         self.emit(SIGNAL('itemAdded'), item)
@@ -206,6 +207,7 @@ class _Session(QObject):
         for item in items:
             group.items.append(item)
             item.set_group(group, len(group.items))
+        group.update_htmldesc()
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
         self.emit(SIGNAL('itemAdded'), items[-1])
@@ -221,6 +223,7 @@ class _Session(QObject):
                 self.groups.remove(group)
             for i, item in enumerate(group.items):
                 item.set_group(group, i + 1)
+            group.update_htmldesc()
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
 
@@ -233,6 +236,7 @@ class _Session(QObject):
         for group in renumber_groups:
             for i, item in enumerate(group.items):
                 item.set_group(group, i + 1)
+            group.update_htmldesc()
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
 
@@ -243,6 +247,7 @@ class _Session(QObject):
             group.items[:] = items
             for i, item in enumerate(items):
                 item.set_group(group, i + 1)
+            group.update_htmldesc()
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
 

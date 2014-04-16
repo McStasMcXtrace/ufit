@@ -77,9 +77,10 @@ class ItemListModel(QAbstractItemModel):
         self.dataChanged.emit(index, index)
 
     def on_session_itemAdded(self, item):
+        groupindex = self.index(session.groups.index(item.group), 0)
+        self.dataChanged.emit(groupindex, groupindex)
         itemrow = item.group.items.index(item)
-        self.rowsInserted.emit(self.index(self.groups.index(item.group), 0),
-                               itemrow, itemrow)
+        self.rowsInserted.emit(groupindex, itemrow, itemrow)
 
     def on_session_groupAdded(self, group):
         itemrow = self.groups.index(group)
