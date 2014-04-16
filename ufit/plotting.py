@@ -10,14 +10,13 @@
 
 from itertools import cycle
 
+from numpy import array, isscalar, linspace
+
 import matplotlib
 matplotlib.rc('font', family='Helvetica')
 matplotlib.rc('savefig', format='pdf')
 
-import numpy as np
-from numpy import array, mgrid, clip, linspace, isscalar
 from matplotlib import pyplot as pl
-from matplotlib.cbook import flatten
 
 from ufit.param import prepare_params
 
@@ -193,34 +192,8 @@ class DataPlotter(object):
         kwds['clear'] = False
         self.image = plot_mapping(*args, **kwds)
 
-
-def bin_mapping(x, y, runs, usemask=True, log=False, xscale=1, yscale=1,
-                interpolate=100, minmax=None):
-    from scipy.interpolate import griddata as griddata_sp
-    if usemask:
-        xss = array(list(flatten(run['col_'+x][run.mask] for run in runs))) * xscale
-        yss = array(list(flatten(run['col_'+y][run.mask] for run in runs))) * yscale
-        if log:
-            zss = list(flatten(np.log10(run.y)[run.mask] for run in runs))
-        else:
-            zss = list(flatten(run.y[run.mask] for run in runs))
-    else:
-        # XXX duplication
-        xss = array(list(flatten(run['col_'+x] for run in runs))) * xscale
-        yss = array(list(flatten(run['col_'+y] for run in runs))) * yscale
-        if log:
-            zss = list(flatten(np.log10(run.y) for run in runs))
-        else:
-            zss = list(flatten(run.y for run in runs))
-    if minmax is not None:
-        if log:
-            minmax = map(np.log10, minmax)
-        zss = clip(zss, minmax[0], minmax[1])
-    interpolate = interpolate * 1j
-    xi, yi = mgrid[min(xss):max(xss):interpolate,
-                   min(yss):max(yss):interpolate]
-    zi = griddata_sp(array((xss, yss)).T, zss, (xi, yi))
-    return xss/xscale, yss/yscale, xi/xscale, yi/yscale, zi
+    def plot_image(self, imgdata):
+        pass
 
 
 def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,
@@ -263,6 +236,7 @@ def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,
 def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
             xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
             clear=True, colors=None, axes=None, title=None):
+    from ufit.data.mapping import bin_mapping
     mapdata = bin_mapping(
         x, y, runs, usemask=usemask, log=log, xscale=xscale, yscale=yscale,
         interpolate=interpolate, minmax=minmax)
