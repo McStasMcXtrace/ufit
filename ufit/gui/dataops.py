@@ -131,8 +131,8 @@ class DataOps(QWidget):
     def on_cloneBtn_clicked(self):
         new_data = self.data.copy()
         new_model = self.model.copy()
-        from ufit.gui.datasetitem import DatasetItem
-        session.add_item(DatasetItem(new_data, new_model), self.item.group)
+        from ufit.gui.scanitem import ScanDataItem
+        session.add_item(ScanDataItem(new_data, new_model), self.item.group)
 
     @qtsig('')
     def on_mulBtn_clicked(self):
@@ -197,10 +197,10 @@ class DataOps(QWidget):
 
     @qtsig('')
     def on_subtractBtn_clicked(self):
-        from ufit.gui.datasetitem import DatasetItem
+        from ufit.gui.scanitem import ScanDataItem
         dlg = QDialog(self)
         loadUi(dlg, 'subtract.ui')
-        data2obj = dlg.setList.populate(DatasetItem)
+        data2obj = dlg.setList.populate(ScanDataItem)
         if dlg.exec_() != QDialog.Accepted:
             return
         witems = dlg.setList.selectedItems()
@@ -240,8 +240,8 @@ class DataOps(QWidget):
 
         if not dlg.destructBox.isChecked():
             new_model = self.model.copy()
-            from ufit.gui.datasetitem import DatasetItem
-            session.add_item(DatasetItem(new_data, new_model), self.item.group)
+            from ufit.gui.scanitem import ScanDataItem
+            session.add_item(ScanDataItem(new_data, new_model), self.item.group)
         else:
             self.emit(SIGNAL('replotRequest'), None)
             session.set_dirty()

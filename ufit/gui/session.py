@@ -122,10 +122,10 @@ class _Session(QObject):
         info['groups'] = [group]
         panels = info.pop('panels')
         from ufit.gui.mappingitem import MappingItem
-        from ufit.gui.datasetitem import DatasetItem
+        from ufit.gui.scanitem import ScanDataItem
         for panel in panels:
             if panel[0] == 'dataset':
-                group.items.append(DatasetItem(panel[1], panel[2]))
+                group.items.append(ScanDataItem(panel[1], panel[2]))
             elif panel[0] == 'mapping':
                 group.items.append(MappingItem(panel[1], panel[2]))
         info['props'] = attrdict()

@@ -15,8 +15,8 @@ from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QFrame, QMessageBox
 
 from ufit.data.dataset import Dataset
+from ufit.data.mapping import bin_mapping
 from ufit.models.peaks import Gauss2D
-from ufit.plotting import bin_mapping
 from ufit.utils import attrdict
 from ufit.gui import logger
 from ufit.gui.common import loadUi

@@ -8,11 +8,10 @@
 
 """Data loader object."""
 
-from os import path
 from numpy import ones, sqrt
 
 from ufit import UFitError
-from ufit.data.dataset import Dataset, DataList, DatasetList
+from ufit.data.dataset import ScanData, ImageData, DataList, DatasetList
 
 
 class Loader(object):
@@ -22,16 +21,16 @@ class Loader(object):
         self.sets = DataList()
 
     def _get_reader(self, filename, fobj):
-        from ufit.data import data_formats
+        from ufit.data import data_formats, data_formats_image
         if self.format == 'auto':
             for n, m in data_formats.iteritems():
                 # check 'simple' last
                 if n != 'simple' and m.check_data(fobj):
-                    return m
+                    return m, n in data_formats_image
             if data_formats['simple'].check_data(fobj):
-                return data_formats['simple']
+                return data_formats['simple'], False
             raise UFitError('File %r has no recognized file format' % filename)
-        return data_formats[self.format]
+        return data_formats[self.format], self.format in data_formats_image
 
     def _inner_load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
         try:
@@ -39,7 +38,29 @@ class Loader(object):
         except TypeError:
             filename = self.template
         fobj = open(filename, 'rb')
-        rdr = self._get_reader(filename, fobj)
+        rdr, isimg = self._get_reader(filename, fobj)
+        if isimg:
+            return self._inner_load_image(rdr, filename, fobj, n, ncol, nscale)
+        return self._inner_load_scan(rdr, filename, fobj, n, xcol, ycol, dycol,
+                                     ncol, nscale)
+
+    def _inner_load_image(self, rdr, filename, fobj, n, ncol, nscale):
+        arr, darr, meta = rdr.read_data(filename, fobj)
+        if 'filenumber' not in meta:
+            meta['filenumber'] = n
+        meta['datafilename'] = filename
+        if ncol == 'auto':
+            ncol = rdr.guess_norm(meta)
+        if ncol is not None:
+            norm = meta[ncol]
+        else:
+            norm = 1
+        dset = ImageData(meta, arr, darr, norm, nscale)
+        self.sets[n] = dset
+        return dset
+
+    def _inner_load_scan(self, rdr, filename, fobj, n,
+                         xcol, ycol, dycol, ncol, nscale):
         colnames, coldata, meta = rdr.read_data(filename, fobj)
         colguess = rdr.guess_cols(colnames, coldata, meta)
         if 'filenumber' not in meta:
@@ -91,8 +112,8 @@ class Loader(object):
             return colnames[col - 1]   # 1-based indices
         if use_hkl:
             meta['is_hkldata'] = True
-        dset = Dataset(meta, datarr, colname(xcol), colname(ycol),
-                       colname(ncol), nscale)
+        dset = ScanData(meta, datarr, colname(xcol), colname(ycol),
+                        colname(ncol), nscale)
         if use_hkl and 'hkle' in dset.meta:  # 3-axis support
             dset.x = dset.meta['hkle']
         self.sets[n] = dset
@@ -110,20 +131,30 @@ class Loader(object):
         except TypeError:
             filename = self.template
         fobj = open(filename, 'rb')
-        rdr = self._get_reader(filename, fobj)
-        colnames, coldata, meta = rdr.read_data(filename, fobj)
-        xguess, yguess, dyguess, mguess = rdr.guess_cols(colnames, coldata, meta)
-        if mguess is not None:
-            # use average monitor counts for normalization, but
-            # round to 2 significant digits
-            moncol = coldata[:,colnames.index(mguess)]
-            nmon = int(float('%.2g' % moncol.mean()))
+        rdr, isimg = self._get_reader(filename, fobj)
+        if isimg:
+            arr, darr, meta = rdr.read_data(filename, fobj)
+            mguess = rdr.guess_norm(meta)
+            if mguess:
+                nmon = int(float('%.2g' % meta[mguess]))
+            else:
+                nmon = 1
+            xguess, yguess, dyguess = None, None, None
+            colnames = meta.keys()
         else:
-            nmon = 0
-        if yguess is None and len(colnames) > 1:
-            yguess = colnames[1]
-            if len(colnames) > 2:
-                dyguess = colnames[2]
+            colnames, coldata, meta = rdr.read_data(filename, fobj)
+            xguess, yguess, dyguess, mguess = rdr.guess_cols(colnames, coldata, meta)
+            if mguess is not None:
+                # use average monitor counts for normalization, but
+                # round to 2 significant digits
+                moncol = coldata[:,colnames.index(mguess)]
+                nmon = int(float('%.2g' % moncol.mean()))
+            else:
+                nmon = 0
+            if yguess is None and len(colnames) > 1:
+                yguess = colnames[1]
+                if len(colnames) > 2:
+                    dyguess = colnames[2]
         return colnames, xguess, yguess, dyguess, mguess, nmon
 
     def load_numors(self, nstring, binsize, xcol, ycol, dycol=None,

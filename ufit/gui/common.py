@@ -21,6 +21,7 @@ from PyQt4.QtSvg import QSvgRenderer
 from matplotlib.backends.backend_qt4agg import \
     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
 from matplotlib._pylab_helpers import Gcf
+from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure
 from matplotlib import pyplot
 try:
@@ -57,6 +58,7 @@ class MPLCanvas(FigureCanvas):
         self.printer = None
         self.print_width = 0
         self.main = parent
+        self.logz = False
         self.axes = fig.add_subplot(111)
         self.plotter = DataPlotter(self, self.axes)
         # make tight_layout do the right thing
@@ -146,6 +148,7 @@ class MPLToolbar(NavigationToolbar2QT):
         'pyconsole.png':    'terminal--arrow.png',
         'log-x.png':        'log-x.png',
         'log-y.png':        'log-y.png',
+        'log-z.png':        'log-z.png',
         'exwindow.png':    'chart--arrow.png',
     }
 
@@ -153,7 +156,8 @@ class MPLToolbar(NavigationToolbar2QT):
     del toolitems[7]  # subplot adjust
     toolitems.insert(0, ('Log x', 'Logarithmic X scale', 'log-x', 'logx_callback'))
     toolitems.insert(1, ('Log y', 'Logarithmic Y scale', 'log-y', 'logy_callback'))
-    toolitems.insert(2, (None, None, None, None))
+    toolitems.insert(2, ('Log z', 'Logarithmic Z scale', 'log-z', 'logz_callback'))
+    toolitems.insert(3, (None, None, None, None))
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
     toolitems.append(('Pop out', 'Show the figure in a separate window',
@@ -166,6 +170,7 @@ class MPLToolbar(NavigationToolbar2QT):
         self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self._actions['logx_callback'].setCheckable(True)
         self._actions['logy_callback'].setCheckable(True)
+        self._actions['logz_callback'].setCheckable(True)
 
     def _icon(self, name):
         if name in self.icon_name_map:
@@ -198,6 +203,17 @@ class MPLToolbar(NavigationToolbar2QT):
         else:
             ax.set_yscale('linear')
             self._actions['logy_callback'].setChecked(False)
+        self.canvas.draw()
+
+    def logz_callback(self):
+        ax = self.canvas.figure.gca()
+        self.canvas.logz = not self.canvas.logz
+        self._actions['logz_callback'].setChecked(self.canvas.logz)
+        for im in ax.get_images():
+            if self.canvas.logz:
+                im.set_norm(LogNorm())
+            else:
+                im.set_norm(None)
         self.canvas.draw()
 
     def print_callback(self):

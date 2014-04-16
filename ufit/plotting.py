@@ -17,6 +17,7 @@ matplotlib.rc('font', family='Helvetica')
 matplotlib.rc('savefig', format='pdf')
 
 from matplotlib import pyplot as pl
+from matplotlib.colors import LogNorm
 
 from ufit.param import prepare_params
 
@@ -193,7 +194,11 @@ class DataPlotter(object):
         self.image = plot_mapping(*args, **kwds)
 
     def plot_image(self, imgdata):
-        pass
+        axes = self.axes
+        norm = getattr(self.canvas, 'logz', False) and LogNorm() or None
+        axes.imshow(imgdata.arr, origin='lower', aspect='equal',
+                    interpolation='nearest', norm=norm)
+        self.plot_finish(imgdata.xaxis, imgdata.yaxis, imgdata.title)
 
 
 def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,

@@ -1,0 +1,127 @@
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Session item for datasets and corresponding GUI."""
+
+import operator
+
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtGui import QTabWidget, QWidget
+
+from ufit.gui.dataops import DataOps
+from ufit.gui.session import session, SessionItem
+from ufit.gui import logger
+
+
+class ImageDataItem(SessionItem):
+
+    def __init__(self, data):
+        self.data = data
+        SessionItem.__init__(self)
+
+    def after_load(self):
+        self.data.after_load()  # upgrade datastructures
+
+    def __reduce__(self):
+        return (self.__class__, (self.data, ))
+
+    def create_panel(self, mainwindow, canvas):
+        return ImageDataPanel(mainwindow, canvas, self)
+
+    def create_multi_panel(self, mainwindow, canvas):
+        return ImageMultiPanel(mainwindow, canvas)
+
+    def update_htmldesc(self):
+        title = self.data.title
+        # XXX self.dataops.titleEdit.setText(title)
+        self.title = title
+        self.htmldesc = '<big><b>%s</b></big>' % self.index + \
+            (title and ' - %s' % title or '') + \
+            (self.data.environment and
+             '<br>%s' % ', '.join(self.data.environment) or '') + \
+            ('<br><small>%s</small>' % '<br>'.join(self.data.sources))
+        session.emit(SIGNAL('itemsUpdated'))
+
+    def export_python(self, filename):
+        pass
+
+    def export_ascii(self, filename):
+        with open(filename, 'wb') as fp:
+            self.data.export_ascii(fp)
+
+    def export_fits(self, filename):
+        pass
+
+
+class ImageDataPanel(QTabWidget):
+    def __init__(self, parent, canvas, item):
+        QTabWidget.__init__(self, parent)
+        self.item = item
+        self.dataops = DataOps(self)
+        self._limits = None
+        self.picker_widget = None
+
+        self.canvas = canvas
+        # XXX self.dataops.initialize(item)
+        self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
+        self.connect(self.dataops, SIGNAL('replotRequest'), self.plot)
+        self.connect(self.dataops, SIGNAL('titleChanged'), self.item.update_htmldesc)
+        self.addTab(self.dataops, 'Data operations')
+
+    def set_picker(self, widget):
+        self.picker_widget = widget
+
+    def on_canvas_pick(self, event):
+        if self.picker_widget:
+            self.picker_widget.on_canvas_pick(event)
+
+    def save_limits(self):
+        self._limits = self.canvas.axes.get_xlim(), self.canvas.axes.get_ylim()
+
+    def get_saved_limits(self):
+        return self._limits
+
+    def plot(self, limits=True, canvas=None):
+        canvas = canvas or self.canvas
+        plotter = canvas.plotter
+        plotter.reset(limits)
+        try:
+            plotter.plot_image(self.item.data)
+        except Exception:
+            logger.exception('Error while plotting')
+        else:
+            canvas.draw()
+
+    def export_ascii(self, filename):
+        self.item.export_ascii(filename)
+
+    def export_fits(self, filename):
+        self.item.export_fits(filename)
+
+    def export_python(self, filename):
+        self.item.export_python(filename)
+
+
+class ImageMultiPanel(QWidget):
+
+    def __init__(self, parent, canvas):
+        QWidget.__init__(self, parent)
+        self.canvas = canvas
+
+    def initialize(self, items):
+        self.items = [i for i in items if isinstance(i, ImageDataItem)]
+        self.datas = [i.data for i in self.items]
+
+    def plot(self, limits=True, canvas=None):
+        canvas = canvas or self.canvas
+        # XXX better title
+        canvas.plotter.reset()
+        sumdata = reduce(operator.add, self.datas[1:], self.datas[0])
+        canvas.plotter.plot_image(sumdata)
+        canvas.plotter.plot_finish()
+        canvas.draw()

@@ -14,7 +14,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
     QMainWindow, QSplitter, QApplication
 
-from ufit.data import data_formats, Loader
+from ufit.data import data_formats, Loader, ImageData
 from ufit.utils import extract_template
 from ufit.gui import logger
 from ufit.gui.common import loadUi, path_to_str, str_to_path, \
@@ -199,10 +199,14 @@ into one set, as well as files 23 and 24.
             ylabels = set()
             titles = set()
             for data in datas:
-                self.plotter.plot_data(data, multi=True)
                 xlabels.add(data.xaxis)
                 ylabels.add(data.yaxis)
                 titles.add(data.title)
+                if isinstance(data, ImageData):  # plot only one
+                    self.plotter.plot_image(data)
+                    break
+                else:
+                    self.plotter.plot_data(data, multi=True)
             self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
                                      ', '.join(titles))
             self.plotter.draw()

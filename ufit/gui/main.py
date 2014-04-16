@@ -15,19 +15,18 @@ from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
     QFileDialog, QDialog, QAction, QActionGroup, QInputDialog, QSplitter, QLabel
 
-import matplotlib
-
 from ufit import backends, __version__
+from ufit.data.dataset import ScanData, ImageData
 from ufit.gui import logger
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, loadUi, \
     path_to_str
 from ufit.gui.dialogs import ParamExportDialog
 from ufit.gui.dataloader import DataLoader
-from ufit.gui.multiops import MultiDataOps
 from ufit.gui.itemlist import ItemListModel
 from ufit.gui.inspector import InspectorWindow
 from ufit.gui.annotations import AnnotationWindow
-from ufit.gui.datasetitem import DatasetPanel, DatasetItem
+from ufit.gui.scanitem import ScanDataPanel, ScanDataItem
+from ufit.gui.imageitem import ImageDataItem
 from ufit.gui.session import session, SessionItem, ItemGroup
 
 max_recent_files = 6
@@ -85,11 +84,6 @@ class UFitMain(QMainWindow):
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
-        # create panel for multiple-data operations
-        self.multiops = MultiDataOps(self, self.canvas)
-        self.connect(self.multiops, SIGNAL('replotRequest'), self.plot_multi)
-        self.stacker.addWidget(self.multiops)
-
         # create item model
         self.itemlistmodel = ItemListModel()
         self.itemTree.setModel(self.itemlistmodel)
@@ -137,7 +131,12 @@ class UFitMain(QMainWindow):
 
     def on_dloader_newDatas(self, datas):
         # XXX which group
-        items = [DatasetItem(data) for data in datas]
+        items = []
+        for data in datas:
+            if isinstance(data, ScanData):
+                items.append(ScanDataItem(data))
+            elif isinstance(data, ImageData):
+                items.append(ImageDataItem(data))
         session.add_items(items)
 
     def on_session_itemsUpdated(self):
@@ -200,7 +199,7 @@ class UFitMain(QMainWindow):
         self.stacker.setCurrentWidget(self.current_panel)
 
     def on_canvas_pick(self, event):
-        if isinstance(self.current_panel, DatasetPanel):
+        if isinstance(self.current_panel, ScanDataPanel):
             self.current_panel.on_canvas_pick(event)
 
     @qtsig('')
@@ -284,9 +283,13 @@ class UFitMain(QMainWindow):
         return [item for item in items if isinstance(item, itemcls)]
 
     def on_itemTree_newSelection(self):
+        nallitems = len(self.itemTree.selectedIndexes())
         items = self.selected_items()
-        if len(items) == 0:
+        if nallitems == 0:
             self.on_loadBtn_clicked()
+        elif len(items) == 0:
+            # a group is selected
+            pass
         elif len(items) == 1:
             item = items[0]
             if item not in self.itempanels:
@@ -298,24 +301,15 @@ class UFitMain(QMainWindow):
             self.select_new_panel(panel)
             panel.plot(panel.get_saved_limits())
             self.toolbar.update()
-            if self.inspector_window and isinstance(item, DatasetItem):
+            if self.inspector_window and isinstance(item, ScanDataItem):
                 self.inspector_window.setDataset(item.data)
         else:
-            self.select_new_panel(self.multiops)
-            self.plot_multi()
-            self.multiops.initialize(
-                [i for i in items if isinstance(i, DatasetItem)])
-
-    def plot_multi(self, *ignored, **kwds):
-        canvas = kwds.get('canvas', self.canvas)
-        # XXX better title
-        canvas.plotter.reset()
-        items = self.selected_items(DatasetItem)
-        for i in items:
-            c = canvas.plotter.plot_data(i.data, multi=True)
-            canvas.plotter.plot_model(i.model, i.data, labels=False, color=c)
-        canvas.plotter.plot_finish()
-        canvas.draw()
+            self.multi_panel = items[0].create_multi_panel(self, self.canvas)
+            self.multi_panel.initialize(items)
+            # XXX it is never removed!
+            self.stacker.addWidget(self.multi_panel)
+            self.select_new_panel(self.multi_panel)
+            self.multi_panel.plot()
 
     @qtsig('')
     def on_actionInspector_triggered(self):
@@ -328,7 +322,7 @@ class UFitMain(QMainWindow):
         self.connect(self.inspector_window, SIGNAL('replotRequest'),
                      lambda: self.current_panel.plot(True))
         self.connect(self.inspector_window, SIGNAL('closed'), deref)
-        if isinstance(self.current_panel, DatasetPanel):
+        if isinstance(self.current_panel, ScanDataPanel):
             self.inspector_window.setDataset(self.current_panel.item.data)
         self.inspector_window.show()
 
@@ -387,7 +381,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionExportParams_triggered(self):
-        items = self.selected_items(DatasetItem)
+        items = self.selected_items(ScanDataItem)
         dlg = ParamExportDialog(self, items)
         if dlg.exec_() != QDialog.Accepted:
             return
@@ -427,10 +421,7 @@ class UFitMain(QMainWindow):
             self.connect(iw, SIGNAL('redraw'), canvas.draw_idle)
             splitter.addWidget(iw)
         new_win.setCentralWidget(splitter)
-        if self.current_panel is self.multiops:
-            self.plot_multi(canvas=canvas)
-        else:
-            self.current_panel.plot(limits=None, canvas=canvas)
+        self.current_panel.plot(limits=None, canvas=canvas)
         new_win.show()
 
     @qtsig('')
@@ -528,7 +519,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionMergeData_triggered(self):
-        items = self.selected_items(DatasetItem)
+        items = self.selected_items(ScanDataItem)
         if len(items) < 2:
             return
         dlg = QDialog(self)
@@ -540,7 +531,7 @@ class UFitMain(QMainWindow):
                 return
             datalist = [i.data for i in items]
             new_data = datalist[0].merge(precision, *datalist[1:])
-            session.add_item(DatasetItem(new_data), self.items[-1].group)
+            session.add_item(ScanDataItem(new_data), self.items[-1].group)
 
     @qtsig('')
     def on_actionQuit_triggered(self):

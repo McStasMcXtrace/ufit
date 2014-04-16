@@ -21,7 +21,7 @@ from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup, \
     path_to_str
 from ufit.gui.session import session
-from ufit.gui.datasetitem import DatasetItem
+from ufit.gui.scanitem import ScanDataItem
 
 
 class BrowseWindow(QMainWindow):
@@ -59,7 +59,7 @@ class BrowseWindow(QMainWindow):
         datas = [self._data[item.type()] for item in self.dataList.selectedItems()]
         if not datas:
             return
-        items = [DatasetItem(data) for data in datas]
+        items = [ScanDataItem(data) for data in datas]
         # XXX which group
         session.add_items(items)
 

@@ -9,6 +9,7 @@
 """Base dataset class."""
 
 import copy
+import operator
 
 from numpy import array, concatenate, ones, broadcast_arrays, savetxt
 
@@ -52,13 +53,38 @@ def sanitize_meta(meta, name):
         meta.datafilename = ''
 
 
-class Dataset(object):
-    def __init__(self, meta, data, xcol, ycol, ncol=None, nscale=1,
-                 name='', sources=None):
+class DataBase(object):
+
+    def __init__(self, meta, name='', sources=None):
         self.meta = attrdict(meta)
         sanitize_meta(self.meta, name)
         self.name = name or str(self.meta.filenumber or '---')
         self.sources = sources or [self.meta.filedesc]
+
+    def after_load(self):
+        pass
+
+    def __getattr__(self, key):
+        if key == '__setstate__':
+            # pickling support
+            raise AttributeError(key)
+        elif key in self.meta:
+            return self.meta[key]
+        elif key == 'x_plot':
+            # backwards compatibility
+            self.x_plot = self.x
+            return self.x
+        raise AttributeError('no such data column or metadata: %s' % key)
+
+    def copy(self):
+        return copy.deepcopy(self)
+
+
+class ScanData(DataBase):
+    def __init__(self, meta, data, xcol, ycol, ncol=None, nscale=1,
+                 name='', sources=None):
+        DataBase.__init__(self, meta, name, sources)
+
         self._data = data
 
         self.xcol = self.xaxis = xcol
@@ -96,9 +122,6 @@ class Dataset(object):
             self.reset_mask()
         sanitize_meta(self.meta, self.name)
 
-    def copy(self):
-        return copy.deepcopy(self)
-
     @property
     def fit_columns(self):
         mask = self.mask.copy()
@@ -128,18 +151,6 @@ class Dataset(object):
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))
-
-    def __getattr__(self, key):
-        if key == '__setstate__':
-            # pickling support
-            raise AttributeError(key)
-        elif key in self.meta:
-            return self.meta[key]
-        elif key == 'x_plot':
-            # backwards compatibility
-            self.x_plot = self.x
-            return self.x
-        raise AttributeError('no such data column: %s' % key)
 
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -214,6 +225,68 @@ class Dataset(object):
     def export_python(self, fp, objname='data'):
         fp.write('%s = as_data(%r, %r, %r, %r)\n' %
                  (objname, self.x, self.y, self.dy, self.name))
+
+# compatibility name
+Dataset = ScanData
+
+
+class ImageData(DataBase):
+    def __init__(self, meta, arr, darr, norm=None, nscale=1,
+                 name='', sources=None):
+        DataBase.__init__(self, meta, name, sources)
+
+        self.arr_raw = arr
+        self.darr_raw = darr
+        self.nscale = nscale
+
+        if norm:
+            self.norm_raw = norm
+            self.norm = norm / nscale
+        else:
+            self.norm_raw = self.norm = 1
+
+        self.arr = arr / self.norm
+        self.darr = darr / self.norm
+
+        # XXX implement scaling?
+        self.xaxis = 'pixels X'
+        self.yaxis = 'pixels Y'
+
+    def __add__(self, other):
+        if not isinstance(other, ImageData):
+            raise TypeError
+        return self.__class__(self.meta, self.arr_raw + other.arr_raw,
+                              self.darr_raw + other.darr_raw,
+                              self.norm_raw + other.norm_raw,
+                              self.nscale, name=self.name + '+' + other.name,
+                              sources=self.sources + other.sources)
+
+    def __subtract__(self, other):
+        if not isinstance(other, ImageData):
+            raise TypeError
+        scaled_arr = other.arr / other.nscale * self.nscale
+        scaled_darr = other.darr / other.nscale * self.nscale
+        return self.__class__(self.meta, self.arr_raw - scaled_arr,
+                              self.darr_raw + scaled_darr,
+                              self.norm_raw, self.nscale,
+                              name=self.name + '-' + other.name,
+                              sources=self.sources + other.sources)
+
+    def plot(self, axes=None, **kw):
+        """Plot the image dataset using matplotlib.
+
+        *axes* is a matplotlib Axes object, as returned by :func:`gca()`.  If
+        no axes are given, the current figure is used.
+        """
+        dp = DataPlotter(axes=axes)
+        dp.plot_image(self, **kw)
+
+    def merge(self, binsize, *others, **kwds):
+        return reduce(operator.add, others, self)
+
+    def __repr__(self):
+        return '<%s (%dx%d pixels)>' % (self.name, self.arr.shape[0],
+                                        self.arr.shape[1])
 
 
 class DataList(dict):

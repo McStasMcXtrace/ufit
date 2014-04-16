@@ -83,7 +83,7 @@ if len(args) >= 1:
             mainwindow.filename = None
     else:
         dtempl, numor = extract_template(datafile)
-        mainwindow.dloader.set_template(dtempl, numor)
+        mainwindow.dloader.set_template(dtempl, numor, silent=False)
 mainwindow.show()
 if opts.browse:
     mainwindow.dloader.open_browser(opts.browse)
