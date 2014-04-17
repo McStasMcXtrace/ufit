@@ -13,7 +13,8 @@ from os import path
 from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
     QByteArray
 from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
-    QFileDialog, QDialog, QAction, QActionGroup, QInputDialog, QSplitter, QLabel
+    QFileDialog, QDialog, QAction, QActionGroup, QInputDialog, QSplitter, \
+    QLabel, QCursor
 
 from ufit import backends, __version__
 from ufit.data.dataset import ScanData, ImageData
@@ -65,6 +66,7 @@ class UFitMain(QMainWindow):
         self.canvas = MPLCanvas(self, maincanvas=True)
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
+        self.canvas.mpl_connect('button_release_event', self.on_canvas_click)
         self.toolbar = MPLToolbar(self.canvas, self)
         self.toolbar.setObjectName('mainplottoolbar')
         self.connect(self.toolbar, SIGNAL('popoutRequested'),
@@ -121,6 +123,14 @@ class UFitMain(QMainWindow):
         menu.addMenu(self.menuRenameGroup)
         menu.addMenu(self.menuRemoveGroup)
         self.manageBtn.setMenu(menu)
+
+        # right-mouse-button menu for canvas
+        menu = self.canvasMenu = QMenu(self)
+        menu.addAction(self.actionUnzoom)
+        menu.addAction(self.actionDrawSymbols)
+        menu.addAction(self.actionConnectData)
+        menu.addAction(self.actionDrawGrid)
+        menu.addAction(self.actionShowLegend)
 
         # restore window state
         with self.sgroup as settings:
@@ -212,6 +222,10 @@ class UFitMain(QMainWindow):
     def on_canvas_pick(self, event):
         if isinstance(self.current_panel, ScanDataPanel):
             self.current_panel.on_canvas_pick(event)
+
+    def on_canvas_click(self, event):
+        if event.button == 3 and not self.toolbar.mode: # right button
+            self.canvasMenu.popup(QCursor.pos())
 
     @qtsig('')
     def on_loadBtn_clicked(self):
