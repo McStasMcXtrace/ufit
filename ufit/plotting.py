@@ -50,6 +50,8 @@ class DataPlotter(object):
         self._limits = None
         self.symbols = True
         self.lines = False
+        self.grid = True
+        self.legend = True
 
     def draw(self):
         self.canvas.draw()
@@ -113,8 +115,10 @@ class DataPlotter(object):
             axes.set_ylabel(ylabel)
         if title is not None:
             axes.set_title(title, size='medium')
-        axes.legend(prop={'size': 'small'})
-        axes.grid(True)
+        if self.legend:
+            axes.legend(prop={'size': 'small'})
+        if self.grid:
+            axes.grid(True)
         if self._limits:
             axes.set_xlim(*self._limits[0])
             axes.set_ylim(*self._limits[1])

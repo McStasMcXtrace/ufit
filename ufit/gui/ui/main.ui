@@ -182,8 +182,11 @@
     <addaction name="actionPopOut"/>
     <addaction name="separator"/>
     <addaction name="actionUnzoom"/>
+    <addaction name="separator"/>
     <addaction name="actionDrawSymbols"/>
     <addaction name="actionConnectData"/>
+    <addaction name="actionDrawGrid"/>
+    <addaction name="actionShowLegend"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -363,7 +366,7 @@
   <action name="actionUnzoom">
    <property name="icon">
     <iconset resource="../../../resource/gui.qrc">
-     <normaloff>:/home.png</normaloff>:/home.png</iconset>
+     <normaloff>:/magnifier-zoom-fit.png</normaloff>:/magnifier-zoom-fit.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Unzoom</string>
@@ -435,6 +438,28 @@
    </property>
    <property name="text">
     <string>Show in a new &amp;window</string>
+   </property>
+  </action>
+  <action name="actionShowLegend">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable legend</string>
+   </property>
+  </action>
+  <action name="actionDrawGrid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable grid</string>
    </property>
   </action>
  </widget>

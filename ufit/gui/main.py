@@ -370,13 +370,19 @@ class UFitMain(QMainWindow):
 
     def on_actionConnectData_toggled(self, on):
         self.canvas.plotter.lines = on
-        QMessageBox.information(self, 'Info', 'The new style will be used '
-                                'the next time a plot is generated.')
+        self.current_panel.plot()
 
     def on_actionDrawSymbols_toggled(self, on):
         self.canvas.plotter.symbols = on
-        QMessageBox.information(self, 'Info', 'The new style will be used '
-                                'the next time a plot is generated.')
+        self.current_panel.plot()
+
+    def on_actionShowLegend_toggled(self, on):
+        self.canvas.plotter.legend = on
+        self.current_panel.plot()
+
+    def on_actionDrawGrid_toggled(self, on):
+        self.canvas.plotter.grid = on
+        self.current_panel.plot()
 
     def _get_export_filename(self, filter='ASCII text (*.txt)'):
         initialdir = session.props.get('lastexportdir', session.dirname)

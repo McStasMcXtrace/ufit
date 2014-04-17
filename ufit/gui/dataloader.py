@@ -199,30 +199,33 @@ into one set, as well as files 23 and 24.
             self.logger.exception('Error while loading data file')
             QMessageBox.information(self, 'Error', str(e))
             return
+        self.last_data = datas
         if final:
-            self.last_data = datas
             self.emit(SIGNAL('newDatas'), datas, self.groupBox.currentText())
             self.emit(SIGNAL('closeRequest'))
         else:
-            self.plotter.reset()
-            xlabels = set()
-            ylabels = set()
-            titles = set()
-            for data in datas:
-                xlabels.add(data.xaxis)
-                ylabels.add(data.yaxis)
-                titles.add(data.title)
-                if isinstance(data, ImageData):  # XXX this plots only one
-                    self.plotter.plot_image(data, multi=True)
-                    break
-                else:
-                    self.plotter.plot_data(data, multi=True)
-            self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
-                                     ', '.join(titles))
-            self.plotter.draw()
+            self.plot()
 
     def initialize(self):
         pass
+
+    def plot(self, limits=True, canvas=None):
+        self.plotter.reset()
+        xlabels = set()
+        ylabels = set()
+        titles = set()
+        for data in self.last_data:
+            xlabels.add(data.xaxis)
+            ylabels.add(data.yaxis)
+            titles.add(data.title)
+            if isinstance(data, ImageData):  # XXX this plots only one
+                self.plotter.plot_image(data, multi=True)
+                break
+            else:
+                self.plotter.plot_data(data, multi=True)
+        self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
+                                 ', '.join(titles))
+        self.plotter.draw()
 
 
 class DataLoaderMain(QMainWindow):
