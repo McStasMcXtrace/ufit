@@ -259,7 +259,7 @@ class MultiDataOps(QWidget):
             data.dy *= const
             data.dy_raw *= const
         self.emit(SIGNAL('replotRequest'), None)
-        session.set_dirty(True)
+        session.set_dirty()
 
     @qtsig('')
     def on_addBtn_clicked(self):
@@ -271,7 +271,7 @@ class MultiDataOps(QWidget):
             data.y += const
             data.y_raw += const * data.norm
         self.emit(SIGNAL('replotRequest'), None)
-        session.set_dirty(True)
+        session.set_dirty()
 
     @qtsig('')
     def on_shiftBtn_clicked(self):
@@ -282,7 +282,7 @@ class MultiDataOps(QWidget):
         for data in self.datas:
             data.x += const
         self.emit(SIGNAL('replotRequest'), None)
-        session.set_dirty(True)
+        session.set_dirty()
 
     @qtsig('')
     def on_monscaleBtn_clicked(self):
@@ -296,7 +296,7 @@ class MultiDataOps(QWidget):
             data.y = data.y_raw/data.norm
             data.dy = sqrt(data.y_raw)/data.norm
         self.emit(SIGNAL('replotRequest'), None)
-        session.set_dirty(True)
+        session.set_dirty()
 
     @qtsig('')
     def on_mergeBtn_clicked(self):
@@ -328,6 +328,12 @@ class MultiDataOps(QWidget):
             if i == which:
                 continue
             item.change_model(model.copy())
+        self.emit(SIGNAL('replotRequest'), None)
+
+    @qtsig('')
+    def on_fitallBtn_clicked(self):
+        for item in self.items:
+            item.model.fit(item.data)
         self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')
