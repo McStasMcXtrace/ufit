@@ -52,7 +52,7 @@ def str_to_path(string):
 
 class MPLCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent, width=10, height=6, dpi=72):
+    def __init__(self, parent, width=10, height=6, dpi=72, maincanvas=False):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
         self.printer = None
@@ -79,6 +79,20 @@ class MPLCanvas(FigureCanvas):
         # actually get key events
         self.setFocusPolicy(Qt.StrongFocus)
         self.mpl_connect('key_press_event', self.key_press)
+        # These will not do anything in standalone mode, but do not hurt.
+        if maincanvas:
+            self.connect(session, SIGNAL('propsRequested'),
+                         self.on_session_propsRequested)
+            self.connect(session, SIGNAL('propsUpdated'),
+                         self.on_session_propsUpdated)
+
+    def on_session_propsRequested(self):
+        session.props.canvas_logz = self.logz
+
+    def on_session_propsUpdated(self):
+        if 'canvas_logz' in session.props:
+            self.logz = session.props.canvas_logz
+            self.emit(SIGNAL('logzChanged'))
 
     def key_press(self, event):
         if key_press_handler:
@@ -171,6 +185,8 @@ class MPLToolbar(NavigationToolbar2QT):
         self._actions['logx_callback'].setCheckable(True)
         self._actions['logy_callback'].setCheckable(True)
         self._actions['logz_callback'].setCheckable(True)
+        self.connect(self.canvas, SIGNAL('logzChanged'),
+                     self.on_canvas_logzChanged)
 
     def _icon(self, name):
         if name in self.icon_name_map:
@@ -208,6 +224,7 @@ class MPLToolbar(NavigationToolbar2QT):
     def logz_callback(self):
         ax = self.canvas.figure.gca()
         self.canvas.logz = not self.canvas.logz
+        session.set_dirty()
         self._actions['logz_callback'].setChecked(self.canvas.logz)
         for im in ax.get_images():
             if self.canvas.logz:
@@ -215,6 +232,9 @@ class MPLToolbar(NavigationToolbar2QT):
             else:
                 im.set_norm(None)
         self.canvas.draw()
+
+    def on_canvas_logzChanged(self):
+        self._actions['logz_callback'].setChecked(self.canvas.logz)
 
     def print_callback(self):
         self.canvas.print_()

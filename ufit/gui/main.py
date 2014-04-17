@@ -62,7 +62,7 @@ class UFitMain(QMainWindow):
         # populate plot view
         layout2 = QVBoxLayout()
         layout2.setContentsMargins(0, 0, 0, 0)
-        self.canvas = MPLCanvas(self)
+        self.canvas = MPLCanvas(self, maincanvas=True)
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         self.toolbar = MPLToolbar(self.canvas, self)
