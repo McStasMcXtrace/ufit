@@ -250,7 +250,7 @@ class UFitMain(QMainWindow):
                 if not items:
                     return
                 session.move_items(items, group)
-                self.itemTree.expandAll()
+                self.re_expand_tree()
             self.connect(action, SIGNAL('triggered()'), move_to)
             self.menuMoveToGroup.addAction(action)
 
@@ -260,7 +260,7 @@ class UFitMain(QMainWindow):
             action = QAction(group.name, self)
             def remove(group=group):
                 session.remove_group(group)
-                self.itemTree.expandAll()
+                self.re_expand_tree()
             self.connect(action, SIGNAL('triggered()'), remove)
             self.menuRemoveGroup.addAction(action)
 
@@ -287,7 +287,7 @@ class UFitMain(QMainWindow):
                                 QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
             return
         session.remove_items(items)
-        self.itemTree.expandAll()
+        self.re_expand_tree()
 
     @qtsig('')
     def on_actionReorder_triggered(self):
@@ -310,7 +310,7 @@ class UFitMain(QMainWindow):
                     return
                 new_structure[-1][1].append(obj)
         session.reorder_groups(new_structure)
-        self.itemTree.expandAll()
+        self.re_expand_tree()
 
     def selected_items(self, itemcls=SessionItem):
         """Return a list of selected items that belong to the given class."""
@@ -352,6 +352,22 @@ class UFitMain(QMainWindow):
             panel.initialize(items)
             self.select_new_panel(panel)
             panel.plot()
+
+    def on_itemTree_expanded(self, index):
+        index.internalPointer().expanded = True
+        session.set_dirty()
+
+    def on_itemTree_collapsed(self, index):
+        index.internalPointer().expanded = False
+        session.set_dirty()
+
+    def re_expand_tree(self):
+        # expand / collapse all groups according to last saved state
+        for group in session.groups:
+            if group.expanded:
+                self.itemTree.expand(self.itemlistmodel.index_for_group(group))
+            else:
+                self.itemTree.collapse(self.itemlistmodel.index_for_group(group))
 
     @qtsig('')
     def on_actionInspector_triggered(self):
@@ -530,7 +546,7 @@ class UFitMain(QMainWindow):
             logger.exception('Loading session %r failed' % filename)
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
         else:
-            self.itemTree.expandAll()
+            self.re_expand_tree()
             # if there are annotations, show the window automatically
             if session.props.get('annotations'):
                 self.on_actionAnnotations_triggered()
