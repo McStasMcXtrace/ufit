@@ -131,6 +131,7 @@ class UFitMain(QMainWindow):
         menu.addAction(self.actionConnectData)
         menu.addAction(self.actionDrawGrid)
         menu.addAction(self.actionShowLegend)
+        menu.addAction(self.actionSmoothImages)
 
         # restore window state
         with self.sgroup as settings:
@@ -396,6 +397,10 @@ class UFitMain(QMainWindow):
 
     def on_actionDrawGrid_toggled(self, on):
         self.canvas.plotter.grid = on
+        self.current_panel.plot()
+
+    def on_actionSmoothImages_toggled(self, on):
+        self.canvas.plotter.imgsmoothing = on
         self.current_panel.plot()
 
     def _get_export_filename(self, filter='ASCII text (*.txt)'):

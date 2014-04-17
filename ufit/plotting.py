@@ -48,10 +48,12 @@ class DataPlotter(object):
         self.marker_cycle = cycle(self.markers)
         self.toolbar = toolbar
         self._limits = None
+        # display options
         self.symbols = True
         self.lines = False
         self.grid = True
         self.legend = True
+        self.imgsmoothing = True
 
     def draw(self):
         self.canvas.draw()
@@ -200,9 +202,10 @@ class DataPlotter(object):
 
     def plot_image(self, imgdata, multi=False):
         axes = self.axes
-        norm = getattr(self.canvas, 'logz', False) and LogNorm(vmin=0.1) or None
+        norm = getattr(self.canvas, 'logz', False) and LogNorm() or None
+        interp = 'nearest' if not self.imgsmoothing else 'gaussian'
         axes.imshow(imgdata.arr, origin='lower', aspect='equal',
-                    interpolation='nearest', norm=norm)
+                    interpolation=interp, norm=norm)
         if not multi:
             self.plot_finish(imgdata.xaxis, imgdata.yaxis, imgdata.title)
 
