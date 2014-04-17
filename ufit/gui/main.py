@@ -53,8 +53,11 @@ class UFitMain(QMainWindow):
                      self.on_menuMoveToGroup_aboutToShow)
         self.menuRemoveGroup = QMenu('Remove group', self)
         self.menuRemoveGroup.setIcon(QIcon(':/drawer--minus.png'))
-        self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
+        self.connect(self.menuRemoveGroup, SIGNAL('aboutToShow()'),
                      self.on_menuRemoveGroup_aboutToShow)
+        self.menuRenameGroup = QMenu('Rename group', self)
+        self.connect(self.menuRenameGroup, SIGNAL('aboutToShow()'),
+                     self.on_menuRenameGroup_aboutToShow)
 
         # populate plot view
         layout2 = QVBoxLayout()
@@ -111,10 +114,11 @@ class UFitMain(QMainWindow):
         menu = QMenu(self)
         menu.addAction(self.actionMergeData)
         menu.addAction(self.actionRemoveData)
+        menu.addMenu(self.menuMoveToGroup)
         menu.addAction(self.actionReorder)
         menu.addSeparator()
         menu.addAction(self.actionNewGroup)
-        menu.addMenu(self.menuMoveToGroup)
+        menu.addMenu(self.menuRenameGroup)
         menu.addMenu(self.menuRemoveGroup)
         self.manageBtn.setMenu(menu)
 
@@ -244,6 +248,19 @@ class UFitMain(QMainWindow):
                 self.itemTree.expandAll()
             self.connect(action, SIGNAL('triggered()'), remove)
             self.menuRemoveGroup.addAction(action)
+
+    def on_menuRenameGroup_aboutToShow(self):
+        self.menuRenameGroup.clear()
+        for group in session.groups:
+            action = QAction(group.name, self)
+            def rename(group=group):
+                name = QInputDialog.getText(self, 'ufit', 'Please enter a new name '
+                                            'for the group:', text=group.name)[0]
+                if not name:
+                    return
+                session.rename_group(group, name)
+            self.connect(action, SIGNAL('triggered()'), rename)
+            self.menuRenameGroup.addAction(action)
 
     @qtsig('')
     def on_actionRemoveData_triggered(self):

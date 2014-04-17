@@ -189,6 +189,12 @@ class _Session(QObject):
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
 
+    def rename_group(self, group, name):
+        group.name = name
+        group.update_htmldesc()
+        self.set_dirty()
+        self.emit(SIGNAL('groupUpdated'), group)
+
     def add_item(self, item, group=None):
         if group is None:
             group = self.groups[-1]
