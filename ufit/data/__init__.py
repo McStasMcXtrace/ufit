@@ -2,18 +2,19 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
 """Data loading and treatment for ufit."""
 
 from ufit import UFitError
-from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp
+from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp, \
+    cascade
 from ufit.data.loader import Loader
-from ufit.data.dataset import Dataset, DatasetList
+from ufit.data.dataset import Dataset, ScanData, ImageData, DatasetList
 
-data_formats = {
+data_formats_scan = {
     'ill': ill,
     'nicos': nicos,
     'old nicos': nicos_old,
@@ -22,8 +23,16 @@ data_formats = {
     'trisp': trisp,
 }
 
-__all__ = ['Dataset', 'DatasetList', 'sets', 'set_datatemplate',
-           'set_dataformat', 'read_data', 'as_data', 'read_numors']
+data_formats_image = {
+    'cascade': cascade,
+}
+
+data_formats = dict(kv for kv in (data_formats_scan.items() +
+                                  data_formats_image.items()))
+
+__all__ = ['Dataset', 'DatasetList', 'ScanData', 'ImageData', 'sets',
+           'set_datatemplate', 'set_dataformat', 'read_data', 'as_data',
+           'read_numors']
 
 
 # simplified interface for usage in noninteractive scripts

@@ -47,32 +47,50 @@
              <string>Load new data</string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="reorderBtn">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="manageBtn">
             <property name="text">
-             <string>Reorder</string>
+             <string>Manage   </string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/arrow-switch.png</normaloff>:/arrow-switch.png</iconset>
+             <iconset resource="../../../resource/gui.qrc">
+              <normaloff>:/gear.png</normaloff>:/gear.png</iconset>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="removeBtn">
-            <property name="text">
-             <string>Remove selected</string>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-            <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/cross.png</normaloff>:/cross.png</iconset>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
             </property>
-           </widget>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>1</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -84,9 +102,12 @@
          </widget>
         </item>
         <item>
-         <widget class="DataListView" name="dataList">
+         <widget class="ItemTreeView" name="itemTree">
           <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
+          </property>
+          <property name="indentation">
+           <number>14</number>
           </property>
          </widget>
         </item>
@@ -109,8 +130,14 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuRecent">
+     <property name="title">
+      <string>&amp;Recent sessions</string>
+     </property>
+    </widget>
     <addaction name="actionNewSession"/>
     <addaction name="actionLoad"/>
+    <addaction name="menuRecent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
@@ -127,8 +154,11 @@
      <string>&amp;Datasets</string>
     </property>
     <addaction name="actionLoadData"/>
+    <addaction name="separator"/>
     <addaction name="actionRemoveData"/>
     <addaction name="actionMergeData"/>
+    <addaction name="actionReorder"/>
+    <addaction name="actionNewGroup"/>
     <addaction name="separator"/>
     <addaction name="actionExportASCII"/>
     <addaction name="actionExportFIT"/>
@@ -136,6 +166,7 @@
     <addaction name="actionExportPython"/>
     <addaction name="separator"/>
     <addaction name="actionInspector"/>
+    <addaction name="actionAnnotations"/>
    </widget>
    <widget class="QMenu" name="menuBackend">
     <property name="title">
@@ -148,10 +179,16 @@
     </property>
     <addaction name="actionSavePlot"/>
     <addaction name="actionPrint"/>
+    <addaction name="actionPopOut"/>
     <addaction name="separator"/>
     <addaction name="actionUnzoom"/>
+    <addaction name="separator"/>
     <addaction name="actionDrawSymbols"/>
     <addaction name="actionConnectData"/>
+    <addaction name="actionDrawGrid"/>
+    <addaction name="actionShowLegend"/>
+    <addaction name="separator"/>
+    <addaction name="actionSmoothImages"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -175,10 +212,11 @@
    <addaction name="separator"/>
    <addaction name="actionLoadData"/>
    <addaction name="actionInspector"/>
+   <addaction name="actionAnnotations"/>
   </widget>
   <action name="actionLoad">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
    </property>
    <property name="text">
@@ -190,7 +228,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/disk-black.png</normaloff>:/disk-black.png</iconset>
    </property>
    <property name="text">
@@ -202,7 +240,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/question-white.png</normaloff>:/question-white.png</iconset>
    </property>
    <property name="text">
@@ -211,7 +249,7 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/cross-button.png</normaloff>:/cross-button.png</iconset>
    </property>
    <property name="text">
@@ -223,7 +261,7 @@
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/disks-black.png</normaloff>:/disks-black.png</iconset>
    </property>
    <property name="text">
@@ -235,7 +273,7 @@
   </action>
   <action name="actionLoadData">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
    </property>
    <property name="text">
@@ -255,7 +293,7 @@
   </action>
   <action name="actionRemoveData">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/cross.png</normaloff>:/cross.png</iconset>
    </property>
    <property name="text">
@@ -264,7 +302,7 @@
   </action>
   <action name="actionMergeData">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/arrow-join.png</normaloff>:/arrow-join.png</iconset>
    </property>
    <property name="text">
@@ -284,7 +322,7 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/printer.png</normaloff>:/printer.png</iconset>
    </property>
    <property name="text">
@@ -293,7 +331,7 @@
   </action>
   <action name="actionExportASCII">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/document-export.png</normaloff>:/document-export.png</iconset>
    </property>
    <property name="text">
@@ -314,10 +352,13 @@
    <property name="text">
     <string>Export parameters as ASCII...</string>
    </property>
+   <property name="toolTip">
+    <string>Export parameters (and data values) as ASCII</string>
+   </property>
   </action>
   <action name="actionSavePlot">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/document-pdf.png</normaloff>:/document-pdf.png</iconset>
    </property>
    <property name="text">
@@ -326,8 +367,8 @@
   </action>
   <action name="actionUnzoom">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
-     <normaloff>:/home.png</normaloff>:/home.png</iconset>
+    <iconset resource="../../../resource/gui.qrc">
+     <normaloff>:/magnifier-zoom-fit.png</normaloff>:/magnifier-zoom-fit.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Unzoom</string>
@@ -335,11 +376,11 @@
   </action>
   <action name="actionInspector">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/table-select-row.png</normaloff>:/table-select-row.png</iconset>
    </property>
    <property name="text">
-    <string>Data inspector</string>
+    <string>Data &amp;inspector</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
@@ -347,7 +388,7 @@
   </action>
   <action name="actionNewSession">
    <property name="icon">
-    <iconset resource="../../resource/gui.qrc">
+    <iconset resource="../../../resource/gui.qrc">
      <normaloff>:/document.png</normaloff>:/document.png</iconset>
    </property>
    <property name="text">
@@ -357,16 +398,93 @@
     <string>Ctrl+N</string>
    </property>
   </action>
+  <action name="actionClearRecent">
+   <property name="text">
+    <string>Clear this list</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear recent files list</string>
+   </property>
+  </action>
+  <action name="actionReorder">
+   <property name="icon">
+    <iconset resource="../../../resource/gui.qrc">
+     <normaloff>:/arrow-switch.png</normaloff>:/arrow-switch.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reorder</string>
+   </property>
+  </action>
+  <action name="actionNewGroup">
+   <property name="icon">
+    <iconset resource="../../../resource/gui.qrc">
+     <normaloff>:/drawer--plus.png</normaloff>:/drawer--plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>New group...</string>
+   </property>
+  </action>
+  <action name="actionAnnotations">
+   <property name="icon">
+    <iconset resource="../../../resource/gui.qrc">
+     <normaloff>:/script-php.png</normaloff>:/script-php.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Annotations</string>
+   </property>
+  </action>
+  <action name="actionPopOut">
+   <property name="icon">
+    <iconset resource="../../../resource/gui.qrc">
+     <normaloff>:/chart--arrow.png</normaloff>:/chart--arrow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show in a new &amp;window</string>
+   </property>
+  </action>
+  <action name="actionShowLegend">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable legend</string>
+   </property>
+  </action>
+  <action name="actionDrawGrid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable grid</string>
+   </property>
+  </action>
+  <action name="actionSmoothImages">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Smooth images</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DataListView</class>
-   <extends>QListView</extends>
-   <header>ufit.gui.datalist</header>
+   <class>ItemTreeView</class>
+   <extends>QTreeView</extends>
+   <header>ufit.gui.itemlist</header>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resource/gui.qrc"/>
+  <include location="../../../resource/gui.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -2,23 +2,21 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
 """Data fitter panel."""
 
-import traceback
-
-from numpy import array, savetxt, linspace
-
 from PyQt4.QtCore import SIGNAL, Qt
 from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
-     QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
-     QComboBox, QKeySequence, QIcon
+    QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
+    QComboBox, QKeySequence, QIcon
 
+from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
-from ufit.param import prepare_params
+from ufit.gui.session import session
+
 
 def is_float(x):
     try:
@@ -32,6 +30,7 @@ class Fitter(QWidget):
 
     def __init__(self, parent, standalone=False, fit_kws={}):
         QWidget.__init__(self, parent)
+        self.logger = logger.getChild('fitter')
         self.picking = None
         self.last_result = None
         self.model = None
@@ -187,7 +186,7 @@ class Fitter(QWidget):
             p.pmax = float(pmax.text()) if pmax.text() else None
             p.delta = float(delta.text()) if delta.text() else 0
         self.update_enables()
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
 
     def restore_from_params(self, other_params):
         for p in self.model.params:
@@ -207,7 +206,7 @@ class Fitter(QWidget):
             ctls[5].setText(p0.pmin is not None and '%.5g' % p0.pmin or '')
             ctls[6].setText(p0.pmax is not None and '%.5g' % p0.pmax or '')
             ctls[7].setText(p0.delta and '%.5g' % p0.delta or '')
-        self.emit(SIGNAL('dirty'))
+        session.set_dirty()
         self.do_plot()
 
     def save_original_params(self):
@@ -243,13 +242,13 @@ class Fitter(QWidget):
                 ctls = self.param_controls[p]
                 if not p.expr:
                     ctls[1].setText('%.5g' % p.value)
-            self.emit(SIGNAL('dirty'))
+            session.set_dirty()
             self.do_plot()
         self._pick_finished = callback
 
     def do_plot(self, *ignored):
         self.update_from_controls()
-        self.emit(SIGNAL('replotRequest'))
+        self.emit(SIGNAL('replotRequest'), None)
 
     def do_fit(self):
         if self.picking:
@@ -263,7 +262,7 @@ class Fitter(QWidget):
         try:
             res = self.model.fit(self.data, **self.fit_kws)
         except Exception, e:
-            traceback.print_exc()
+            self.logger.exception('Error during fit')
             self.statusLabel.setText('Error during fit: %s' % e)
             return
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
@@ -274,24 +273,10 @@ class Fitter(QWidget):
             self.param_controls[p][1].setText('%.5g' % p.value)
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
 
-        self.emit(SIGNAL('replotRequest'), True, res.paramvalues)
-        self.emit(SIGNAL('dirty'))
+        self.emit(SIGNAL('replotRequest'), True)
+        session.set_dirty()
 
         self.last_result = res
-
-    def export_fits(self, fp):
-        xx = linspace(self.data.x.min(), self.data.x.max(), 1000)
-        if self.last_result is None:
-            paramvalues = prepare_params(self.model.params, self.data.meta)[3]
-        else:
-            paramvalues = self.last_result.paramvalues
-        yy = self.model.fcn(paramvalues, xx)
-        yys = []
-        for comp in self.model.get_components():
-              if comp is self.model:
-                  continue
-              yys.append(comp.fcn(paramvalues, xx))
-        savetxt(fp, array([xx, yy] + yys).T)
 
 
 class FitterMain(QMainWindow):
@@ -312,16 +297,14 @@ class FitterMain(QMainWindow):
         self.setCentralWidget(layout)
         self.setWindowTitle('Fitting: data %s' % data.name)
 
-    def replot(self, limits=True, paramvalues=None):
+    def replot(self, limits=True):
         plotter = self.canvas.plotter
         plotter.reset(limits=limits)
         try:
             plotter.plot_data(self.fitter.data)
-            plotter.plot_model_full(self.fitter.model, self.fitter.data,
-                                    paramvalues=paramvalues)
-        except Exception, e:
-            traceback.print_exc()
-            print 'Error while plotting:', e
+            plotter.plot_model_full(self.fitter.model, self.fitter.data)
+        except Exception:
+            self.logger.exception('Error while plotting')
         else:
             plotter.draw()
 

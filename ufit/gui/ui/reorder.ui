@@ -6,48 +6,40 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>310</width>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Subtract</string>
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="titleLbl">
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
-      <string>Select a dataset to subtract:</string>
+      <string>Reorder items</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="setList"/>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="destructBox">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Destructive (do not make a copy)</string>
+      <string>Drag and drop items to reorder them:</string>
      </property>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Precision:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="precisionEdit">
-       <property name="text">
-        <string>0.01</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="ItemListWidget" name="itemList">
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::InternalMove</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -61,12 +53,13 @@
    </item>
   </layout>
  </widget>
- <tabstops>
-  <tabstop>setList</tabstop>
-  <tabstop>destructBox</tabstop>
-  <tabstop>precisionEdit</tabstop>
-  <tabstop>buttonBox</tabstop>
- </tabstops>
+ <customwidgets>
+  <customwidget>
+   <class>ItemListWidget</class>
+   <extends>QListWidget</extends>
+   <header>ufit.gui.itemlist</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

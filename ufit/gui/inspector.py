@@ -2,16 +2,17 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
 """Metadata view window."""
 
 from PyQt4.QtCore import SIGNAL, QByteArray, Qt
-from PyQt4.QtGui import QMainWindow, QTableWidgetItem
+from PyQt4.QtGui import QMainWindow, QTableWidgetItem, QMessageBox
 
 from ufit.gui.common import loadUi, SettingGroup
+from ufit.gui.session import session
 
 
 class InspectorWindow(QMainWindow):
@@ -33,11 +34,10 @@ class InspectorWindow(QMainWindow):
             windowstate = settings.value('windowstate', QByteArray())
             self.restoreState(windowstate)
 
-    def setDataPanel(self, panel):
-        data = panel.data
+    def setDataset(self, data):
+        self.data = data
         self.dataName.setText('%s - %s' % (data.name, data.title))
         self._updating = True
-        self._panel = panel
         self.tbl.setRowCount(len(data.meta))
         for i, key in enumerate(sorted(data.meta, key=lambda n: n.lower())):
             key_item = QTableWidgetItem(key)
@@ -52,6 +52,9 @@ class InspectorWindow(QMainWindow):
         self._updating = False
 
     def closeEvent(self, event):
+        with self.sgroup as settings:
+            settings.setValue('geometry', self.saveGeometry())
+            settings.setValue('windowstate', self.saveState())
         self.emit(SIGNAL('closed'))
         return QMainWindow.closeEvent(self, event)
 
@@ -61,9 +64,11 @@ class InspectorWindow(QMainWindow):
         try:
             new_value = eval(str(item.text()))
         except Exception:
-            pass
+            QMessageBox.error(self, 'Error',
+                              'The new value is not a valid expression.')
+            return
         else:
             key = str(self.tbl.item(item.row(), 0).text())
-            self._panel.data.meta[key] = new_value
-        self._panel.replot()
-        self.emit(SIGNAL('dirty'))
+            self.data.meta[key] = new_value
+        self.emit(SIGNAL('replotRequest'), None)
+        session.set_dirty()

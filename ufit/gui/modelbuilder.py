@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -17,6 +17,7 @@ from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
 from ufit.models import concrete_models, eval_model
 from ufit.models.corr import Background
 from ufit.models.peaks import GaussInt
+from ufit.gui import logger
 from ufit.gui.common import loadUi
 
 ident_re = re.compile('[a-zA-Z][a-zA-Z0-9_]*$')
@@ -26,6 +27,7 @@ class ModelBuilder(QWidget):
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
+        self.logger = logger.getChild('model')
         self.gauss_picking = 0
         self.gauss_peak_pos = 0, 0
         self.pick_model = None
@@ -63,8 +65,7 @@ class ModelBuilder(QWidget):
         self.gauss_picked_points = []
         self.modeldefStacker.setCurrentIndex(1)
         self.pick_model = Background(bkgd=self.data.y.min())
-        self.modeldefEdit.setText(self.pick_model.get_description())
-        self.emit(SIGNAL('newModel'), self.pick_model, False)
+        self.emit(SIGNAL('newModel'), self.pick_model, True, False)
 
     def on_canvas_pick(self, event):
         if not self.gauss_picking:
@@ -81,8 +82,7 @@ class ModelBuilder(QWidget):
             fwhm = abs(pos - event.xdata) * 2
             self.pick_model += GaussInt('p%02d' % (self.gauss_picking/2),
                                         pos=pos, int=fwhm*ampl*2.5, fwhm=fwhm)
-            self.emit(SIGNAL('newModel'), self.pick_model, False)
-            self.modeldefEdit.setText(self.pick_model.get_description())
+            self.emit(SIGNAL('newModel'), self.pick_model, True, False)
         self.gauss_picking += 1
 
     def _finish_picking(self):
@@ -151,23 +151,6 @@ class ModelBuilder(QWidget):
         tc.movePosition(QTextCursor.End)
         tc.insertText(prefix + code)
 
-    def default_model(self, data):
-        ymin = data.y.min()
-        ymaxidx = data.y.argmax()
-        ymax = data.y[ymaxidx]
-        xmax = data.x[ymaxidx]
-        overhalf = data.x[data.y > (ymax + ymin)/2.]
-        if len(overhalf) >= 2:
-            xwidth = abs(overhalf[0] - overhalf[-1]) or 0.1
-        else:
-            xwidth = 0.1
-        new_model = eval_model('Background() + Gauss(\'peak\')')
-        new_model.params[0].value = ymin
-        new_model.params[1].value = xmax
-        new_model.params[2].value = ymax-ymin
-        new_model.params[3].value = xwidth
-        return new_model
-
     def initialize(self, data, model):
         self.model = model
         self.data = data
@@ -181,6 +164,7 @@ class ModelBuilder(QWidget):
         try:
             model = eval_model(modeldef)
         except Exception, e:
+            self.logger.exception('Could not evaluate model')
             QMessageBox.information(self, 'Error',
                                     'Could not evaluate model: %s' % e)
             return

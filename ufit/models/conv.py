@@ -1,4 +1,12 @@
-# ufit convolution model
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Convolution models."""
 
 import re
 

@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -11,25 +11,30 @@
 import os
 from os import path
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, QByteArray
-from PyQt4.QtGui import QMainWindow, QListWidgetItem, QVBoxLayout
+from PyQt4.QtCore import pyqtSignature as qtsig, QByteArray
+from PyQt4.QtGui import QMainWindow, QApplication, QListWidgetItem, \
+    QVBoxLayout, QFileDialog
 
 from ufit.data import Loader
 from ufit.utils import extract_template
-from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup
+from ufit.gui import logger
+from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup, \
+    path_to_str
+from ufit.gui.session import session
+from ufit.gui.scanitem import ScanDataItem
 
 
 class BrowseWindow(QMainWindow):
     def __init__(self, parent):
         QMainWindow.__init__(self, parent)
         loadUi(self, 'browse.ui')
-        self.dirBtn.hide()
+        self.logger = logger.getChild('browse')
+
+        self.rootdir = ''
         self.loader = Loader()
         self._data = {}
         self.canvas = MPLCanvas(self)
         self.canvas.plotter.lines = True
-        self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
-                              horizontalalignment='center')
         self.toolbar = MPLToolbar(self.canvas, self)
         self.toolbar.setObjectName('browsetoolbar')
         self.addToolBar(self.toolbar)
@@ -54,14 +59,29 @@ class BrowseWindow(QMainWindow):
         datas = [self._data[item.type()] for item in self.dataList.selectedItems()]
         if not datas:
             return
-        loadwin = self.parent()
-        for data in datas[:-1]:
-            loadwin.emit(SIGNAL('newData'), data, False)
-        loadwin.emit(SIGNAL('newData'), datas[-1])
+        items = [ScanDataItem(data) for data in datas]
+        # XXX which group
+        session.add_items(items)
+
+    @qtsig('')
+    def on_dirBtn_clicked(self):
+        newdir = QFileDialog.getExistingDirectory(self, 'New directory',
+                                                  self.rootdir)
+        self.set_directory(path_to_str(newdir))
+
+    @qtsig('')
+    def on_refreshBtn_clicked(self):
+        self.set_directory(self.rootdir)
 
     def set_directory(self, root):
         self.setWindowTitle('ufit browser - %s' % root)
+        self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
+                              horizontalalignment='center')
+        self.canvas.draw()
+        QApplication.processEvents()
+        self.rootdir = root
         files = os.listdir(root)
+        self.dataList.clear()
         for fn in sorted(files):
             fn = path.join(root, fn)
             if not path.isfile(fn):
@@ -71,7 +91,7 @@ class BrowseWindow(QMainWindow):
                 self.loader.template = t
                 res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
             except Exception, e:
-                print e
+                self.logger.warning('While loading %r: %s' % (fn, e))
             else:
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s - %s' %

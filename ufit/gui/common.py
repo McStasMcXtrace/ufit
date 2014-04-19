@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -10,15 +10,18 @@
 
 import sys
 from os import path
+from cStringIO import StringIO
 
 from PyQt4 import uic
-from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt
+from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt, QRectF, QByteArray
 from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-    QMessageBox
+    QMessageBox, QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, QDialog
+from PyQt4.QtSvg import QSvgRenderer
 
 from matplotlib.backends.backend_qt4agg import \
     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
 from matplotlib._pylab_helpers import Gcf
+from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure
 from matplotlib import pyplot
 try:
@@ -32,11 +35,12 @@ pyplot.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
                      'Lucida Grande, Bitstream Vera Sans'})
 
 from ufit.gui import logger
+from ufit.gui.session import session
 from ufit.plotting import DataPlotter
 
 uipath = path.dirname(__file__)
 
-def loadUi(widget, uiname, subdir=''):
+def loadUi(widget, uiname, subdir='ui'):
     uic.loadUi(path.join(uipath, subdir, uiname), widget)
 
 def path_to_str(qstring):
@@ -48,10 +52,13 @@ def str_to_path(string):
 
 class MPLCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent, width=10, height=6, dpi=72):
+    def __init__(self, parent, width=10, height=6, dpi=72, maincanvas=False):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
+        self.printer = None
+        self.print_width = 0
         self.main = parent
+        self.logz = False
         self.axes = fig.add_subplot(111)
         self.plotter = DataPlotter(self, self.axes)
         # make tight_layout do the right thing
@@ -72,6 +79,20 @@ class MPLCanvas(FigureCanvas):
         # actually get key events
         self.setFocusPolicy(Qt.StrongFocus)
         self.mpl_connect('key_press_event', self.key_press)
+        # These will not do anything in standalone mode, but do not hurt.
+        if maincanvas:
+            self.connect(session, SIGNAL('propsRequested'),
+                         self.on_session_propsRequested)
+            self.connect(session, SIGNAL('propsUpdated'),
+                         self.on_session_propsUpdated)
+
+    def on_session_propsRequested(self):
+        session.props.canvas_logz = self.logz
+
+    def on_session_propsUpdated(self):
+        if 'canvas_logz' in session.props:
+            self.logz = session.props.canvas_logz
+            self.emit(SIGNAL('logzChanged'))
 
     def key_press(self, event):
         if key_press_handler:
@@ -89,9 +110,43 @@ class MPLCanvas(FigureCanvas):
             self.figure.tight_layout(pad=2)
         except Exception:
             pass
+        self.plotter.save_layout()
         self.draw()
         self.update()
         QWidget.resizeEvent(self, event)
+
+    def print_(self):
+        sio = StringIO()
+        self.print_figure(sio, format='svg')
+        svg = QSvgRenderer(QByteArray(sio.getvalue()))
+        sz = svg.defaultSize()
+        aspect = sz.width()/float(sz.height())
+
+        if self.printer is None:
+            self.printer = QPrinter(QPrinter.HighResolution)
+            self.printer.setOrientation(QPrinter.Landscape)
+
+        dlg = QDialog(self)
+        loadUi(dlg, 'printpreview.ui')
+        dlg.width.setValue(self.print_width or 500)
+        ppw = QPrintPreviewWidget(self.printer, dlg)
+        dlg.layout().insertWidget(1, ppw)
+        def render(printer):
+            height = printer.height() * (dlg.width.value()/1000.)
+            width = aspect * height
+            painter = QPainter(printer)
+            svg.render(painter, QRectF(0, 0, width, height))
+        def sliderchanged(newval):
+            ppw.updatePreview()
+        self.connect(ppw, SIGNAL('paintRequested(QPrinter *)'), render)
+        self.connect(dlg.width, SIGNAL('valueChanged(int)'), sliderchanged)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        self.print_width = dlg.width.value()
+        pdlg = QPrintDialog(self.printer, self)
+        if pdlg.exec_() != QDialog.Accepted:
+            return
+        render(self.printer)
 
 
 class MPLToolbar(NavigationToolbar2QT):
@@ -107,15 +162,20 @@ class MPLToolbar(NavigationToolbar2QT):
         'pyconsole.png':    'terminal--arrow.png',
         'log-x.png':        'log-x.png',
         'log-y.png':        'log-y.png',
+        'log-z.png':        'log-z.png',
+        'exwindow.png':    'chart--arrow.png',
     }
 
     toolitems = list(NavigationToolbar2QT.toolitems)
     del toolitems[7]  # subplot adjust
     toolitems.insert(0, ('Log x', 'Logarithmic X scale', 'log-x', 'logx_callback'))
     toolitems.insert(1, ('Log y', 'Logarithmic Y scale', 'log-y', 'logy_callback'))
-    toolitems.insert(2, (None, None, None, None))
+    toolitems.insert(2, ('Log z', 'Logarithmic Z scale', 'log-z', 'logz_callback'))
+    toolitems.insert(3, (None, None, None, None))
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))
+    toolitems.append(('Pop out', 'Show the figure in a separate window',
+                      'exwindow', 'popout_callback'))
     toolitems.append(('Execute', 'Show Python console', 'pyconsole',
                       'exec_callback'))
 
@@ -124,6 +184,9 @@ class MPLToolbar(NavigationToolbar2QT):
         self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self._actions['logx_callback'].setCheckable(True)
         self._actions['logy_callback'].setCheckable(True)
+        self._actions['logz_callback'].setCheckable(True)
+        self.connect(self.canvas, SIGNAL('logzChanged'),
+                     self.on_canvas_logzChanged)
 
     def _icon(self, name):
         if name in self.icon_name_map:
@@ -158,13 +221,33 @@ class MPLToolbar(NavigationToolbar2QT):
             self._actions['logy_callback'].setChecked(False)
         self.canvas.draw()
 
+    def logz_callback(self):
+        ax = self.canvas.figure.gca()
+        self.canvas.logz = not self.canvas.logz
+        session.set_dirty()
+        self._actions['logz_callback'].setChecked(self.canvas.logz)
+        for im in ax.get_images():
+            if self.canvas.logz:
+                im.set_norm(LogNorm())
+            else:
+                im.set_norm(None)
+        self.canvas.draw()
+
+    def on_canvas_logzChanged(self):
+        self._actions['logz_callback'].setChecked(self.canvas.logz)
+
     def print_callback(self):
-        self.emit(SIGNAL('printRequested'))
+        self.canvas.print_()
+
+    def popout_callback(self):
+        self.emit(SIGNAL('popoutRequested'))
 
     def exec_callback(self):
         try:
             from ufit.gui.console import ConsoleWindow
         except ImportError:
+            logger.exception('Qt console window cannot be opened without '
+                             'IPython; import error was:')
             QMessageBox.information(self, 'ufit',
                 'Please install IPython with qtconsole to activate this function.')
             return
@@ -173,7 +256,7 @@ class MPLToolbar(NavigationToolbar2QT):
         w.ipython.pushVariables({
             'fig': self.canvas.figure,
             'ax': self.canvas.figure.gca(),
-            'D': self.canvas.main.panels,
+            'D': [item for group in session.groups for item in group.items],
         })
         w.show()
 
@@ -197,7 +280,6 @@ class MPLToolbar(NavigationToolbar2QT):
             try:
                 self.canvas.print_figure(unicode(fname))
             except Exception as e:
-                # XXX
                 logger.exception('Error saving file')
                 QMessageBox.critical(self, 'Error saving file', str(e))
 

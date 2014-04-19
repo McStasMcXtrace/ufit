@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -12,23 +12,45 @@ from os import path
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
 from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
-     QMainWindow, QSplitter, QApplication
+    QMainWindow, QSplitter, QApplication
 
-from ufit.data import data_formats, Loader
+from ufit.data import data_formats, Loader, ImageData
 from ufit.utils import extract_template
+from ufit.gui import logger
 from ufit.gui.common import loadUi, path_to_str, str_to_path, \
-     MPLCanvas, MPLToolbar
+    MPLCanvas, MPLToolbar
 from ufit.gui.browse import BrowseWindow
+from ufit.gui.common import SettingGroup
+from ufit.gui.session import session
 
 
 class DataLoader(QWidget):
 
     def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
+        self.logger = logger.getChild('loader')
         self.plotter = plotter
         self.last_data = []
         self.loader = Loader()
         self.createUI(standalone)
+
+        self.sgroup = SettingGroup('main')
+
+        # These will not do anything in standalone mode, but do not hurt.
+        self.connect(session, SIGNAL('propsRequested'),
+                     self.on_session_propsRequested)
+        self.connect(session, SIGNAL('propsUpdated'),
+                     self.on_session_propsUpdated)
+        self.connect(session, SIGNAL('itemsUpdated'),
+                     self.on_session_itemsUpdated)
+        self.connect(session, SIGNAL('groupAdded'),
+                     self.on_session_itemsUpdated)
+
+        with self.sgroup as settings:
+            data_template_path = settings.value('last_data_template', '')
+            if data_template_path:
+                self.templateEdit.setText(data_template_path)
+                self.set_template(data_template_path, 0, silent=True)
 
     def createUI(self, standalone):
         loadUi(self, 'dataloader.ui')
@@ -38,6 +60,19 @@ class DataLoader(QWidget):
 
         self.buttonBox.addButton(QDialogButtonBox.Open)
         self.buttonBox.addButton('Preview', QDialogButtonBox.NoRole)
+
+    def on_session_propsRequested(self):
+        session.props.template = self.templateEdit.text()
+
+    def on_session_propsUpdated(self):
+        if 'template' in session.props:
+            self.templateEdit.setText(session.props.template)
+
+    def on_session_itemsUpdated(self):
+        # list of groups may have changed
+        self.groupBox.clear()
+        for group in session.groups:
+            self.groupBox.addItem(group.name)
 
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
@@ -70,13 +105,17 @@ into one set, as well as files 23 and 24.
 * 10,11,12+13,14 loads four sets.
 ''')
 
-    @qtsig('')
-    def on_browseBtn_clicked(self):
+    def open_browser(self, directory):
         bwin = BrowseWindow(self)
         bwin.show()
         QApplication.processEvents()
+        bwin.set_directory(directory)
+        bwin.activateWindow()
+
+    @qtsig('')
+    def on_browseBtn_clicked(self):
         templ = path_to_str(self.templateEdit.text())
-        bwin.set_directory(path.dirname(templ))
+        self.open_browser(path.dirname(templ))
 
     @qtsig('')
     def on_settemplateBtn_clicked(self):
@@ -85,23 +124,26 @@ into one set, as well as files 23 and 24.
             startdir = path.dirname(previous)
         else:
             startdir = '.'
-        fn = path_to_str(QFileDialog.getOpenFileName(self, 'Choose a file', startdir,
-                                                     'All files (*)'))
+        fn = path_to_str(QFileDialog.getOpenFileName(
+            self, 'Choose a file', startdir, 'All files (*)'))
         if not fn:
             return
-        self.set_template(fn)
-
-    def set_template(self, fn):
         dtempl, numor = extract_template(fn)
+        self.set_template(dtempl, numor)
+
+    def set_template(self, dtempl, numor, silent=True):
         self.templateEdit.setText(str_to_path(dtempl))
+        with self.sgroup as settings:
+            settings.setValue('last_data_template', dtempl)
         self.loader.template = dtempl
         try:
             cols, xguess, yguess, dyguess, mguess, nmon = \
                 self.loader.guess_cols(numor)
         except Exception, e:
-            print e
-            QMessageBox.information(self, 'Error',
-                                    'Could not read column names: %s' % e)
+            if not silent:
+                self.logger.exception('Could not read column names')
+                QMessageBox.information(self, 'Error',
+                                        'Could not read column names: %s' % e)
             return
         self.xcolBox.clear()
         self.xcolBox.addItem('auto')
@@ -144,39 +186,46 @@ into one set, as well as files 23 and 24.
         try:
             mscale = int(self.monscaleEdit.text())
         except Exception:
-            QMessageBox.information(self, 'Error', 'Monitor scale must be integer.')
+            QMessageBox.information(
+                self, 'Error', 'Monitor scale must be integer.')
             return
         dtempl = path_to_str(self.templateEdit.text())
         self.loader.template = dtempl
         numors = str(self.numorsEdit.text())
         try:
-            datas = self.loader.load_numors(numors, prec,
-                                            xcol, ycol, dycol, mcol, mscale, floatmerge)
+            datas = self.loader.load_numors(
+                numors, prec, xcol, ycol, dycol, mcol, mscale, floatmerge)
         except Exception, e:
+            self.logger.exception('Error while loading data file')
             QMessageBox.information(self, 'Error', str(e))
             return
+        self.last_data = datas
         if final:
-            self.last_data = datas
-            for data in datas[:-1]:
-                self.emit(SIGNAL('newData'), data, False)
-            self.emit(SIGNAL('newData'), datas[-1])
+            self.emit(SIGNAL('newDatas'), datas, self.groupBox.currentText())
             self.emit(SIGNAL('closeRequest'))
         else:
-            self.plotter.reset()
-            xlabels = set()
-            ylabels = set()
-            titles = set()
-            for data in datas:
-                self.plotter.plot_data(data, multi=True)
-                xlabels.add(data.xaxis)
-                ylabels.add(data.yaxis)
-                titles.add(data.title)
-            self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
-                                     ', '.join(titles))
-            self.plotter.draw()
+            self.plot()
 
     def initialize(self):
         pass
+
+    def plot(self, limits=True, canvas=None):
+        self.plotter.reset()
+        xlabels = set()
+        ylabels = set()
+        titles = set()
+        for data in self.last_data:
+            xlabels.add(data.xaxis)
+            ylabels.add(data.yaxis)
+            titles.add(data.title)
+            if isinstance(data, ImageData):  # XXX this plots only one
+                self.plotter.plot_image(data, multi=True)
+                break
+            else:
+                self.plotter.plot_data(data, multi=True)
+        self.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
+                                 ', '.join(titles))
+        self.plotter.draw()
 
 
 class DataLoaderMain(QMainWindow):
@@ -188,6 +237,9 @@ class DataLoaderMain(QMainWindow):
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         self.dloader = DataLoader(self, self.canvas.plotter, standalone=True)
+        self.dloader.groupBox.hide()
+        self.dloader.groupBoxLbl.hide()
+        self.dloader.groupBoxDesc.hide()
         self.dloader.initialize()
         self.connect(self.dloader, SIGNAL('closeRequest'), self.close)
         layout.addWidget(self.dloader)

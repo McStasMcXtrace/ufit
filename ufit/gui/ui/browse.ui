@@ -51,24 +51,35 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QPushButton" name="dirBtn">
-            <property name="text">
-             <string>Change directory...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
-              <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="loadBtn">
             <property name="text">
              <string>Load</string>
             </property>
             <property name="icon">
-             <iconset resource="../../resource/gui.qrc">
+             <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refreshBtn">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../../resource/gui.qrc">
+              <normaloff>:/arrow-circle-double.png</normaloff>:/arrow-circle-double.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="dirBtn">
+            <property name="text">
+             <string>Change directory...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../../resource/gui.qrc">
+              <normaloff>:/folder-open.png</normaloff>:/folder-open.png</iconset>
             </property>
            </widget>
           </item>
@@ -99,13 +110,13 @@
      <x>0</x>
      <y>0</y>
      <width>836</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
  </widget>
  <resources>
-  <include location="../../resource/gui.qrc"/>
+  <include location="../../../resource/gui.qrc"/>
  </resources>
  <connections/>
 </ui>

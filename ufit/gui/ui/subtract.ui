@@ -6,40 +6,48 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>310</width>
-    <height>525</height>
+    <width>400</width>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Subtract</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
+    <widget class="QLabel" name="titleLbl">
      <property name="text">
-      <string>Reorder datasets</string>
+      <string>Select a dataset to subtract:</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="ItemListWidget" name="setList"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="destructBox">
      <property name="text">
-      <string>Drag and drop datasets to reorder them:</string>
+      <string>Destructive (do not make a copy)</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="dataList">
-     <property name="dragDropMode">
-      <enum>QAbstractItemView::InternalMove</enum>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Precision:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="precisionEdit">
+       <property name="text">
+        <string>0.01</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -53,6 +61,19 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ItemListWidget</class>
+   <extends>QListWidget</extends>
+   <header>ufit.gui.itemlist</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>setList</tabstop>
+  <tabstop>destructBox</tabstop>
+  <tabstop>precisionEdit</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

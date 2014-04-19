@@ -3,12 +3,13 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2014, Georg Brandl.  All rights reserved.
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
 import sys
 import time
+import optparse
 from os import path
 
 t0 = time.time()
@@ -24,28 +25,55 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 
 import ufit.guiresource
+from ufit import __version__
+from ufit.gui.common import SettingGroup
 
 app = QApplication([])
 app.setOrganizationName('ufit')
 app.setApplicationName('gui')
 
-pixmap = QPixmap(':/splash.png')
-splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
-splash.show()
-time.sleep(0.1)
-app.processEvents()
-
 from ufit.gui import logger
 from ufit.gui.main import UFitMain
+from ufit.utils import extract_template
+
+pixmap = QPixmap(':/splash.png')
+splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint)
+splash.showMessage(u'Loading...' + u'\xa0' * 10 + '\n\n',
+                   Qt.AlignRight | Qt.AlignBottom)
+splash.show()
+time.sleep(0.1)
+with SettingGroup('main') as settings:
+    if settings.value('current_version', '') != __version__:
+        settings.setValue('current_version', __version__)
+        # Execute here the actions to be performed only once after
+        # each update (there is nothing there for now, but it could
+        # be useful some day...)
+        logger.info('Upgrade to version %s finished' % __version__)
+app.processEvents()
+
+def log_unhandled(*exc_info):
+    logger.error('Unhandled exception in Qt callback', exc_info=exc_info)
+sys.excepthook = log_unhandled
 
 t1 = time.time()
-logger.info('import finished (%.3f s), starting up app...' % (t1-t0))
+logger.info('Startup: import finished (%.3f s), starting GUI...' % (t1-t0))
 
 mainwindow = UFitMain()
-args = sys.argv[1:]
-if len(args) == 1:
+
+parser = optparse.OptionParser(usage='''\
+Usage: %prog [-b directory] [.ufit file | data file]
+''')
+parser.add_option('-b', '--browse', action='store', metavar='DIR',
+                  help='open browse window in specified directory')
+
+opts, args = parser.parse_args()
+
+if len(args) >= 1:
     datafile = path.abspath(args[0])
-    if datafile.endswith('.ufit'):
+    if path.isdir(datafile):
+        # directory given, treat it as -b argument (browse)
+        opts.browse = datafile
+    elif datafile.endswith('.ufit'):
         try:
             mainwindow.filename = datafile
             mainwindow.load_session(datafile)
@@ -54,10 +82,13 @@ if len(args) == 1:
                                 'Error', 'Loading failed: %s' % err)
             mainwindow.filename = None
     else:
-        mainwindow.dloader.set_template(datafile)
+        dtempl, numor = extract_template(datafile)
+        mainwindow.dloader.set_template(dtempl, numor, silent=False)
+mainwindow.show()
+if opts.browse:
+    mainwindow.dloader.open_browser(opts.browse)
 
 t2 = time.time()
-logger.info('loading finished (%.3f s), main window showing...' % (t2-t1))
-mainwindow.show()
+logger.info('Startup: loading finished (%.3f s), main window opened' % (t2-t1))
 splash.deleteLater()
 app.exec_()

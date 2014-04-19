@@ -1,4 +1,12 @@
-# ufit base models
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""ufit base models."""
 
 import re
 import inspect
@@ -185,8 +193,6 @@ class Model(object):
         # be changed on the fly
         success, msg, chi2 = backends.backend.do_fit(data, self.fcn,
                                                      self.params, kw)
-        # second run makes it better...
-#        success, msg, chi2 = backends.backend.do_fit(data, self.fcn, self.params, kw)
         for p in self.params:
             p.value = p.finalize(p.value)
         return Result(success, data, self, self.params, msg, chi2)

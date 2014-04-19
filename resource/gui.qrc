@@ -1,9 +1,11 @@
 <RCC>
   <qresource>
+    <file>arrow-circle-double.png</file>
     <file>table-select-row.png</file>
     <file>splash.png</file>
     <file>printer.png</file>
     <file>arrow-join.png</file>
+    <file>notebook.png</file>
     <file>notebook--plus.png</file>
     <file>document-export.png</file>
     <file>cross-button.png</file>
@@ -23,6 +25,16 @@
     <file>magnifier-zoom-fit.png</file>
     <file>log-x.png</file>
     <file>log-y.png</file>
+    <file>log-z.png</file>
     <file>document.png</file>
+    <file>map.png</file>
+    <file>gear.png</file>
+    <file>drawer.png</file>
+    <file>drawer--plus.png</file>
+    <file>drawer--minus.png</file>
+    <file>drawer-open.png</file>
+    <file>script-php.png</file>
+    <file>chart--arrow.png</file>
+    <file>image-sunset.png</file>
   </qresource>
 </RCC>
