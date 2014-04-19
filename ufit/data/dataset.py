@@ -111,6 +111,8 @@ class Dataset(object):
     @classmethod
     def from_arrays(cls, name, x, y, dy, meta=None, xcol='x', ycol='y'):
         multix = False
+        if isinstance(x, list):
+            x = array(x)
         if len(x.shape) > 1:
             multix = True
             xorig = x
