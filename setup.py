@@ -18,7 +18,7 @@ def find_packages():
 def find_ui_files():
     """Find all Qt .ui files in ufit.gui subpackages."""
     res = {}
-    for root, dirs, files in os.walk('ufit/gui'):
+    for root, dirs, files in os.walk('ufit/gui/ui'):
         uis = [uifile for uifile in files if uifile.endswith('.ui')]
         if uis:
             res[root.replace('/', '.')] = uis
