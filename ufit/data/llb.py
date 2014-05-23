@@ -44,6 +44,12 @@ def guess_cols(colnames, coldata, meta):
     return meta['hkle_vary'], 'counts', None, 'mon'
 
 
+def _float_fmt(x):
+    if x == 0:
+        return '0'
+    else:
+        return '%.3f' % x
+
 def read_data(filename, fp):
     meta = {}
     dates = fp.read(10)
@@ -57,6 +63,15 @@ def read_data(filename, fp):
         if name is None:
             continue
         meta[name] = headerfields[i]
+    # reconstruct run command from header fields
+    meta['subtitle'] = 'run q=(%s %s %s %s) dq=(%s %s %s %s) ' % \
+                       tuple(map(_float_fmt, headerfields[92:100]))
+    meta['subtitle'] += 'np=%d m=%d ' % headerfields[100:102]
+    if headerfields[102] == 1:
+        # const ki
+        meta['subtitle'] += 'ki=%.3f' % headerfields[103]
+    else:
+        meta['subtitle'] += 'kf=%.3f' % headerfields[103]
     parr = []
     for point in iter(lambda: fp.read(POINTFMT.size), ''):
         coords = POINTFMT.unpack(point)[:len(POINTFIELDS) + 1]
