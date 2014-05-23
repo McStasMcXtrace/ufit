@@ -170,7 +170,8 @@ class MPLToolbar(NavigationToolbar2QT):
     del toolitems[7]  # subplot adjust
     toolitems.insert(0, ('Log x', 'Logarithmic X scale', 'log-x', 'logx_callback'))
     toolitems.insert(1, ('Log y', 'Logarithmic Y scale', 'log-y', 'logy_callback'))
-    toolitems.insert(2, ('Log z', 'Logarithmic Z scale', 'log-z', 'logz_callback'))
+    toolitems.insert(2, ('Log z', 'Logarithmic Z scale for images', 'log-z',
+                         'logz_callback'))
     toolitems.insert(3, (None, None, None, None))
     toolitems.append(('Print', 'Print the figure', 'printer',
                       'print_callback'))

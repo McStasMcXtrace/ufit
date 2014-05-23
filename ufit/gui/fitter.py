@@ -304,7 +304,7 @@ class FitterMain(QMainWindow):
             plotter.plot_data(self.fitter.data)
             plotter.plot_model_full(self.fitter.model, self.fitter.data)
         except Exception:
-            self.logger.exception('Error while plotting')
+            logger.exception('Error while plotting')
         else:
             plotter.draw()
 

@@ -503,7 +503,8 @@ class UFitMain(QMainWindow):
     def check_save(self):
         if not self.isWindowModified():  # nothing there to be saved
             return True
-        resp = QMessageBox.question(self, 'ufit', 'Save current session?',
+        resp = QMessageBox.question(self, 'ufit',
+            'Save current session?\n%s' % session.filename,
             QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
         if resp == QMessageBox.Yes:
             return self.save_session()

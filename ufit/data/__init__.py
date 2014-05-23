@@ -10,7 +10,7 @@
 
 from ufit import UFitError
 from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp, \
-    cascade
+    llb, cascade
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset, ScanData, ImageData, DatasetList
 
@@ -21,6 +21,7 @@ data_formats_scan = {
     'simple': simple,
     'simple comma-separated': simple_csv,
     'trisp': trisp,
+    'llb': llb,
 }
 
 data_formats_image = {
