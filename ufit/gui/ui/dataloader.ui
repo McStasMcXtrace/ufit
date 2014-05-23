@@ -427,6 +427,11 @@
        <property name="editable">
         <bool>true</bool>
        </property>
+       <item>
+        <property name="text">
+         <string>Default</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="9" column="3" colspan="2">
