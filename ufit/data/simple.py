@@ -22,23 +22,20 @@ def guess_cols(colnames, coldata, meta):
 
 
 def check_data_simple(fp, sep=None):
-    line1 = fp.readline()
-    line2 = fp.readline()
+    line = fp.readline()
     # find the first non-comment line
-    while line2.startswith(('#', '%')):
-        line1 = line2
-        line2 = fp.readline()
+    while line.startswith(('#', '%')):
+        line = fp.readline()
+    line2 = fp.readline()
     fp.seek(0, 0)
-    # must be values in second line
+    # must be values in non-comment line, or the line after
     try:
-        values = map(float, line2.split(sep))
+        map(float, line.split(sep))
     except ValueError:
-        return False
-    # optional header in first line
-    if line1.startswith(('#', '%')):
-        line1 = line1[1:]
-    if len(line1.split(sep)) != len(values):
-        return False
+        try:
+            map(float, line2.split(sep))
+        except ValueError:
+            return False
     return True
 
 def check_data(fp):
@@ -46,29 +43,38 @@ def check_data(fp):
 
 
 def read_data_simple(filename, fp, sep=None):
-    line1 = fp.readline()
+    line1 = ''
     line2 = fp.readline()
+    skiprows = 0
     # find the first non-comment line
     while line2.startswith(('#', '%')):
         line1 = line2
         line2 = fp.readline()
-    # now line2 is definitely a data line and line1 *may* be headers
+        skiprows += 1
+    # now line2 is the first non-comment line (but may be column names)
+
+    # if there are comments, line1 will have the comment char
     comments = '#'
+    if line1.startswith(('#', '%')):
+        comments = line1[0]
+        line1 = line1[1:]
     try:
-        if line1.startswith(('#', '%')):
-            comments = line1[0]
-            line1 = line1[1:]
-        map(float, line1.split())
+        map(float, line2.split())
     except ValueError:
-        # must be headers...
-        colnames = line1.split()
-    fp.seek(0, 0)
-    arr = loadtxt(fp, ndmin=2, comments=comments)
-    if colnames is None:
-        colnames = ['Column %d' % i for i in range(1, arr.shape[1]+1)]
+        # must be column names
+        colnames = line2.split()
+        skiprows += 1
     else:
-        # clip to actual number of columns
-        colnames = colnames[:arr.shape[1]]
+        # line1 might have column names
+        if line1:
+            colnames = line1.split()
+        else:
+            colnames = []
+    fp.seek(0, 0)
+    arr = loadtxt(fp, ndmin=2, skiprows=skiprows, comments=comments)
+    # if number of colnames is not correct, discard them
+    if len(colnames) != arr.shape[1]:
+        colnames = ['Column %d' % i for i in range(1, arr.shape[1]+1)]
     meta = {}
     meta['filedesc'] = path.basename(filename)
     return colnames, arr, meta
