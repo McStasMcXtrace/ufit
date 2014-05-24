@@ -334,7 +334,8 @@ class MultiDataOps(QWidget):
     @qtsig('')
     def on_fitallBtn_clicked(self):
         for item in self.items:
-            item.model.fit(item.data)
+            res = item.model.fit(item.data)
+            session.emit(SIGNAL('modelFitted'), item, res)
         self.emit(SIGNAL('replotRequest'), None)
 
     @qtsig('')

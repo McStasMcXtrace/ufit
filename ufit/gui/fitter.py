@@ -30,6 +30,7 @@ class Fitter(QWidget):
 
     def __init__(self, parent, standalone=False, fit_kws={}):
         QWidget.__init__(self, parent)
+        self.item = parent.item
         self.logger = logger.getChild('fitter')
         self.picking = None
         self.last_result = None
@@ -70,6 +71,8 @@ class Fitter(QWidget):
         if keep_old and old_model is not None:
             oldp_dict = dict((p.name, p) for p in old_model.params)
             self.restore_from_params(oldp_dict)
+
+        self.connect(session, SIGNAL('modelFitted'), self.on_modelFitted)
 
         if self.standalone:
             if fit:
@@ -265,6 +268,15 @@ class Fitter(QWidget):
             self.logger.exception('Error during fit')
             self.statusLabel.setText('Error during fit: %s' % e)
             return
+        self.on_modelFitted(self.item, res)
+
+        self.emit(SIGNAL('replotRequest'), True)
+        session.set_dirty()
+
+    def on_modelFitted(self, item, res):
+        if item is not self.item:
+            return
+
         self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
                                  + res.message +
                                  ' Reduced chi^2 = %.3g.' % res.chisqr)
@@ -272,9 +284,6 @@ class Fitter(QWidget):
         for p in res.params:
             self.param_controls[p][1].setText('%.5g' % p.value)
             self.param_controls[p][2].setText(u'± %.5g' % p.error)
-
-        self.emit(SIGNAL('replotRequest'), True)
-        session.set_dirty()
 
         self.last_result = res
 

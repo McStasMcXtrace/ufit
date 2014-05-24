@@ -11,7 +11,7 @@
 from numpy import sqrt, ones
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QWidget, QDialog, QListWidgetItem, QMessageBox
+from PyQt4.QtGui import QWidget, QDialog, QMessageBox
 
 from ufit.data.merge import rebin, floatmerge
 from ufit.gui.common import loadUi
