@@ -159,6 +159,14 @@ class MultiResult(list):
         #pl.tight_layout()
 
     @cached_property
+    def datavalues(self):
+        d = dict((k, [v]) for (k, v) in self[0].data.meta.iteritems())
+        for res in self[1:]:
+            for k, v in res.data.meta.iteritems():
+                d[k].append(v)
+        return d
+
+    @cached_property
     def paramvalues(self):
         """Return a dictionary mapping parameter names to arrays of
         parameter values, one for each result.
@@ -192,3 +200,9 @@ class MultiResult(list):
             if p.overall:
                 print p
         print '=' * 80
+
+    def plot_param(self, xname, pname):
+        pl.errorbar(self.datavalues[xname], self.paramvalues[pname],
+                    self.paramerrors[pname], fmt='o-')
+        pl.xlabel(xname)
+        pl.ylabel(pname)

@@ -135,6 +135,7 @@ class Param(object):
     def copy(self, newname=None):
         cp = copy.copy(self)
         cp.name = newname or self.name
+        cp.finalize = self.finalize
         return cp
 
     def fix(self):
