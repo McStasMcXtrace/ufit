@@ -26,9 +26,13 @@ FIELDS = \
 
 # format of a single point (92 bytes long)
 POINTFMT = struct.Struct('<hffffffffffffffhffffffff')
+POINTFIELDS = ['qh', 'qk', 'ql', 'en', 'ki', 'm1', 'm2',
+               'e1', 'e2', 'a1', 'a2', 'time', 'mon', 'counts', 'xx', 'T']
 
-POINTFIELDS = ['qh', 'qk', 'ql', 'en', 'ki', 'm1', 'm2', 'e1',
-               'e2', 'a1', 'a2', 'time', 'mon', 'counts', 'xx', 'T']
+# format for 4F with double monochromator
+POINTFMT_alt = struct.Struct('<hffffffffffffffffhffffff')
+POINTFIELDS_alt = ['qh', 'qk', 'ql', 'en', 'ki', 'm1', 'm2', 'm3', 'm4',
+                   'e1', 'e2', 'a1', 'a2', 'time', 'mon', 'counts', 'xx', 'T']
 
 def check_data(fp):
     # the first 10 bytes are a packed date; check that for plausibility
@@ -73,16 +77,23 @@ def read_data(filename, fp):
     else:
         meta['subtitle'] += 'kf=%.3f' % headerfields[103]
     parr = []
-    for point in iter(lambda: fp.read(POINTFMT.size), ''):
-        coords = POINTFMT.unpack(point)[:len(POINTFIELDS) + 1]
+    pointfmt = POINTFMT
+    pointfields = POINTFIELDS
+    for i, point in enumerate(iter(lambda: fp.read(POINTFMT.size), '')):
+        if i == 0:
+            unp = pointfmt.unpack(point)
+            if unp[14] != 1:
+                pointfmt = POINTFMT_alt
+                pointfields = POINTFIELDS_alt
+        coords = pointfmt.unpack(point)[:len(pointfields) + 1]
         parr.append(coords + (coords[1] + 0.5*coords[2],
                               0.5*sqrt(3)*coords[2]))
     parr = array(parr)[:,1:]
-    for i, name in enumerate(POINTFIELDS):
+    for i, name in enumerate(pointfields):
         meta[name] = parr[:,i].mean()
     meta['environment'] = ['T = %.3f K' % meta['T']]
     meta['hkle'] = parr[:,0:4]
     deviations = array([cs.max() - cs.min() for cs in parr.T[0:4]])
-    xg = POINTFIELDS[deviations.argmax()]
+    xg = pointfields[deviations.argmax()]
     meta['hkle_vary'] = xg
-    return POINTFIELDS + ['qx', 'qy'], parr, meta
+    return pointfields + ['qx', 'qy'], parr, meta
