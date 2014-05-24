@@ -24,6 +24,10 @@ def guess_cols(colnames, coldata, meta):
 def check_data_simple(fp, sep=None):
     line1 = fp.readline()
     line2 = fp.readline()
+    # find the first non-comment line
+    while line2.startswith(('#', '%')):
+        line1 = line2
+        line2 = fp.readline()
     fp.seek(0, 0)
     # must be values in second line
     try:
@@ -42,20 +46,29 @@ def check_data(fp):
 
 
 def read_data_simple(filename, fp, sep=None):
-    dtline = fp.readline()
+    line1 = fp.readline()
+    line2 = fp.readline()
+    # find the first non-comment line
+    while line2.startswith(('#', '%')):
+        line1 = line2
+        line2 = fp.readline()
+    # now line2 is definitely a data line and line1 *may* be headers
+    comments = '#'
     try:
-        if dtline.startswith(('#', '%')):
-            dtline = dtline[1:]
-        map(float, dtline.split())
+        if line1.startswith(('#', '%')):
+            comments = line1[0]
+            line1 = line1[1:]
+        map(float, line1.split())
     except ValueError:
         # must be headers...
-        colnames = dtline.split()
-    else:
-        fp.seek(0, 0)
-        colnames = None
-    arr = loadtxt(fp, ndmin=2)
+        colnames = line1.split()
+    fp.seek(0, 0)
+    arr = loadtxt(fp, ndmin=2, comments=comments)
     if colnames is None:
         colnames = ['Column %d' % i for i in range(1, arr.shape[1]+1)]
+    else:
+        # clip to actual number of columns
+        colnames = colnames[:arr.shape[1]]
     meta = {}
     meta['filedesc'] = path.basename(filename)
     return colnames, arr, meta
