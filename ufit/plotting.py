@@ -49,6 +49,7 @@ class DataPlotter(object):
         self.toolbar = toolbar
         self._limits = None
         # display options
+        self.no_fits = False
         self.symbols = True
         self.lines = False
         self.grid = True
@@ -134,6 +135,8 @@ class DataPlotter(object):
 
     def plot_model_full(self, model, data, labels=True, paramvalues=None,
                         offset=0, **kw):
+        if self.no_fits:
+            return
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
         nsamples = self._get_samples(model, data)
@@ -153,6 +156,8 @@ class DataPlotter(object):
 
     def plot_model(self, model, data, labels=True, paramvalues=None,
                    offset=0, **kw):
+        if self.no_fits:
+            return
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
         nsamples = self._get_samples(model, data)
@@ -167,6 +172,8 @@ class DataPlotter(object):
 
     def plot_model_components(self, model, data, labels=True, paramvalues=None,
                               offset=0, **kw):
+        if self.no_fits:
+            return
         if paramvalues is None:
             paramvalues = prepare_params(model.params, data.meta)[3]
         nsamples = self._get_samples(model, data)

@@ -17,6 +17,7 @@ from numpy import array, sqrt
 DATEFMT = struct.Struct('<hhhhh')
 
 # names the header floats starting at position 92; None means unmapped
+# CAUTION: some of these names are only correct for 1T
 FIELDS = \
     ['dm', 'da', 'etam', 'etaa', 'zme', 'zea', 'zad', 'he', 've', 'hd', 'vd'] + \
     [None] * 12 + ['h0', 'h1', 'h2', 'h3', 'v0', 'v1', 'v2', 'v3',

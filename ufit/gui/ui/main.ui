@@ -183,6 +183,7 @@
     <addaction name="separator"/>
     <addaction name="actionUnzoom"/>
     <addaction name="separator"/>
+    <addaction name="actionHideFit"/>
     <addaction name="actionDrawSymbols"/>
     <addaction name="actionConnectData"/>
     <addaction name="actionDrawGrid"/>
@@ -473,6 +474,14 @@
    </property>
    <property name="text">
     <string>Smooth images</string>
+   </property>
+  </action>
+  <action name="actionHideFit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide fit curves</string>
    </property>
   </action>
  </widget>

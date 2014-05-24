@@ -127,11 +127,14 @@ class UFitMain(QMainWindow):
         # right-mouse-button menu for canvas
         menu = self.canvasMenu = QMenu(self)
         menu.addAction(self.actionUnzoom)
+        menu.addAction(self.actionHideFit)
+        menu.addSeparator()
         menu.addAction(self.actionDrawSymbols)
         menu.addAction(self.actionConnectData)
+        menu.addAction(self.actionSmoothImages)
+        menu.addSeparator()
         menu.addAction(self.actionDrawGrid)
         menu.addAction(self.actionShowLegend)
-        menu.addAction(self.actionSmoothImages)
 
         # restore window state
         with self.sgroup as settings:
@@ -398,6 +401,10 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_actionLoadData_triggered(self):
         self.on_loadBtn_clicked()
+
+    def on_actionHideFit_toggled(self, on):
+        self.canvas.plotter.no_fits = on
+        self.current_panel.plot()
 
     def on_actionConnectData_toggled(self, on):
         self.canvas.plotter.lines = on
