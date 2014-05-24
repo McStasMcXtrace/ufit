@@ -295,6 +295,7 @@ class MultiDataOps(QWidget):
             data.norm = data.norm_raw / const
             data.y = data.y_raw/data.norm
             data.dy = sqrt(data.y_raw)/data.norm
+            data.yaxis = data.ycol + ' / %s %s' % (const, data.ncol)
         self.emit(SIGNAL('replotRequest'), None)
         session.set_dirty()
 
