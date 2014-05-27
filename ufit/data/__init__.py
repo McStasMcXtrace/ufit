@@ -65,7 +65,8 @@ def set_dataformat(format):
     this function.  Data formats are:
 
     * ``'ill'`` - ILL TAS data format
-    * ``'llb'`` - LLB TAS data format (known working for 1T and 4F unpolarized)
+    * ``'llb'`` - LLB binary TAS data format (known working for data from 1T and
+      4F unpolarized)
     * ``'nicos'`` - NICOS data format
     * ``'old nicos'`` - NICOS 1.0 data format
     * ``'trisp'`` - FRM-II TRISP data format
