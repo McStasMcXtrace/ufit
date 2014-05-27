@@ -1,0 +1,80 @@
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+"""Load routine for TAIPAN data files."""
+
+from os import path
+
+from numpy import loadtxt
+
+
+def guess_cols(colnames, coldata, meta):
+    return meta['def_x'], meta['def_y'], None, meta['preset_channel']
+
+
+def check_data(fp):
+    line = fp.readline()
+    fp.seek(0, 0)
+    # on the first line is always name of the raw file
+    return line.startswith('# raw_file =')
+
+
+def read_data(filename, fp):
+    line1 = ''
+    line2 = fp.readline()
+    skiprows = 0
+    meta = {}
+    # find the first non-comment line
+    while line2.startswith('#'):
+        # parse meta:
+        line1 = line2
+        line2 = fp.readline()
+        skiprows += 1
+        # do not parse headers
+        if not line2.startswith('#'): 
+            continue
+        key, oval = [x.strip() for x in line1[1:].strip().split('=', 1)]
+        if key == 'experiment':
+            title = oval
+        elif key == 'samplename':
+            remark = oval
+        if key == 'scan':
+            meta['filenumber'] = int(oval)
+        elif key == 'scan_title':
+            meta['subtitle'] = oval
+        else:
+            meta[key] = oval
+    if remark and title:
+        meta['title'] = title + ', ' + remark
+    # now line2 is the first data line
+    # line1 is header line
+    line1 = line1[1:]
+    # if there are comments, line1 will have the comment char
+    colnames = line1.split()
+    
+    fp.seek(0, 0)
+    arr = loadtxt(fp, ndmin=2, skiprows=skiprows, comments="#")
+    # if number of colnames is not correct, discard them
+    if len(colnames) != arr.shape[1]:
+        colnames = ['Column %d' % i for i in range(1, arr.shape[1]+1)]
+
+    meta['filedesc'] = path.basename(filename)
+
+    cols = dict((name, arr[:,i]) for (i, name) in enumerate(colnames))
+    meta['environment'] = []
+    for col in cols:
+        meta[col] = cols[col].mean()
+    for tcol in ['temp', 'TC1_sensorB', 'TC1_sensorA', 'TC1_sensorC', 'TC1_sensorD']:
+        if tcol in cols:
+            meta['environment'].append('T = %.3f K' % meta[tcol])
+            break
+    if 'MAG' in cols:
+        if meta['MAG'] > 0:
+            meta['environment'].append('B = %.3f K' % meta['B'])
+
+    return colnames, arr, meta
