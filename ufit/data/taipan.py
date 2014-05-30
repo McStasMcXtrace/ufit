@@ -39,6 +39,9 @@ def read_data(filename, fp):
         if not line2.startswith('#'): 
             continue
         key, oval = [x.strip() for x in line1[1:].strip().split('=', 1)]
+        #name cannot start with col_ - this is reserved for columns values
+        if key.startswith('col_'):
+            key = key[4:]
         if key == 'experiment':
             title = oval
         elif key == 'samplename':
