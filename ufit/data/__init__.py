@@ -10,7 +10,7 @@
 
 from ufit import UFitError
 from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp, \
-    llb, cascade
+    llb, cascade, taipan
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset, ScanData, ImageData, DatasetList
 
@@ -22,6 +22,7 @@ data_formats_scan = {
     'simple comma-separated': simple_csv,
     'trisp': trisp,
     'llb': llb,
+    'taipan': taipan,
 }
 
 data_formats_image = {
@@ -70,6 +71,7 @@ def set_dataformat(format):
     * ``'nicos'`` - NICOS data format
     * ``'old nicos'`` - NICOS 1.0 data format
     * ``'trisp'`` - FRM-II TRISP data format
+    * ``'taipan'`` - ANSTO Taipan data format
     * ``'simple'`` - simple whitespace-separated multi-column files
     * ``'simple comma-separated'`` - simple comma-separated multi-column files
     """
