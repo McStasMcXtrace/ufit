@@ -30,7 +30,7 @@ class Fitter(QWidget):
 
     def __init__(self, parent, standalone=False, fit_kws={}):
         QWidget.__init__(self, parent)
-        self.item = parent.item
+        self.item = getattr(parent, 'item', None)
         self.logger = logger.getChild('fitter')
         self.picking = None
         self.last_result = None
