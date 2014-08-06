@@ -101,7 +101,7 @@ class ScanData(DataBase):
             self.norm_raw = data[:,3]
             self.norm = self.norm_raw / nscale
             if nscale != 1:
-                self.yaxis += ' / %s %s' % (nscale, ncol)
+                self.yaxis += ' per %s %s' % (nscale, ncol)
             else:
                 self.yaxis += ' / %s' % ncol
         else:

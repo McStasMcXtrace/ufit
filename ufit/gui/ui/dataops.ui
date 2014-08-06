@@ -188,7 +188,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Change monitor:</string>
+        <string>New monitor scale:</string>
        </property>
       </widget>
      </item>
