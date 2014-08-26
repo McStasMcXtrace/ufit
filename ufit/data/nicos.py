@@ -22,8 +22,12 @@ def check_data(fp):
 
 def _hkle_index(colnames):
     # find the index of the "h" column or -1 if it's not a qscan
-    if 'h' in colnames:
-        qhindex = colnames.index('h')
+    # NOTE: don't support "h" in a position other than 0 since this would
+    # recognize all scans as Q scans even if the HKL device is just added
+    # for monitoring purposes.
+    #if 'h' in colnames:
+    if colnames and colnames[0] == 'h':
+        qhindex = 0  # colnames.index('h')
         if qhindex < len(colnames) - 3 and colnames[qhindex+3] == 'E':
             return qhindex
     return -1
