@@ -16,15 +16,22 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="4" column="3">
-      <widget class="QPushButton" name="rebinBtn">
+     <item row="6" column="1" colspan="2">
+      <widget class="QLineEdit" name="scaleConstEdit">
        <property name="text">
-        <string>Rebin</string>
+        <string>1</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label">
+     <item row="11" column="0" colspan="4">
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_7">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -32,25 +39,73 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Add a constant:</string>
+        <string>Scale Y with constant:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="titleBtn">
+     <item row="9" column="3">
+      <widget class="QPushButton" name="monscaleBtn">
+       <property name="text">
+        <string>Change</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="3">
+      <widget class="QPushButton" name="mulBtn">
+       <property name="text">
+        <string>Scale</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Shift X values:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="3">
+      <widget class="QPushButton" name="limitsBtn">
        <property name="text">
         <string>Set</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="1" colspan="2">
-      <widget class="QLineEdit" name="monscaleEdit">
+     <item row="12" column="3">
+      <widget class="QLabel" name="pickedLbl">
        <property name="text">
-        <string>10000</string>
+        <string>0 picked</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="10" column="0">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>Subtract dataset:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="3">
+      <widget class="QPushButton" name="subtractBtn">
+       <property name="text">
+        <string>Subtract...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QPushButton" name="rebinBtn">
+       <property name="text">
+        <string>Rebin</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
         <string>Mask out points:</string>
@@ -71,7 +126,55 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="1" colspan="2">
+     <item row="4" column="1" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="precisionEdit">
+         <property name="text">
+          <string>0.001</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="floatmergeBtn">
+         <property name="text">
+          <string>Float merge</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Set title:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Merge/Rebin (destructive):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="2">
+      <widget class="QLineEdit" name="nameEdit"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Set short name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="1" colspan="2">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QLineEdit" name="limitminEdit"/>
@@ -108,78 +211,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1" colspan="2">
-      <widget class="QLineEdit" name="scaleConstEdit">
-       <property name="text">
-        <string>1</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="0" colspan="4">
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Scale with constant:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="3">
-      <widget class="QPushButton" name="monscaleBtn">
-       <property name="text">
-        <string>Change</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="3">
-      <widget class="QPushButton" name="mulBtn">
-       <property name="text">
-        <string>Scale</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>Set title:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Merge/Rebin (destructive):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1" colspan="2">
-      <widget class="QLineEdit" name="nameEdit"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_12">
-       <property name="text">
-        <string>Set short name:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label_6">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -209,7 +241,7 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
+     <item row="14" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Fit limits:</string>
@@ -223,7 +255,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QPushButton" name="badPointsBtn">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -243,7 +275,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="2">
+     <item row="12" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QPushButton" name="badResetBtn">
@@ -273,8 +305,8 @@
        </item>
       </layout>
      </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_3">
+     <item row="5" column="0">
+      <widget class="QLabel" name="label">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -282,55 +314,44 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Shift X values:</string>
+        <string>Add a constant:</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="3">
-      <widget class="QPushButton" name="limitsBtn">
+     <item row="1" column="3">
+      <widget class="QPushButton" name="titleBtn">
        <property name="text">
         <string>Set</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="3">
-      <widget class="QLabel" name="pickedLbl">
+     <item row="9" column="1" colspan="2">
+      <widget class="QLineEdit" name="monscaleEdit">
        <property name="text">
-        <string>0 picked</string>
+        <string>10000</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="label_13">
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_14">
        <property name="text">
-        <string>Subtract dataset:</string>
+        <string>Scale X with constant:</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="3">
-      <widget class="QPushButton" name="subtractBtn">
+     <item row="8" column="1" colspan="2">
+      <widget class="QLineEdit" name="scaleXConstEdit">
        <property name="text">
-        <string>Subtract...</string>
+        <string>1</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1" colspan="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLineEdit" name="precisionEdit">
-         <property name="text">
-          <string>0.001</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="floatmergeBtn">
-         <property name="text">
-          <string>Float merge</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="8" column="3">
+      <widget class="QPushButton" name="scaleXBtn">
+       <property name="text">
+        <string>Scale</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
