@@ -274,6 +274,17 @@ class MultiDataOps(QWidget):
         session.set_dirty()
 
     @qtsig('')
+    def on_scaleXBtn_clicked(self):
+        try:
+            const = float(self.scaleXConstEdit.text())
+        except ValueError:
+            return
+        for data in self.datas:
+            data.x *= const
+        self.emit(SIGNAL('replotRequest'), None)
+        session.set_dirty()
+
+    @qtsig('')
     def on_shiftBtn_clicked(self):
         try:
             const = float(self.shiftConstEdit.text())
