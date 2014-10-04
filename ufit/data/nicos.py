@@ -70,6 +70,7 @@ def read_data(filename, fp):
     meta['created'] = ctime
     remark = ''
     for line in iter(fp.readline, ''):
+        line = line.decode('ascii', 'ignore').encode('ascii')
         if line.startswith('### Scan data'):
             break
         if line.startswith('# '):

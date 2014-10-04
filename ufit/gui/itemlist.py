@@ -146,7 +146,7 @@ class ItemListDelegate(QStyledItemDelegate):
         document.setDefaultFont(option.font)
         if option.state & QStyle.State_Selected:
             document.setHtml("<font color=%s>%s</font>" %
-                    (palette.highlightedText().color().name(), text))
+                    (palette.highlightedText().color().name(), text.decode('utf-8', 'ignore')))
             color = palette.highlight().color()
         else:
             document.setHtml(text)

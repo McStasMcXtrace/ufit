@@ -228,7 +228,7 @@ class MultiDataOps(QWidget):
             ylabels.add(i.data.yaxis)
             titles.add(i.data.title)
         canvas.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
-                                   ', '.join(titles))
+                                   ', '.join(titles).decode('ascii', 'ignore'))
         canvas.draw()
 
     @qtsig('')
