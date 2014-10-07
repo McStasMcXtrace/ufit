@@ -91,6 +91,8 @@ def read_data(filename, fp):
     meta['environment'] = []
     if 'TT' in meta:
         meta['environment'].append('T = %.3f K' % meta['TT'])
+    if 'MAG' in meta:
+        meta['environment'].append('B = %.5f T' % meta['MAG'])
     if names[3] == 'EN':
         meta['hkle'] = arr[:,:4]
         deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
