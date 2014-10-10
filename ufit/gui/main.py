@@ -573,9 +573,12 @@ class UFitMain(QMainWindow):
 
     def insert_session(self, filename):
         temp_session.load(filename)
-        # XXX HACK
+        basename = path.basename(filename)
+        if basename.endswith('.ufit'):
+            basename = basename[:-5]
+        # XXX slight HACK
         for group in temp_session.groups:
-            session.add_group(group.name)
+            session.add_group(group.name + ' (from %s)' % basename)
             for item in group.items:
                 session.add_item(item)
 
