@@ -123,7 +123,7 @@
      <x>0</x>
      <y>0</y>
      <width>386</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -137,6 +137,7 @@
     </widget>
     <addaction name="actionNewSession"/>
     <addaction name="actionLoad"/>
+    <addaction name="actionInsert"/>
     <addaction name="menuRecent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -482,6 +483,11 @@
    </property>
    <property name="text">
     <string>Hide fit curves</string>
+   </property>
+  </action>
+  <action name="actionInsert">
+   <property name="text">
+    <string>Insert data from other session...</string>
    </property>
   </action>
  </widget>

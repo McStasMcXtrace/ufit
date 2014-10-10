@@ -28,7 +28,7 @@ from ufit.gui.inspector import InspectorWindow
 from ufit.gui.annotations import AnnotationWindow
 from ufit.gui.scanitem import ScanDataPanel, ScanDataItem
 from ufit.gui.imageitem import ImageDataItem
-from ufit.gui.session import session, SessionItem, ItemGroup
+from ufit.gui.session import session, temp_session, SessionItem, ItemGroup
 
 max_recent_files = 6
 
@@ -540,6 +540,18 @@ class UFitMain(QMainWindow):
             return
         self.load_session(path_to_str(filename))
 
+    @qtsig('')
+    def on_actionInsert_triggered(self):
+        initialdir = session.dirname
+        if not initialdir:
+            with self.sgroup as settings:
+                initialdir = settings.value('loadfiledirectory', '')
+        filename = QFileDialog.getOpenFileName(
+            self, 'Select file name', initialdir, 'ufit files (*.ufit)')
+        if filename == '':
+            return
+        self.insert_session(path_to_str(filename))
+
     def load_session(self, filename=None):
         if not filename:
             # Recent files action
@@ -558,6 +570,14 @@ class UFitMain(QMainWindow):
             # if there are annotations, show the window automatically
             if session.props.get('annotations'):
                 self.on_actionAnnotations_triggered()
+
+    def insert_session(self, filename):
+        temp_session.load(filename)
+        # XXX HACK
+        for group in temp_session.groups:
+            session.add_group(group.name)
+            for item in group.items:
+                session.add_item(item)
 
     @qtsig('')
     def on_actionSave_triggered(self):

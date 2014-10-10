@@ -265,3 +265,6 @@ class _Session(QObject):
 
 # one singleton instance
 session = _Session()
+
+# one temporary instance
+temp_session = _Session()
