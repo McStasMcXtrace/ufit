@@ -19,7 +19,7 @@ pygments_style = 'sphinx'
 
 html_theme = 'haiku'
 html_title = 'ufit documentation'
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 latex_documents = [
   ('index', 'ufit.tex', u'ufit Documentation',

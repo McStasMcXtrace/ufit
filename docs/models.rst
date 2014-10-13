@@ -16,7 +16,11 @@ Peaks
 
 .. autoclass:: Gauss
 
+.. autoclass:: GaussInt
+
 .. autoclass:: Lorentz
+
+.. autoclass:: LorentzInt
 
 .. autoclass:: Voigt
 
@@ -51,3 +55,5 @@ Others
 .. autoclass:: ExpDecay
 
 .. autoclass:: PowerLaw
+
+.. autoclass:: GaussianConvolution
