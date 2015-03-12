@@ -109,7 +109,10 @@ into one set, as well as files 23 and 24.
         bwin = BrowseWindow(self)
         bwin.show()
         QApplication.processEvents()
-        bwin.set_directory(directory)
+        try:
+            bwin.set_directory(directory)
+        except OSError:
+            pass
         bwin.activateWindow()
 
     @qtsig('')
