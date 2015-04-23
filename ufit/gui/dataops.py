@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2015, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -14,7 +14,7 @@ from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QMessageBox
 
 from ufit.data.merge import rebin, floatmerge
-from ufit.gui.common import loadUi
+from ufit.gui.common import loadUi, SettingGroup
 from ufit.gui.session import session
 
 
@@ -135,6 +135,39 @@ class DataOps(QWidget):
         session.add_item(ScanDataItem(new_data, new_model), self.item.group)
 
     @qtsig('')
+    def on_arbBtn_clicked(self):
+        dlg = QDialog(self)
+        loadUi(dlg, 'change.ui')
+        with SettingGroup('main') as settings:
+            dlg.xEdit.setText(settings.value('changex', 'x'))
+            dlg.yEdit.setText(settings.value('changey', 'y'))
+            dlg.dyEdit.setText(settings.value('changedy', 'dy'))
+            if dlg.exec_() != QDialog.Accepted:
+                return
+            settings.setValue('changex', dlg.xEdit.text())
+            settings.setValue('changey', dlg.yEdit.text())
+            settings.setValue('changedy', dlg.dyEdit.text())
+        xfml = dlg.xEdit.text()
+        yfml = dlg.yEdit.text()
+        dyfml = dlg.dyEdit.text()
+        new_x = []
+        new_y = []
+        new_dy = []
+        ns = {}
+        for dpoint in zip(self.data.x, self.data.y_raw, self.data.dy_raw):
+            ns.update(x=dpoint[0], y=dpoint[1], dy=dpoint[2])
+            new_x.append(eval(xfml, ns))
+            new_y.append(eval(yfml, ns))
+            new_dy.append(eval(dyfml, ns))
+        self.data.x[:] = new_x
+        self.data.y_raw[:] = new_y
+        self.data.dy_raw[:] = new_dy
+        self.data.y = self.data.y_raw / self.data.norm
+        self.data.dy = self.data.dy_raw / self.data.norm
+        self.emit(SIGNAL('replotRequest'), None)
+        session.set_dirty()
+
+    @qtsig('')
     def on_mulBtn_clicked(self):
         try:
             const = float(self.scaleConstEdit.text())
@@ -186,8 +219,8 @@ class DataOps(QWidget):
             return
         self.data.nscale = const
         self.data.norm = self.data.norm_raw / const
-        self.data.y = self.data.y_raw/self.data.norm
-        self.data.dy = sqrt(self.data.y_raw)/self.data.norm
+        self.data.y = self.data.y_raw / self.data.norm
+        self.data.dy = self.data.dy_raw / self.data.norm
         self.data.yaxis = self.data.ycol + ' / %s %s' % (const, self.data.ncol)
         self.emit(SIGNAL('replotRequest'), None)
         session.set_dirty()
