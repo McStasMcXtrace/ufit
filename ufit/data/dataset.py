@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2015, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -150,6 +150,13 @@ class ScanData(DataBase):
         # points with mask = False are masked out
         self.mask = ones(len(self.x), bool)
         self.mask[self.dy==0] = False
+
+    def rescale(self, const):
+        self.nscale = const
+        self.norm = self.norm_raw / const
+        self.y = self.y_raw / self.norm
+        self.dy = self.dy_raw / self.norm
+        self.yaxis = self.ycol + ' / %s %s' % (const, self.ncol)
 
     def __repr__(self):
         return '<%s (%d points)>' % (self.name, len(self.x))

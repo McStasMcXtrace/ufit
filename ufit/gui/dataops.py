@@ -217,11 +217,7 @@ class DataOps(QWidget):
             const = int(self.monscaleEdit.text())
         except ValueError:
             return
-        self.data.nscale = const
-        self.data.norm = self.data.norm_raw / const
-        self.data.y = self.data.y_raw / self.data.norm
-        self.data.dy = self.data.dy_raw / self.data.norm
-        self.data.yaxis = self.data.ycol + ' / %s %s' % (const, self.data.ncol)
+        self.data.rescale(const)
         self.emit(SIGNAL('replotRequest'), None)
         session.set_dirty()
 

@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2014, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2015, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -51,8 +51,7 @@ class BrowseWindow(QMainWindow):
             self.restoreState(windowstate)
             splitstate = settings.value('splitstate', QByteArray())
             self.splitter.restoreState(splitstate)
-            #vsplitstate = settings.value('vsplitstate').toByteArray()
-            #self.vsplitter.restoreState(vsplitstate)
+            self.monScaleEdit.setText(settings.value('fixedmonval'))
 
     @qtsig('')
     def on_loadBtn_clicked(self):
@@ -71,6 +70,10 @@ class BrowseWindow(QMainWindow):
 
     @qtsig('')
     def on_refreshBtn_clicked(self):
+        self.set_directory(self.rootdir)
+
+    @qtsig('')
+    def on_monScaleBtn_clicked(self):
         self.set_directory(self.rootdir)
 
     def set_directory(self, root):
@@ -93,6 +96,9 @@ class BrowseWindow(QMainWindow):
             except Exception, e:
                 self.logger.warning('While loading %r: %s' % (fn, e))
             else:
+                if self.useMonScale.isChecked():
+                    const = int(self.monScaleEdit.text())  # XXX check
+                    res.rescale(const)
                 self._data[n] = res
                 QListWidgetItem('%s (%s) - %s - %s' %
                                 (n, res.xcol, res.title,
@@ -121,5 +127,4 @@ class BrowseWindow(QMainWindow):
             settings.setValue('geometry', self.saveGeometry())
             settings.setValue('windowstate', self.saveState())
             settings.setValue('splitstate', self.splitter.saveState())
-            #settings.setValue('vsplitstate',
-            #                  QVariant(self.vsplitter.saveState()))
+            settings.setValue('fixedmonval', self.monScaleEdit.text())
