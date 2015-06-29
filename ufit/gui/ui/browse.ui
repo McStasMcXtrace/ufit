@@ -49,6 +49,24 @@
          </widget>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QCheckBox" name="useFmtString">
+            <property name="text">
+             <string>custom format string:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="fmtStringEdit">
+            <property name="text">
+             <string>{0} ({1.xcol}) - {1.title} | {1.environment}</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QCheckBox" name="useMonScale">

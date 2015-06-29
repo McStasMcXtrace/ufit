@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2015, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2017, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -22,6 +22,28 @@ from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SettingGroup, \
     path_to_str
 from ufit.gui.session import session
 from ufit.gui.scanitem import ScanDataItem
+
+
+class Unavailable(object):
+    def __format__(self, fmt):
+        # Accepts all format strings (important for e.g. ".2f")
+        return '???'
+
+
+class FormatWrapper(object):
+    """Wraps a dataset for the purposes of format() not raising exceptions."""
+
+    def __init__(self, dataset):
+        self.__dataset = dataset
+
+    def __getattr__(self, attr, default=Unavailable()):
+        val = getattr(self.__dataset, attr, default)
+        if isinstance(val, list):
+            return ', '.join(map(str, val))
+        return val
+
+    def __getitem__(self, attr):
+        return getattr(self, attr)
 
 
 class BrowseWindow(QMainWindow):
@@ -93,17 +115,24 @@ class BrowseWindow(QMainWindow):
                 t, n = extract_template(fn)
                 self.loader.template = t
                 res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
-            except Exception, e:
+            except Exception as e:
                 self.logger.warning('While loading %r: %s' % (fn, e))
             else:
                 if self.useMonScale.isChecked():
                     const = int(self.monScaleEdit.text())  # XXX check
                     res.rescale(const)
+                if self.useFmtString.isChecked():
+                    try:
+                        scanLabel = self.fmtStringEdit.text().format(
+                            n, FormatWrapper(res))
+                    except Exception:
+                        scanLabel = '%s (%s) - %s | %s' % (
+                            n, res.xcol, res.title, ', '.join(res.environment))
+                else:
+                    scanLabel = '%s (%s) - %s | %s' % (
+                        n, res.xcol, res.title, ', '.join(res.environment))
                 self._data[n] = res
-                QListWidgetItem('%s (%s) - %s - %s' %
-                                (n, res.xcol, res.title,
-                                 ', '.join(res.environment)),
-                                self.dataList, n)
+                QListWidgetItem(scanLabel, self.dataList, n)
         self.canvas.axes.clear()
         self.canvas.draw()
 
