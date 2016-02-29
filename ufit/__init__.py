@@ -6,7 +6,7 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 
 def debug(str):
