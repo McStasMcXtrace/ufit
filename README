@@ -22,37 +22,38 @@ The GUI uses PyQt 4.
 Icons by Yusuke Kamiyamane. Licensed under a Creative Commons Attribution 3.0 License.
 See http://p.yusukekamiyamane.com/.
 
-Generating Windows EXEcutables and instalation:
+
+Generating Windows EXEcutables and installation
 ===============================================
 
-Generation of the windows executables is done in PyInstaller
+Generation of the Windows executables is done in PyInstaller.
 
-Recommanded way is using Single Folder script:
+Recommended way is using Single Folder script:
     Generate:
         in the base-directory run:
             pyinstaller ufit_singlefolder.spec [-y] [--clean]
          -y option will overwrite everything in dist directory
-         --clean will generate everything fro scratch 
-         
+         --clean will generate everything fro scratch
+
      Result:
         A Folder named 'ufit' in the folder 'dist', in which you can find all
         the files you need to run the 'Ufit.exe' contained in said folder.
 
-        Because this is not easy to distribute to the end users, 
+        Because this is not easy to distribute to the end users,
         it is reccomended to create installer. Use open source installer NSIS.
         Tool can be downlaoded from: http://nsis.sourceforge.net/
-        
+
         Open the tool and run script Ufit-Install.nsi from the root folder.
-        
-        The result will be one cca 180 MB big install file, 
+
+        The result will be one ca 180 MB big install file,
         which can be distributed to the users.
-        
+
 
 There is also possible to generate single file executable by running:
-            pyinstaller pluto_singlefile.spec [-y] [--clean]
-    This option will be very slow to start the ufit and therefore it is not recommended.        
-    
-Remarks for PyInstaller: 
+            pyinstaller ufit_singlefile.spec [-y] [--clean]
+    This option will be very slow to start the ufit and therefore it is not recommended.
+
+Remarks for PyInstaller:
      Created files are big, because they do not use UPX packaging.
-     The reason is, that upx will create some problems with QT and 
-     will cause Ufit to crash by memory violation exception. 
+     The reason is, that upx will create some problems with QT and
+     will cause Ufit to crash by memory violation exception.
