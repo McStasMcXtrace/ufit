@@ -55,7 +55,6 @@ class MPLCanvas(FigureCanvas):
     def __init__(self, parent, width=10, height=6, dpi=72, maincanvas=False):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
-        self.printer = None
         self.print_width = 0
         self.main = parent
         self.logz = False
@@ -122,14 +121,13 @@ class MPLCanvas(FigureCanvas):
         sz = svg.defaultSize()
         aspect = sz.width()/float(sz.height())
 
-        if self.printer is None:
-            self.printer = QPrinter(QPrinter.HighResolution)
-            self.printer.setOrientation(QPrinter.Landscape)
+        printer = QPrinter(QPrinter.HighResolution)
+        printer.setOrientation(QPrinter.Landscape)
 
         dlg = QDialog(self)
         loadUi(dlg, 'printpreview.ui')
         dlg.width.setValue(self.print_width or 500)
-        ppw = QPrintPreviewWidget(self.printer, dlg)
+        ppw = QPrintPreviewWidget(printer, dlg)
         dlg.layout().insertWidget(1, ppw)
         def render(printer):
             height = printer.height() * (dlg.width.value()/1000.)
@@ -143,10 +141,10 @@ class MPLCanvas(FigureCanvas):
         if dlg.exec_() != QDialog.Accepted:
             return
         self.print_width = dlg.width.value()
-        pdlg = QPrintDialog(self.printer, self)
+        pdlg = QPrintDialog(printer, self)
         if pdlg.exec_() != QDialog.Accepted:
             return
-        render(self.printer)
+        render(printer)
 
 
 class MPLToolbar(NavigationToolbar2QT):
