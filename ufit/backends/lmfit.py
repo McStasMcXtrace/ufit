@@ -12,7 +12,7 @@ from __future__ import absolute_import
 
 from ufit.param import prepare_params, update_params
 
-from lmfit import Parameters, minimize
+from lmfit import Parameters, minimize, report_fit
 
 __all__ = ['do_fit', 'backend_name']
 
@@ -42,13 +42,15 @@ def do_fit(data, fcn, params, add_kw):
     except Exception, e:
         return False, str(e), 0
 
-    pd = dict((pn, lmfparams[pn].value) for pn in varynames)
+    report_fit(out.params)
+
+    pd = dict((pn, out.params[pn].value) for pn in varynames)
     update_params(dependent, meta, pd)
     for p in params:
         p.value = pd[p.name]
         if p.name in lmfparams:
-            p.error = lmfparams[p.name].stderr
-            p.correl = lmfparams[p.name].correl
+            p.error = out.params[p.name].stderr
+            p.correl = out.params[p.name].correl
         else:
             p.error = 0
             p.correl = {}
