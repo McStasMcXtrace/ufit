@@ -6,7 +6,9 @@
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
-__version__ = '1.0.1'
+from ufit.version import get_version
+
+__version__ = get_version()
 
 
 def debug(str):

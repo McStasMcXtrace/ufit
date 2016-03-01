@@ -1,5 +1,7 @@
 import os
+from os import path
 from distutils.core import setup
+
 
 def find_packages():
     """Return a list of all ufit subpackages."""
@@ -15,6 +17,7 @@ def find_packages():
                 stack.append((fn, prefix + name + '.'))
     return out
 
+
 def find_ui_files():
     """Find all Qt .ui files in ufit.gui subpackages."""
     res = {}
@@ -24,11 +27,14 @@ def find_ui_files():
             res[root.replace('/', '.')] = uis
     return res
 
-import ufit
+ns = {'__file__': path.abspath(path.join(
+    path.dirname(__file__), 'ufit', 'version.py'))}
+execfile("ufit/version.py", ns)
+version = ns['get_version']()
 
 setup(
     name = 'ufit',
-    version = ufit.__version__,
+    version = version,
     license = 'GPL',
     author = 'Georg Brandl',
     author_email = 'georg.brandl@frm2.tum.de',

@@ -4,3 +4,5 @@ docs/_build/
 test.ufit
 ufitgui.py
 dist/
+RELEASE-VERSION
+MANIFEST
