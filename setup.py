@@ -32,6 +32,9 @@ ns = {'__file__': path.abspath(path.join(
 execfile("ufit/version.py", ns)
 version = ns['get_version']()
 
+pkg_data = find_ui_files()
+pkg_data.setdefault('ufit', []).append('RELEASE-VERSION')
+
 setup(
     name = 'ufit',
     version = version,
@@ -41,6 +44,6 @@ setup(
     description = 'Universal scattering data fitting tool',
     url = 'https://bitbucket.org/birkenfeld/ufit/',
     packages = find_packages(),
-    package_data = find_ui_files(),
+    package_data = pkg_data,
     scripts = ['ufitgui'],
 )
