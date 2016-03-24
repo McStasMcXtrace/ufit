@@ -19,6 +19,7 @@ __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'scipy'
 
+
 def do_fit(data, fcn, params, add_kw):
     x, y, dy = data.fit_columns
     meta = data.meta
@@ -56,7 +57,7 @@ def do_fit(data, fcn, params, add_kw):
     for i, p in enumerate(varying):
         pd[p.name] = popt[i]
         if pcov is not inf:
-            p.error = sqrt(pcov[i,i])
+            p.error = sqrt(pcov[i, i])
         else:
             p.error = 0
         p.correl = {}  # XXX

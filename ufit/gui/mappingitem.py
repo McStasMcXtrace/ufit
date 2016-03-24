@@ -65,8 +65,8 @@ class MappingItem(SessionItem):
         self.title = self.settings.title
         self.htmldesc = '<img src=":/map.png">&nbsp;&nbsp;<big><b>%d</b></big> ' \
                         '- %s<br>%s' % (
-            self.index, self.settings.title,
-            ', '.join(d.name for d in self.datas))
+                            self.index, self.settings.title,
+                            ', '.join(d.name for d in self.datas))
         session.emit(SIGNAL('itemUpdated'), self)
 
 
@@ -127,7 +127,7 @@ class MappingPanel(QFrame):
         yaxis = s.yaxis = str(self.yaxisBox.currentText())
         if xaxis == yaxis:
             QMessageBox.warning(self, 'Error', 'Please select distinct X '
-                               'and Y axes.')
+                                'and Y axes.')
             return
         s.interp = self.stepBox.value()
         s.zmin = maybe_float(self.zminEdit.text(), -1e300)

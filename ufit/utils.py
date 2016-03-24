@@ -25,8 +25,10 @@ class attrdict(dict):
             return self[key]
         except KeyError:
             raise AttributeError(key)
+
     def __setattr__(self, key, value):
         self[key] = value
+
     def __delattr__(self, key):
         try:
             del self[key]
@@ -35,6 +37,7 @@ class attrdict(dict):
 
 
 _missing = object()
+
 
 class cached_property(object):
     """A decorator that converts a function into a lazy property.  The
@@ -60,6 +63,7 @@ class cached_property(object):
 
 
 numor_re = re.compile(r'\d+')
+
 
 def extract_template(fn):
     bn = path.basename(fn)

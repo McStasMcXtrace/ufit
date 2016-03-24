@@ -141,10 +141,10 @@ class Result(object):
 
 
 def calc_panel_size(num):
-    for nx, ny in ([1,1], [2,1], [2,2], [3,2], [3,3], [4,3], [5,3], [4,4],
-                   [5,4], [6,4], [5,5], [6,5], [7,5], [6,6], [8,5], [7,6],
-                   [9,5], [8,6], [7,7], [9,6], [8,7], [9,7], [8,8], [10,7],
-                   [9,8], [11,7], [9,9], [11,8], [10,9], [12,8], [11,9], [10,10]):
+    for nx, ny in ([1, 1], [2, 1], [2, 2], [3, 2], [3, 3], [4, 3], [5, 3], [4, 4],
+                   [5, 4], [6, 4], [5, 5], [6, 5], [7, 5], [6, 6], [8, 5], [7, 6],
+                   [9, 5], [8, 6], [7, 7], [9, 6], [8, 7], [9, 7], [8, 8], [10, 7],
+                   [9, 8], [11, 7], [9, 9], [11, 8], [10, 9], [12, 8], [11, 9], [10, 10]):
         if nx*ny >= num:
             return nx, ny
     return num//10 + 1, 10
@@ -156,7 +156,7 @@ class MultiResult(list):
         fig, axarray = pl.subplots(dims[1], dims[0])
         for res, axes in zip(self, ravel(axarray)):
             res.plotfull(axes=axes)
-        #pl.tight_layout()
+        # pl.tight_layout()
 
     @cached_property
     def datavalues(self):

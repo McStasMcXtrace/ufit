@@ -8,8 +8,6 @@
 
 """Load routine for TAIPAN data files."""
 
-from os import path
-
 from numpy import loadtxt, array
 
 
@@ -40,7 +38,7 @@ def read_data(filename, fp):
         if not line2.startswith('#'):
             continue
         key, oval = [x.strip() for x in line1[1:].strip().split('=', 1)]
-        #name cannot start with col_ - this is reserved for columns values
+        # name cannot start with col_ - this is reserved for columns values
         if key.startswith('col_'):
             key = key[4:]
         if key == 'experiment':
@@ -70,10 +68,10 @@ def read_data(filename, fp):
     if len(colnames) != arr.shape[1]:
         colnames = ['Column %d' % i for i in range(1, arr.shape[1]+1)]
 
-    cols = dict((name, arr[:,i]) for (i, name) in enumerate(colnames))
+    cols = dict((name, arr[:, i]) for (i, name) in enumerate(colnames))
     meta['environment'] = []
     if 'en' in colnames:
-        meta['hkle'] = arr[:,(3,4,5,1)]
+        meta['hkle'] = arr[:, (3, 4, 5, 1)]
         deviations = array([(cs.max()-cs.min()) for cs in meta['hkle'].T])
         meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
     for col in cols:

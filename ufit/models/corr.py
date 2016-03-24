@@ -80,6 +80,7 @@ class CKI_Corr(Model):
 
     def __init__(self, name='', ki=None, dval='3.355'):
         pki, pdv = self._init_params(name, self.param_names, locals())
+
         def fcn(p, x):
             ki = p[pki]
             kf = sqrt(ki**2 - x/2.072)

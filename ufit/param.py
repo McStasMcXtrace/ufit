@@ -27,6 +27,7 @@ class fixed(str):
     def __init__(self, p):
         str.__init__(self, p)
 
+
 class expr(str):
     """Mark the parameter value as an expression.
 
@@ -35,6 +36,7 @@ class expr(str):
     """
     def __init__(self, e):
         str.__init__(self, e)
+
 
 class overall(object):
     """Mark the parameter as an "overall" (global) parameter in a global fit.
@@ -45,6 +47,7 @@ class overall(object):
     def __init__(self, v):
         self.v = v
 
+
 class datapar(object):
     """Mark the parameter as coming from the data file's metadata.
 
@@ -52,6 +55,7 @@ class datapar(object):
     """
     def __init__(self, v):
         self.v = v
+
 
 class limited(tuple):
     """Give parameter limits together with the initial value.
@@ -62,6 +66,7 @@ class limited(tuple):
     """
     def __new__(self, min, max, v):
         return (min, max, v)
+
 
 class delta(object):
     """Give parameter delta together with initial value."""
@@ -176,6 +181,7 @@ class Param(object):
 # XXX replace by something more safe later
 param_eval = eval
 
+
 def prepare_params(params, meta):
     # find parameters that need to vary
     dependent = {}
@@ -211,7 +217,7 @@ def prepare_params(params, meta):
             else:
                 del dependent[p]
                 dep_order.append((p, expr))
-    #pd.pop('__builtins__', None)
+    # pd.pop('__builtins__', None)
 
     return varying, varynames, dep_order, pd
 
@@ -221,4 +227,4 @@ def update_params(parexprs, meta, pd):
     pd['data'] = meta
     for p, expr in parexprs:
         pd[p] = param_eval(expr, pd)
-    #pd.pop('__builtins__', None)
+    # pd.pop('__builtins__', None)

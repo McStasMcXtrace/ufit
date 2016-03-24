@@ -274,10 +274,9 @@ class Gauss2D(Model):
         def fcn(p, x):
             # rotate coordinate system by theta
             c, s = cos(p[pth]), sin(p[pth])
-            x1 = (x[:,0] - p[ppx])*c - (x[:,1] - p[ppy])*s
-            y1 = (x[:,0] - p[ppx])*s + (x[:,1] - p[ppy])*c
+            x1 = (x[:, 0] - p[ppx])*c - (x[:, 1] - p[ppy])*s
+            y1 = (x[:, 0] - p[ppx])*s + (x[:, 1] - p[ppy])*c
             return abs(p[pb]) + abs(p[pa]) * \
                 exp(-x1**2/p[pfx]**2 * 4*log(2)) * \
                 exp(-y1**2/p[pfy]**2 * 4*log(2))
         self.fcn = fcn
-

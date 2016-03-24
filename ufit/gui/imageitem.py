@@ -96,7 +96,7 @@ class ImageDataPanel(QTabWidget):
     def save_limits(self):
         # global limits for all images
         ImageDataPanel.image_limits = self.canvas.axes.get_xlim(), \
-                                      self.canvas.axes.get_ylim()
+            self.canvas.axes.get_ylim()
 
     def get_saved_limits(self):
         return ImageDataPanel.image_limits
@@ -152,14 +152,14 @@ class ImageMultiPanel(QWidget):
         canvas.plotter.plot_finish(title='sum over %d images' % len(self.datas))
         for box in self.boxes:
             x1, y1, x2, y2 = box.x1Box.value(), box.y1Box.value(), \
-                             box.x2Box.value(), box.y2Box.value()
+                box.x2Box.value(), box.y2Box.value()
             canvas.plotter.axes.add_patch(
                 Rectangle((x1, y1), x2-x1, y2-y1, fill=False, color='yellow'))
         canvas.draw()
 
     def save_limits(self):
         ImageDataPanel.image_limits = self.canvas.axes.get_xlim(), \
-                                      self.canvas.axes.get_ylim()
+            self.canvas.axes.get_ylim()
 
     @qtsig('')
     def on_addboxBtn_clicked(self):
@@ -175,8 +175,10 @@ class ImageMultiPanel(QWidget):
         box.x2Box.setValue(x2)
         box.y1Box.setValue(y1)
         box.y2Box.setValue(y2)
+
         def boxchange(v):
             self.plot(False)
+
         def boxremove(box=box):
             index = self.boxes.index(box)
             del self.boxes[index]
@@ -200,7 +202,7 @@ class ImageMultiPanel(QWidget):
         boxnorm = self.boxNormBox.isChecked()
         for box in self.boxes:
             x1, y1, x2, y2 = box.x1Box.value(), box.y1Box.value(), \
-                             box.x2Box.value(), box.y2Box.value()
+                box.x2Box.value(), box.y2Box.value()
             name = box.nameBox.text()
             ydata = array([data.arr[x1:x2, y1:y2].sum()
                            for data in self.datas])

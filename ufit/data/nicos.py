@@ -25,7 +25,7 @@ def _hkle_index(colnames):
     # NOTE: don't support "h" in a position other than 0 since this would
     # recognize all scans as Q scans even if the HKL device is just added
     # for monitoring purposes.
-    #if 'h' in colnames:
+    # if 'h' in colnames:
     if colnames and colnames[0] == 'h':
         qhindex = 0  # colnames.index('h')
         if qhindex < len(colnames) - 3 and colnames[qhindex+3] == 'E':
@@ -46,12 +46,12 @@ def guess_cols(colnames, coldata, meta):
     maxcts = 0
     for i, colname in enumerate(colnames):
         if colname.startswith('mon'):
-            if coldata[:,i].sum() > maxmon:
-                maxmon = coldata[:,i].sum()
+            if coldata[:, i].sum() > maxmon:
+                maxmon = coldata[:, i].sum()
                 mg = colname
         if colname.startswith(('det', 'ctr', 'psd.roi')):
-            if coldata[:,i].sum() > maxcts:
-                maxcts = coldata[:,i].sum()
+            if coldata[:, i].sum() > maxcts:
+                maxcts = coldata[:, i].sum()
                 yg = colname
     if yg is None:
         yg = colnames[1]
@@ -131,7 +131,7 @@ def _nicos_common_load(fp, colnames, colunits, meta, comments):
                       comments=comments)
     if not coldata.size:
         raise UFitError('empty data file')
-    cols = dict((name, coldata[:,i]) for (i, name) in enumerate(colnames))
+    cols = dict((name, coldata[:, i]) for (i, name) in enumerate(colnames))
     meta['environment'] = []
     for col in cols:
         meta[col] = cols[col].mean()
@@ -143,7 +143,7 @@ def _nicos_common_load(fp, colnames, colunits, meta, comments):
         meta['environment'].append('B = %.3f K' % meta['B'])
     qhindex = _hkle_index(colnames)
     if qhindex > -1:
-        meta['hkle'] = coldata[:,qhindex:qhindex+4]
+        meta['hkle'] = coldata[:, qhindex:qhindex+4]
         deviations = array([cs.max() - cs.min()
                             for cs in coldata.T[qhindex:qhindex+4]])
         xg = colnames[qhindex + deviations.argmax()]

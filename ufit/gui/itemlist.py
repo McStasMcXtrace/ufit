@@ -29,7 +29,7 @@ class ItemListWidget(QListWidget):
             data2obj[i] = group
             wi = QListWidgetItem('Group: ' + group.name, self, i)
             if itemcls:
-                wi.setFlags(Qt.NoItemFlags) # make it unselectable
+                wi.setFlags(Qt.NoItemFlags)  # make it unselectable
             for item in group.items:
                 i += 1
                 data2obj[i] = item
@@ -47,8 +47,8 @@ class ItemTreeView(QTreeView):
     def __init__(self, parent):
         QTreeView.__init__(self, parent)
         self.header().hide()
-        #self.setRootIsDecorated(False)
-        #self.setStyleSheet("QTreeView::branch { display: none; }")
+        # self.setRootIsDecorated(False)
+        # self.setStyleSheet("QTreeView::branch { display: none; }")
         self.setItemDelegate(ItemListDelegate(self))
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
@@ -125,14 +125,14 @@ class ItemListModel(QAbstractItemModel):
         if role == Qt.DisplayRole:
             return obj.htmldesc
         elif role == Qt.TextAlignmentRole:
-            return int(Qt.AlignLeft|Qt.AlignVCenter)
+            return int(Qt.AlignLeft | Qt.AlignVCenter)
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.TextAlignmentRole:
             if orientation == Qt.Horizontal:
-                return int(Qt.AlignLeft|Qt.AlignVCenter)
-            return int(Qt.AlignRight|Qt.AlignVCenter)
+                return int(Qt.AlignLeft | Qt.AlignVCenter)
+            return int(Qt.AlignRight | Qt.AlignVCenter)
         if role != Qt.DisplayRole:
             return None
 
@@ -146,7 +146,8 @@ class ItemListDelegate(QStyledItemDelegate):
         document.setDefaultFont(option.font)
         if option.state & QStyle.State_Selected:
             document.setHtml("<font color=%s>%s</font>" %
-                    (palette.highlightedText().color().name(), text.decode('utf-8', 'ignore')))
+                             (palette.highlightedText().color().name(),
+                              text.decode('utf-8', 'ignore')))
             color = palette.highlight().color()
         else:
             document.setHtml(text)

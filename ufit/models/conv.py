@@ -20,6 +20,7 @@ __all__ = ['GaussianConvolution']
 
 id_re = re.compile('[a-zA-Z][a-zA-Z0-9_]*$')
 
+
 class GaussianConvolution(Model):
     """Models a 1-D convolution with a Gaussian kernel.
 

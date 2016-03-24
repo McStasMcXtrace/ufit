@@ -42,6 +42,7 @@ __all__ = ['Dataset', 'DatasetList', 'ScanData', 'ImageData', 'sets',
 global_loader = Loader()
 sets = global_loader.sets
 
+
 def set_datatemplate(template):
     """Set a new template for data file names.
 
@@ -58,6 +59,7 @@ def set_datatemplate(template):
        # etc.
     """
     global_loader.template = template
+
 
 def set_dataformat(format):
     """Set the input data format.
@@ -80,6 +82,7 @@ def set_dataformat(format):
                         % (format, ', '.join(data_formats)))
     global_loader.format = format
 
+
 def read_data(n, xcol='auto', ycol='auto', dycol=None, ncol=None, nscale=1):
     """Read a data file.  Returns a :class:`Dataset` object.
 
@@ -94,9 +97,11 @@ def read_data(n, xcol='auto', ycol='auto', dycol=None, ncol=None, nscale=1):
     """
     return global_loader.load(n, xcol, ycol, dycol, ncol, nscale)
 
+
 def as_data(x, y, dy, name=''):
     """Quickly construct a :class:`Dataset` object from three numpy arrays."""
     return Dataset.from_arrays(name or 'data', x, y, dy)
+
 
 def read_numors(nstring, binsize, xcol='auto', ycol='auto',
                 dycol=None, ncol=None, nscale=1):

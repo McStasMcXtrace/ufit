@@ -8,8 +8,6 @@
 
 """Fitting GUI windows for ufit."""
 
-__all__ = ['start_fitter', 'start_loader']
-
 from ufit.gui.loggers import getLogger
 logger = getLogger('ufit')
 
@@ -17,3 +15,5 @@ from ufit.gui.fitter import start as start_fitter
 from ufit.gui.dataloader import start as start_loader
 
 import ufit.guiresource  # register icon resources
+
+__all__ = ['start_fitter', 'start_loader']

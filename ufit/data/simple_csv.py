@@ -10,8 +10,10 @@
 
 from ufit.data.simple import guess_cols, read_data_simple, check_data_simple
 
+
 def read_data(filename, fp):
     return read_data_simple(filename, fp, ',')
+
 
 def check_data(fp):
     return check_data_simple(fp, ',')

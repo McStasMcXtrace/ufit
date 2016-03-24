@@ -21,9 +21,9 @@ class InspectorWindow(QMainWindow):
         self._data = None
         QMainWindow.__init__(self, parent)
         loadUi(self, 'inspector.ui')
-        #layout = QVBoxLayout()
-        #layout.setContentsMargins(0, 0, 0, 0)
-        #layout.addWidget(self.canvas)
+        # layout = QVBoxLayout()
+        # layout.setContentsMargins(0, 0, 0, 0)
+        # layout.addWidget(self.canvas)
         self.sgroup = SettingGroup('inspector')
         self.tbl.verticalHeader().setDefaultSectionSize(
             self.tbl.verticalHeader().minimumSectionSize() + 2)

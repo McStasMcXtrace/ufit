@@ -51,6 +51,7 @@ with SettingGroup('main') as settings:
         logger.info('Upgrade to version %s finished' % __version__)
 app.processEvents()
 
+
 def log_unhandled(*exc_info):
     logger.error('Unhandled exception in Qt callback', exc_info=exc_info)
 sys.excepthook = log_unhandled

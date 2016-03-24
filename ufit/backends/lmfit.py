@@ -18,6 +18,7 @@ __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'lmfit'
 
+
 def do_fit(data, fcn, params, add_kw):
 
     # lmfit can handle expression-based parameters itself, but that is

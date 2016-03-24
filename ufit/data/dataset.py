@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2015, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2016, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -88,17 +88,17 @@ class ScanData(DataBase):
         self._data = data
 
         self.xcol = self.xaxis = xcol
-        self.x = self.x_raw = data[:,0]
+        self.x = self.x_raw = data[:, 0]
         self.x_plot = self.x
 
         self.ycol = self.yaxis = ycol
-        self.y_raw = data[:,1]
-        self.dy_raw = data[:,2]
+        self.y_raw = data[:, 1]
+        self.dy_raw = data[:, 2]
 
         self.ncol = ncol
         self.nscale = nscale
         if ncol is not None and data.shape[1] > 3:
-            self.norm_raw = data[:,3]
+            self.norm_raw = data[:, 3]
             self.norm = self.norm_raw / nscale
             if nscale != 1:
                 self.yaxis += ' per %s %s' % (nscale, ncol)
@@ -139,7 +139,7 @@ class ScanData(DataBase):
         if len(x.shape) > 1:
             multix = True
             xorig = x
-            x = x[:,0]
+            x = x[:, 0]
         data = array(broadcast_arrays(x, y, dy)).T
         ret = cls(meta or {}, data, xcol, ycol, name=name)
         if multix:
@@ -149,7 +149,7 @@ class ScanData(DataBase):
     def reset_mask(self):
         # points with mask = False are masked out
         self.mask = ones(len(self.x), bool)
-        self.mask[self.dy==0] = False
+        self.mask[self.dy == 0] = False
 
     def rescale(self, const):
         self.nscale = const
@@ -200,10 +200,10 @@ class ScanData(DataBase):
             if binsize != 0:
                 if len(set(dset.meta['hkle_vary'] for dset in allsets)) != 1:
                     raise Exception('datasets have differing varying dimension')
-                #print concat
+                # print concat
                 concat = array([concat[0]]*len(new_array))
-                concat[:,['h', 'k', 'l', 'E'].index(self.meta['hkle_vary'])] = new_array[:,0]
-            #print concat
+                concat[:, ['h', 'k', 'l', 'E'].index(self.meta['hkle_vary'])] = new_array[:, 0]
+            # print concat
             new_meta['hkle'] = concat
         # XXX should we merge other meta's?
         ret = self.__class__(new_meta, new_array,
@@ -311,7 +311,7 @@ class DataList(dict):
         return dict.__getitem__(self, obj)
 
     def c(self, r1, r2):
-        return reduce(lambda a, b: a|b, self[r1:r2])
+        return reduce(lambda a, b: a | b, self[r1:r2])
 
 
 class DatasetList(list):

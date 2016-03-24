@@ -24,6 +24,7 @@ __all__ = ['Model', 'CombinedModel', 'Function', 'Custom', 'eval_model']
 
 data_re = re.compile(r'\bdata\b')
 
+
 def eval_model(modeldef, paramdef=None):
     from ufit import models
     d = models.__dict__.copy()
@@ -95,7 +96,7 @@ class Model(object):
                 # not raising an exception allows the GUI to omit irrelevant
                 # initializers
                 self.params.append(Param.from_init(pname, 0))
-                #raise UFitError('Parameter %s needs an initializer' % pname)
+                # raise UFitError('Parameter %s needs an initializer' % pname)
         return pnames_real
 
     def _combine_params(self, a, b):
@@ -291,10 +292,10 @@ class Model(object):
 
     def export_python(self, fp, objname='model'):
         fp.write('%s = %s\n' % (objname, self.get_description()))
-        for param in self.params:
+        for pparam in self.params:
             fp.write('%s[%r].set_props(%r, %r, %r, %r, %r, %r)\n' %
-                     (objname, param.name, param.value, param.error,
-                      param.expr, param.pmin, param.pmax, param.delta))
+                     (objname, pparam.name, pparam.value, pparam.error,
+                      pparam.expr, pparam.pmin, pparam.pmax, pparam.delta))
 
 
 class CombinedModel(Model):
@@ -354,7 +355,7 @@ class CombinedModel(Model):
             components = []
             first = self
             while isinstance(first, CombinedModel) and \
-                first._opstr == self._opstr:
+                    first._opstr == self._opstr:
                 second = first._b
                 first = first._a
                 if second.is_modifier():
@@ -391,13 +392,13 @@ class CombinedModel(Model):
             return self.python_code
         s = ''
         if isinstance(self._a, CombinedModel) and \
-            self.op_prio[self._a._opstr] < self.op_prio[self._opstr]:
+                self.op_prio[self._a._opstr] < self.op_prio[self._opstr]:
             s += '(%s)' % self._a.get_description()
         else:
             s += self._a.get_description()
         s += ' ' + self._opstr + ' '
         if isinstance(self._b, CombinedModel) and \
-            self.op_prio[self._b._opstr] < self.op_prio[self._opstr]:
+                self.op_prio[self._b._opstr] < self.op_prio[self._opstr]:
             s += '(%s)' % self._b.get_description()
         else:
             s += self._b.get_description()
@@ -512,13 +513,13 @@ class GlobalModel(Model):
         # and new data meta dictionaries (data.di)
 
         for i, dplist in enumerate(diff_params):
-            for oldname, param in dplist:
-                param._orig_expr = param.expr
-                if not param.expr:
+            for oldname, pparam in dplist:
+                pparam._orig_expr = pparam.expr
+                if not pparam.expr:
                     continue
                 for oldname0, p0 in dplist:
-                    param.expr = param.expr.replace(oldname0, p0.name)
-                param.expr = data_re.sub('data.d%d' % i, param.expr)
+                    pparam.expr = pparam.expr.replace(oldname0, p0.name)
+                pparam.expr = data_re.sub('data.d%d' % i, pparam.expr)
 
         # global fitting function: call model function once for each dataset
         # with the original data, with the parameter values taken from the

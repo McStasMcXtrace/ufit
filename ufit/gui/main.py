@@ -228,7 +228,7 @@ class UFitMain(QMainWindow):
             self.current_panel.on_canvas_pick(event)
 
     def on_canvas_click(self, event):
-        if event.button == 3 and not self.toolbar.mode: # right button
+        if event.button == 3 and not self.toolbar.mode:  # right button
             self.canvasMenu.popup(QCursor.pos())
 
     @qtsig('')
@@ -248,6 +248,7 @@ class UFitMain(QMainWindow):
         self.menuMoveToGroup.clear()
         for group in session.groups:
             action = QAction(group.name, self)
+
             def move_to(group=group):
                 items = self.selected_items()
                 if not items:
@@ -261,6 +262,7 @@ class UFitMain(QMainWindow):
         self.menuRemoveGroup.clear()
         for group in session.groups:
             action = QAction(group.name, self)
+
             def remove(group=group):
                 session.remove_group(group)
                 self.re_expand_tree()
@@ -271,6 +273,7 @@ class UFitMain(QMainWindow):
         self.menuRenameGroup.clear()
         for group in session.groups:
             action = QAction(group.name, self)
+
             def rename(group=group):
                 name = QInputDialog.getText(self, 'ufit', 'Please enter a new name '
                                             'for the group:', text=group.name)[0]
@@ -287,7 +290,7 @@ class UFitMain(QMainWindow):
             return
         if QMessageBox.question(self, 'ufit',
                                 'OK to remove %d item(s)?' % len(items),
-                                QMessageBox.Yes|QMessageBox.No) == QMessageBox.No:
+                                QMessageBox.Yes | QMessageBox.No) == QMessageBox.No:
             return
         session.remove_items(items)
         self.re_expand_tree()
@@ -335,7 +338,7 @@ class UFitMain(QMainWindow):
             item = items[0]
             if item not in self.itempanels:
                 panel = self.itempanels[item] = \
-                        item.create_panel(self, self.canvas)
+                    item.create_panel(self, self.canvas)
                 self.stacker.addWidget(panel)
             else:
                 panel = self.itempanels[item]
@@ -348,7 +351,7 @@ class UFitMain(QMainWindow):
             paneltype = type(items[0])
             if paneltype not in self.multipanels:
                 panel = self.multipanels[paneltype] = \
-                        items[0].create_multi_panel(self, self.canvas)
+                    items[0].create_multi_panel(self, self.canvas)
                 self.stacker.addWidget(panel)
             else:
                 panel = self.multipanels[paneltype]
@@ -378,6 +381,7 @@ class UFitMain(QMainWindow):
             self.inspector_window.activateWindow()
             return
         self.inspector_window = InspectorWindow(self)
+
         def deref():
             self.inspector_window = None
         self.connect(self.inspector_window, SIGNAL('replotRequest'),
@@ -393,6 +397,7 @@ class UFitMain(QMainWindow):
             self.annotation_window.activateWindow()
             return
         self.annotation_window = AnnotationWindow(self)
+
         def deref():
             self.annotation_window = None
         self.connect(self.annotation_window, SIGNAL('closed'), deref)
@@ -511,8 +516,8 @@ class UFitMain(QMainWindow):
         if not self.isWindowModified():  # nothing there to be saved
             return True
         resp = QMessageBox.question(self, 'ufit',
-            'Save current session?\n%s' % session.filename,
-            QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+                                    'Save current session?\n%s' % session.filename,
+                                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
         if resp == QMessageBox.Yes:
             return self.save_session()
         elif resp == QMessageBox.No:

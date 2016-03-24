@@ -38,6 +38,7 @@ def check_data_simple(fp, sep=None):
             return False
     return True
 
+
 def check_data(fp):
     return check_data_simple(fp, None)
 
@@ -78,6 +79,7 @@ def read_data_simple(filename, fp, sep=None):
     meta = {}
     meta['filedesc'] = path.basename(filename)
     return colnames, arr, meta
+
 
 def read_data(filename, fp):
     return read_data_simple(filename, fp, None)

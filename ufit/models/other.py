@@ -93,7 +93,6 @@ class Parabola(Model):
         }
 
 
-
 class Cosine(Model):
     """Cosine
 
@@ -213,6 +212,7 @@ class BrillouinT(Model):
 
     def __init__(self, name='', J=1, B=0, g=1, scale=1):
         pj, pb, pg, ps = self._init_params(name, self.param_names, locals())
+
         def fcn(p, x):
             J = p[pj]
             arg = 0.67171388 * p[pg] * p[pb] / x
@@ -235,6 +235,7 @@ class BrillouinB(Model):
 
     def __init__(self, name='', J=1, T=1, g=1, scale=1):
         pj, pt, pg, ps = self._init_params(name, self.param_names, locals())
+
         def fcn(p, x):
             J = p[pj]
             arg = 0.67171388 * p[pg] * x / p[pt]

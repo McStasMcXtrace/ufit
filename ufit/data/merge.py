@@ -33,7 +33,7 @@ def rebin(data, binsize):
 
     # newarray will be the new x, y, dy, n array
     newarray = zeros((nbins, 4))
-    newarray[:,0] = stops
+    newarray[:, 0] = stops
 
     # this will keep track which data values we already used
     data_unused = ones(len(x), bool)
@@ -67,12 +67,14 @@ def rebin(data, binsize):
     # return array
     return newarray
 
+
 def mergeList(tomerge):
     tomerge = array(tomerge)
     merged = tomerge.sum(axis = 0)
     merged[2] = sqrt((tomerge**2).sum(axis = 0)[2])
     merged[0] = merged[0] / len(tomerge)
-    return merged;
+    return merged
+
 
 def floatmerge(data, binsize):
     """Merging data based on floating window."""
@@ -82,15 +84,15 @@ def floatmerge(data, binsize):
         return data
 
     # sort data
-    data = data[data[:,0].argsort()]
+    data = data[data[:, 0].argsort()]
 
     lastvals = None
-    tomerge =  []
-    newlist =  []
+    tomerge = []
+    newlist = []
     for vals in data:
-        if lastvals != None:
+        if lastvals is not None:
             if vals[0] > lastvals[0] + binsize:
-                #merge points in list:
+                # merge points in list:
                 newlist.append(mergeList(tomerge))
                 tomerge = []
         tomerge.append(vals)

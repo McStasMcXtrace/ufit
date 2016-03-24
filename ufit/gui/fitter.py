@@ -229,7 +229,8 @@ class Fitter(QWidget):
             self._pick_finished()
         else:
             self.statusLabel.setText('%s: click on %s' %
-                (self.picking, self._pick_points[len(self._pick_values)]))
+                                     (self.picking,
+                                      self._pick_points[len(self._pick_values)]))
 
     def do_pick(self, *args):
         if self.picking:
@@ -239,6 +240,7 @@ class Fitter(QWidget):
         self._pick_values = []
         self.picking = 'Guess'
         self.statusLabel.setText('Guess: click on %s' % self._pick_points[0])
+
         def callback():
             self.model.apply_pick(self._pick_values)
             for p in self.model.params:
@@ -277,9 +279,9 @@ class Fitter(QWidget):
         if item is not self.item:
             return
 
-        self.statusLabel.setText((res.success and 'Converged. ' or 'Failed. ')
-                                 + res.message +
-                                 ' Reduced chi^2 = %.3g.' % res.chisqr)
+        self.statusLabel.setText(
+            (res.success and 'Converged. ' or 'Failed. ') + res.message +
+            ' Reduced chi^2 = %.3g.' % res.chisqr)
 
         for p in res.params:
             self.param_controls[p][1].setText('%.5g' % p.value)

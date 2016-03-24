@@ -8,7 +8,6 @@
 
 """Model of S(q,w) with resolution convolution for TAS."""
 
-import time
 import inspect
 
 from numpy import matrix as zeros
@@ -115,21 +114,22 @@ class ConvolvedScatteringLaw(Model):
         # numba compat
         arg_sqw = getattr(self._sqw, 'py_func', self._sqw)
         self._pvs = self._init_params(name,
-            ['NMC', 'bkgd'] + inspect.getargspec(arg_sqw)[0][6:] +
-            instparnames, init)
+                                      ['NMC', 'bkgd'] +
+                                      inspect.getargspec(arg_sqw)[0][6:] +
+                                      instparnames, init)
         self._ninstpar = len(instparnames)
         self._resmat = resmat(cfg_orig, par_orig)
 
         if matrix is not None:
             self._resmat.fixed_res = True
             self._resmat.setNPMatrix(matrix, mathkl)
-            #self._resmat.NP = matrix
+            # self._resmat.NP = matrix
             self._resmat.R0_corrected = 1.0
 
     def fcn(self, p, x):
         parvalues = [p[pv] for pv in self._pvs]
-        t1 = time.time()
-        #print 'Sqw: values = ', parvalues
+        # t1 = time.time()
+        # print 'Sqw: values = ', parvalues
         if self._ninstpar:
             sqwpar  = parvalues[2:-self._ninstpar]
             for pn, pv in zip(self._instpars, parvalues[-self._ninstpar:]):
@@ -152,8 +152,8 @@ class ConvolvedScatteringLaw(Model):
             res = calc_MC(x, sqwpar, self._sqw, self._resmat,
                           parvalues[0], use_caching=use_caching)
         res += parvalues[1]  # background
-        t2 = time.time()
-        #print 'Sqw: iteration = %.3f sec' % (t2-t1)
+        # t2 = time.time()
+        # print 'Sqw: iteration = %.3f sec' % (t2-t1)
         return res
 
     def resplot(self, h, k, l, e):

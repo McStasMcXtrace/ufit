@@ -87,22 +87,22 @@ class Loader(object):
             use_hkl = True
         if xcol == 'auto':
             xcol = colguess[0]
-        datarr[:,0] = coldata[:,colindex(xcol)]
+        datarr[:, 0] = coldata[:, colindex(xcol)]
         if ycol == 'auto':
             ycol = colguess[1]
-        datarr[:,1] = coldata[:,colindex(ycol)]
+        datarr[:, 1] = coldata[:, colindex(ycol)]
         if dycol == 'auto':
             dycol = colguess[2]
         if dycol is not None:
-            datarr[:,2] = coldata[:,colindex(dycol)]
+            datarr[:, 2] = coldata[:, colindex(dycol)]
         else:
-            datarr[:,2] = sqrt(datarr[:,1])
+            datarr[:, 2] = sqrt(datarr[:, 1])
         if ncol == 'auto':
             ncol = colguess[3]
         if ncol is not None:
-            datarr[:,3] = coldata[:,colindex(ncol)]
+            datarr[:, 3] = coldata[:, colindex(ncol)]
             if nscale == -1:
-                nscale = int(float('%.2g' % datarr[:,3].mean()))
+                nscale = int(float('%.2g' % datarr[:, 3].mean()))
 
         def colname(col):
             if col is None:
@@ -147,7 +147,7 @@ class Loader(object):
             if mguess is not None:
                 # use average monitor counts for normalization, but
                 # round to 2 significant digits
-                moncol = coldata[:,colnames.index(mguess)]
+                moncol = coldata[:, colnames.index(mguess)]
                 nmon = int(float('%.2g' % moncol.mean()))
             else:
                 nmon = 0
@@ -169,6 +169,7 @@ class Loader(object):
         """
         if not isinstance(binsize, (int, float)):
             raise UFitError('binsize argument must be a number')
+
         def toint(a):
             try:
                 return int(a)

@@ -20,7 +20,7 @@ def check_data(fp):
 
 
 def guess_cols(colnames, coldata, meta):
-    xg, yg, dyg, mg = None, 'c1', None, 'mon'
+    xg, yg, dvg, mg = None, 'c1', None, 'mon'
     if 'QH' in colnames:
         qhindex = colnames.index('QH')
         deviations = array([(cs.max()-cs.min())
@@ -57,8 +57,7 @@ def read_data(filename, fp):
         try:
             if len(parts) == 2:
                 meta[parts[0]] = float(parts[1])
-            elif len(parts) == 3:  # encoder target, value
-                                   # so take value
+            elif len(parts) == 3:  # encoder target, value: so take value
                 meta[parts[0]] = float(parts[2])
         except ValueError:
             pass
@@ -73,7 +72,7 @@ def read_data(filename, fp):
         names = names[1:]
     arr = loadtxt(fp, ndmin=2, usecols=usecols)
     for i, n in enumerate(names):
-        meta[n] = arr[:,i].mean()
+        meta[n] = arr[:, i].mean()
     meta['environment'] = []
     if 'TTA' in meta:
         meta['environment'].append('T = %.3f K' % meta['TTA'])
@@ -83,8 +82,8 @@ def read_data(filename, fp):
         if 'QH' not in names:
             raise UFitError('Polarization data without QHKLE not supported')
         nfixed = names.index('E')  # fixed columns (same for all PA points)
-        pal_values = set(arr[:,0])
-        npal = len(pal_values) # number of PA points
+        pal_values = set(arr[:, 0])
+        npal = len(pal_values)  # number of PA points
         names_new = names[1:nfixed+1]
         nvary = arr.shape[1] - nfixed - 1  # without pal and fixed columns
         arr_new = zeros((arr.shape[0]//npal, nfixed + nvary*npal))
@@ -93,11 +92,12 @@ def read_data(filename, fp):
                 names_new.append(name + '_%d' % pal_value)
             arr_new[:, nfixed+(pal_value-1)*nvary:nfixed+pal_value*nvary] = \
                 arr[pal_value-1::npal, nfixed+1:]
-        arr_new[:,:nfixed] = arr[::npal,1:nfixed+1]  # take fixed points from first PA point
+        # take fixed points from first PA point
+        arr_new[:, :nfixed] = arr[::npal, 1:nfixed+1]
         names = names_new
         arr = arr_new
     if names[0] == 'QH':
-        meta['hkle'] = arr[:,:4]
+        meta['hkle'] = arr[:, :4]
         deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
         meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
     return names, arr, meta

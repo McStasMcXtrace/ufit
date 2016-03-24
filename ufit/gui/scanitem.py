@@ -114,9 +114,9 @@ show()
         yy = self.model.fcn(paramvalues, xx)
         yys = []
         for comp in self.model.get_components():
-              if comp is self.model:
-                  continue
-              yys.append(comp.fcn(paramvalues, xx))
+            if comp is self.model:
+                continue
+            yys.append(comp.fcn(paramvalues, xx))
         savetxt(filename, array([xx, yy] + yys).T)
 
 

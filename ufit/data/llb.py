@@ -20,10 +20,14 @@ DATEFMT = struct.Struct('<hhhhh')
 # CAUTION: some of these names are only correct for 1T
 FIELDS = \
     ['dm', 'da', 'etam', 'etaa', 'zme', 'zea', 'zad', 'he', 've', 'hd', 'vd'] + \
-    [None] * 12 + ['h0', 'h1', 'h2', 'h3', 'v0', 'v1', 'v2', 'v3',
-    'eta1', 'eta2', 'eta3'] + [None] * 12 + [
-    'ax', 'ay', 'az', 'alfa', 'beta', 'gama', 'etas'] + [None] * 18 + [
-    'ze1', 'ze2', 'za1', 'za2'] + [None] * 4 + ['zgi', 'zgs', None, 'zca']
+    [None] * 12 + \
+    ['h0', 'h1', 'h2', 'h3', 'v0', 'v1', 'v2', 'v3', 'eta1', 'eta2', 'eta3'] + \
+    [None] * 12 + \
+    ['ax', 'ay', 'az', 'alfa', 'beta', 'gama', 'etas'] + \
+    [None] * 18 + \
+    ['ze1', 'ze2', 'za1', 'za2'] + \
+    [None] * 4 + \
+    ['zgi', 'zgs', None, 'zca']
 
 # format of a single point (92 bytes long)
 POINTFMT = struct.Struct('<hffffffffffffffhffffffff')
@@ -34,6 +38,7 @@ POINTFIELDS = ['qh', 'qk', 'ql', 'en', 'ki', 'm1', 'm2',
 POINTFMT_alt = struct.Struct('<hffffffffffffffffhffffff')
 POINTFIELDS_alt = ['qh', 'qk', 'ql', 'en', 'ki', 'm1', 'm2', 'm3', 'm4',
                    'e1', 'e2', 'a1', 'a2', 'time', 'mon', 'counts', 'xx', 'T']
+
 
 def check_data(fp):
     # the first 10 bytes are a packed date; check that for plausibility
@@ -54,6 +59,7 @@ def _float_fmt(x):
         return '0'
     else:
         return '%.3f' % x
+
 
 def read_data(filename, fp):
     meta = {}
@@ -89,11 +95,11 @@ def read_data(filename, fp):
         coords = pointfmt.unpack(point)[:len(pointfields) + 1]
         parr.append(coords + (coords[1] + 0.5*coords[2],
                               0.5*sqrt(3)*coords[2]))
-    parr = array(parr)[:,1:]
+    parr = array(parr)[:, 1:]
     for i, name in enumerate(pointfields):
-        meta[name] = parr[:,i].mean()
+        meta[name] = parr[:, i].mean()
     meta['environment'] = ['T = %.3f K' % meta['T']]
-    meta['hkle'] = parr[:,0:4]
+    meta['hkle'] = parr[:, 0:4]
     deviations = array([cs.max() - cs.min() for cs in parr.T[0:4]])
     xg = pointfields[deviations.argmax()]
     meta['hkle_vary'] = xg

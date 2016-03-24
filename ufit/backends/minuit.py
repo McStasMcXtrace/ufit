@@ -16,13 +16,14 @@ from ufit.utils import get_chisqr
 try:
     from minuit import Minuit
 except ImportError:
-    ## minuit2 crashes with GIL problems here
-    #from minuit2 import Minuit2 as Minuit
+    # unfortunately, minuit2 crashes with GIL problems here
+    # from minuit2 import Minuit2 as Minuit
     raise
 
 __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'minuit'
+
 
 def do_fit(data, fcn, params, add_kw):
     x, y, dy = data.fit_columns
@@ -63,7 +64,7 @@ def do_fit(data, fcn, params, add_kw):
         m.hesse()
     except Exception, e:
         return False, str(e), 0
-    #m.minos()  -> would calculate more exact and asymmetric errors
+    # m.minos()  -> would calculate more exact and asymmetric errors
 
     pd = dict((pn, m.values[minuit_map[pn]]) for pn in varynames)
     update_params(dependent, meta, pd)

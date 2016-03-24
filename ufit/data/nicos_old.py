@@ -13,15 +13,16 @@ import time
 from ufit import UFitError
 from ufit.data.nicos import _nicos_common_load
 
+# guess_cols is the same as for new nicos format
+
+from ufit.data.nicos import guess_cols
+
+
 def check_data(fp):
     dtline = fp.readline()
     fp.seek(0, 0)
     # not sure if it is enough, but it is working
     return dtline.startswith('filename')
-
-# guess_cols is the same as for new nicos format
-
-from ufit.data.nicos import guess_cols
 
 
 mapping = {
@@ -49,6 +50,7 @@ blacklist = set([
     'att  (A6) (deg)', 'sth  (A3) (deg)', 'stt  (A4) (deg)',
 ])
 
+
 def read_data(filename, fp):
     meta = {}
     first_pos = fp.tell()
@@ -65,8 +67,8 @@ def read_data(filename, fp):
                             'instrument general setup at file creation',
                             'offsets of main axes')):
             continue
-        #POLARIZATION, not implemented:
-        #if line.startswith('counting for switching devices'): # polarized measurements!
+        # POLARIZATION, not implemented:
+        # if line.startswith('counting for switching devices'): # polarized measurements!
         #    self.pol_devices = [d.strip() for d in line.split(']')[0].split('[')[1].split(', ')]
         #    self.pol_states = []
         #    self.polarized = True

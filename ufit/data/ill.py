@@ -33,8 +33,8 @@ def guess_cols(colnames, coldata, meta):
     maxmon = 0
     for i, colname in enumerate(colnames):
         if colname.startswith('M') and colname[1:].isdigit():
-            if coldata[:,i].sum() > maxmon:
-                maxmon = coldata[:,i].sum()
+            if coldata[:, i].sum() > maxmon:
+                maxmon = coldata[:, i].sum()
                 mg = colname
     return xg, yg, None, mg
 

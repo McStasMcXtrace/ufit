@@ -26,11 +26,13 @@ class QIPythonWidget(RichIPythonWidget):
         kernel_manager.kernel.gui = 'qt4'
         self.kernel_client = kernel_client = self._kernel_manager.client()
         kernel_client.start_channels()
+
         def stop():
             kernel_client.stop_channels()
             kernel_manager.shutdown_kernel()
             self.emit(SIGNAL('close'))
         self.exit_requested.connect(stop)
+
         def redraw():
             self.emit(SIGNAL('redraw'))
         self.executed.connect(redraw)

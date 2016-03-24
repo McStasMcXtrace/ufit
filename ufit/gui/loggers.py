@@ -53,11 +53,14 @@ for _i, (_dark, _light) in enumerate(_colors):
     _codes[_dark] = '\x1b[%im' % (_i + 30)
     _codes[_light] = '\x1b[%i;01m' % (_i + 30)
 
+
 def colorize(name, text):
     return _codes.get(name, '') + text + _codes.get('reset', '')
 
+
 def colorcode(name):
     return _codes.get(name, '')
+
 
 def nocolor():
     for key in list(_codes):
@@ -125,6 +128,7 @@ LOGFMT = '%(asctime)s : %(levelname)-7s : %(name)s: %(message)s'
 DATESTAMP_FMT = '%Y-%m-%d'
 SECONDS_PER_DAY = 60 * 60 * 24
 
+
 class LogfileHandler(StreamHandler):
     """
     Logs to log files with a date stamp appended, and rollover on midnight.
@@ -187,7 +191,7 @@ class LogfileHandler(StreamHandler):
             self.stream.close()
             self.stream = None
         self.baseFilename = self._pathnameprefix + '-' + \
-                            time.strftime(self._dayfmt) + '.log'
+            time.strftime(self._dayfmt) + '.log'
         self.rollover_at += SECONDS_PER_DAY
 
 

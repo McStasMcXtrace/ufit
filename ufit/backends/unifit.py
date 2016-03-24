@@ -13,7 +13,7 @@ from __future__ import absolute_import
 from copy import copy
 from time import time
 from numpy import sqrt, infty, ones, zeros, absolute, maximum, minimum, \
-     finfo, corrcoef, nonzero, diag, isnan, dot
+    finfo, corrcoef, nonzero, diag, isnan, dot
 from numpy.linalg import svd, pinv
 
 from ufit.param import prepare_params, update_params
@@ -22,6 +22,7 @@ from ufit.utils import get_chisqr
 __all__ = ['do_fit', 'backend_name']
 
 backend_name = 'unifit'
+
 
 def do_fit(data, fcn, params, add_kw):
     x, y, dy = data.fit_columns
@@ -67,6 +68,7 @@ def do_fit(data, fcn, params, add_kw):
 class FitError(Exception):
     pass
 
+
 def __dfdp(x, f, p, dp, func):
     """
     Returns the partial derivatives of function 'func'.
@@ -76,7 +78,7 @@ def __dfdp(x, f, p, dp, func):
     """
 
     y = zeros((len(x), len(p)))
-    #pp = copy(p)
+    # pp = copy(p)
     dpp = copy(dp)
 
     for i in range(len(p)):
@@ -85,8 +87,9 @@ def __dfdp(x, f, p, dp, func):
             dpp[i] = 0.00001
         pp[i] = p[i] + dpp[i]
         t = func(x, pp)
-        y[:,i] = (t-f)/dpp[i]
+        y[:, i] = (t-f)/dpp[i]
     return y
+
 
 def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
     """Levenberg-Marquardt nonlinear regression of func(x,p) to y(x).
