@@ -87,18 +87,18 @@ def read_data(filename, fp):
     for warning in warnings:
         print '!!!', warning.message
     for i, n in enumerate(names):
-        meta[n] = arr[:,i].mean()
+        meta[n] = arr[:, i].mean()
     meta['environment'] = []
     if 'TT' in meta:
         meta['environment'].append('T = %.3f K' % meta['TT'])
     if 'MAG' in meta:
         meta['environment'].append('B = %.5f T' % meta['MAG'])
     if names[3] == 'EN':
-        meta['hkle'] = arr[:,:4]
+        meta['hkle'] = arr[:, :4]
         deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
         meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]
     elif names[0] == 'QH':  # 2-axis mode
-        meta['hkle'] = arr[:,:3]
+        meta['hkle'] = arr[:, :3]
         meta['hkle'] = array([(h, k, l, 0) for (h, k, l) in meta['hkle']])
         deviations = array([(cs.max()-cs.min()) for cs in arr.T[:4]])
         meta['hkle_vary'] = ['h', 'k', 'l', 'E'][deviations.argmax()]

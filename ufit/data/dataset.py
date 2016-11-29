@@ -200,10 +200,9 @@ class ScanData(DataBase):
             if binsize != 0:
                 if len(set(dset.meta['hkle_vary'] for dset in allsets)) != 1:
                     raise Exception('datasets have differing varying dimension')
-                # print concat
                 concat = array([concat[0]]*len(new_array))
-                concat[:, ['h', 'k', 'l', 'E'].index(self.meta['hkle_vary'])] = new_array[:, 0]
-            # print concat
+                idx = ['h', 'k', 'l', 'E'].index(self.meta['hkle_vary'])
+                concat[:, idx] = new_array[:, 0]
             new_meta['hkle'] = concat
         # XXX should we merge other meta's?
         ret = self.__class__(new_meta, new_array,
