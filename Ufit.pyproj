@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8339ad01-44bf-41b0-a843-0bd1e61df5bb}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>ufitgui.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="docs\pics\main1.png" />
+    <Content Include="docs\_templates\layout.html" />
+    <Content Include="License.txt" />
+    <Content Include="resource\arrow-180.png" />
+    <Content Include="resource\arrow-circle-double.png" />
+    <Content Include="resource\arrow-join.png" />
+    <Content Include="resource\arrow-move.png" />
+    <Content Include="resource\arrow-switch.png" />
+    <Content Include="resource\arrow.png" />
+    <Content Include="resource\chart--arrow.png" />
+    <Content Include="resource\cross-button.png" />
+    <Content Include="resource\cross.png" />
+    <Content Include="resource\disk-black.png" />
+    <Content Include="resource\disks-black.png" />
+    <Content Include="resource\document-export.png" />
+    <Content Include="resource\document-pdf.png" />
+    <Content Include="resource\document.png" />
+    <Content Include="resource\drawer--minus.png" />
+    <Content Include="resource\drawer--plus.png" />
+    <Content Include="resource\drawer-open.png" />
+    <Content Include="resource\drawer.png" />
+    <Content Include="resource\folder-open.png" />
+    <Content Include="resource\gear.png" />
+    <Content Include="resource\home.png" />
+    <Content Include="resource\image-sunset.png" />
+    <Content Include="resource\log-x.png" />
+    <Content Include="resource\log-y.png" />
+    <Content Include="resource\log-z.png" />
+    <Content Include="resource\magnifier-zoom-fit.png" />
+    <Content Include="resource\map.png" />
+    <Content Include="resource\notebook--plus.png" />
+    <Content Include="resource\notebook.png" />
+    <Content Include="resource\printer.png" />
+    <Content Include="resource\question-white.png" />
+    <Content Include="resource\script-php.png" />
+    <Content Include="resource\selection-resize.png" />
+    <Content Include="resource\splash.png" />
+    <Content Include="resource\table-select-row.png" />
+    <Content Include="resource\terminal--arrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="docs\conf.py" />
+    <Compile Include="rthook_pyqt4.py" />
+    <Compile Include="setup.py" />
+    <Compile Include="ufitgui.py" />
+    <Compile Include="ufit\backends\lmfit.py" />
+    <Compile Include="ufit\backends\minuit.py" />
+    <Compile Include="ufit\backends\scipy.py" />
+    <Compile Include="ufit\backends\unifit.py" />
+    <Compile Include="ufit\backends\__init__.py" />
+    <Compile Include="ufit\cluster.py" />
+    <Compile Include="ufit\data\cascade.py" />
+    <Compile Include="ufit\data\dataset.py" />
+    <Compile Include="ufit\data\ill.py" />
+    <Compile Include="ufit\data\llb.py" />
+    <Compile Include="ufit\data\loader.py" />
+    <Compile Include="ufit\data\mapping.py" />
+    <Compile Include="ufit\data\merge.py" />
+    <Compile Include="ufit\data\nicos.py" />
+    <Compile Include="ufit\data\nicos_old.py" />
+    <Compile Include="ufit\data\simple.py" />
+    <Compile Include="ufit\data\simple_csv.py" />
+    <Compile Include="ufit\data\taipan.py" />
+    <Compile Include="ufit\data\trisp.py" />
+    <Compile Include="ufit\data\__init__.py" />
+    <Compile Include="ufit\guiresource.py" />
+    <Compile Include="ufit\gui\annotations.py" />
+    <Compile Include="ufit\gui\browse.py" />
+    <Compile Include="ufit\gui\common.py" />
+    <Compile Include="ufit\gui\console.py" />
+    <Compile Include="ufit\gui\dataloader.py" />
+    <Compile Include="ufit\gui\dataops.py" />
+    <Compile Include="ufit\gui\datasetitem.py" />
+    <Compile Include="ufit\gui\datawidgets.py" />
+    <Compile Include="ufit\gui\dialogs.py" />
+    <Compile Include="ufit\gui\fitter.py" />
+    <Compile Include="ufit\gui\imageitem.py" />
+    <Compile Include="ufit\gui\inspector.py" />
+    <Compile Include="ufit\gui\itemlist.py" />
+    <Compile Include="ufit\gui\loggers.py" />
+    <Compile Include="ufit\gui\main.py" />
+    <Compile Include="ufit\gui\mappingitem.py" />
+    <Compile Include="ufit\gui\modelbuilder.py" />
+    <Compile Include="ufit\gui\scanitem.py" />
+    <Compile Include="ufit\gui\session.py" />
+    <Compile Include="ufit\gui\ui\__init__.py" />
+    <Compile Include="ufit\gui\__init__.py" />
+    <Compile Include="ufit\lab.py" />
+    <Compile Include="ufit\models\base.py" />
+    <Compile Include="ufit\models\conv.py" />
+    <Compile Include="ufit\models\corr.py" />
+    <Compile Include="ufit\models\other.py" />
+    <Compile Include="ufit\models\peaks.py" />
+    <Compile Include="ufit\models\sqwtas.py" />
+    <Compile Include="ufit\models\__init__.py" />
+    <Compile Include="ufit\param.py" />
+    <Compile Include="ufit\plotting.py" />
+    <Compile Include="ufit\rescalc.py" />
+    <Compile Include="ufit\result.py" />
+    <Compile Include="ufit\utils.py" />
+    <Compile Include="ufit\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="docs" />
+    <Folder Include="docs\pics" />
+    <Folder Include="docs\_templates" />
+    <Folder Include="resource" />
+    <Folder Include="ufit" />
+    <Folder Include="ufit\backends" />
+    <Folder Include="ufit\data" />
+    <Folder Include="ufit\gui" />
+    <Folder Include="ufit\gui\ui" />
+    <Folder Include="ufit\models" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\2.7" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
