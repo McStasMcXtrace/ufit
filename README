@@ -30,7 +30,7 @@ Generation of the Windows executables is done in PyInstaller.
 
 Recommended way is using Single Folder script:
     Generate:
-        in the base-directory run:
+        in the installer directory run:
             pyinstaller ufit_singlefolder.spec [-y] [--clean]
          -y option will overwrite everything in dist directory
          --clean will generate everything fro scratch
