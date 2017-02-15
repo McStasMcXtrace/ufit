@@ -1,52 +1,33 @@
-# -*- coding: utf-8 -*-
-# Author: Douglas Creager <dcreager@dcreager.net>
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# ufit, a universal scattering fitting suite
+#
+# Copyright (c) 2013-2016, Georg Brandl and contributors.  All rights reserved.
+# Licensed under a 2-clause BSD license, see LICENSE.
+# *****************************************************************************
+
+# Original author: Douglas Creager <dcreager@dcreager.net>
 # This file is placed into the public domain.
 
-# Calculates the current version number.  If possible, this is the
-# output of “git describe”, modified to conform to the versioning
-# scheme that setuptools uses.  If “git describe” returns an error
-# (most likely because we're in an unpacked copy of a release tarball,
-# rather than in a git working copy), then we fall back on reading the
-# contents of the RELEASE-VERSION file.
-#
-# To use this script, simply import it your setup.py file, and use the
-# results of get_git_version() as your package version:
-#
-# from version import *
-#
-# setup(
-#     version=get_git_version(),
-#     .
-#     .
-#     .
-# )
-#
-# This will automatically update the RELEASE-VERSION file, if
-# necessary.  Note that the RELEASE-VERSION file should *not* be
-# checked into git; please add it to your top-level .gitignore file.
-#
-# You'll probably want to distribute the RELEASE-VERSION file in your
-# sdist tarballs; to do this, just create a MANIFEST.in file that
-# contains the following line:
-#
-#   include RELEASE-VERSION
-
-__all__ = ["get_version"]
+from __future__ import print_function
 
 import os.path
 from subprocess import Popen, PIPE
 
-RELEASE_VERSION_FILE = os.path.join(os.path.dirname(__file__), 'RELEASE-VERSION')
+__all__ = ['get_version']
+
+RELEASE_VERSION_FILE = os.path.join(os.path.dirname(__file__),
+                                    'RELEASE-VERSION')
 GIT_REPO = os.path.join(os.path.dirname(__file__), '..', '.git')
 
 
 def get_git_version(abbrev=4, cwd=None):
     try:
         p = Popen(['git', '--git-dir=%s' % GIT_REPO,
-                   'describe', '--tags', '--abbrev=%d' % abbrev],
+                   'describe', '--abbrev=%d' % abbrev],
                   stdout=PIPE, stderr=PIPE)
         stdout, _stderr = p.communicate()
-        return stdout.strip()
+        return stdout.strip().decode('utf-8', 'ignore')
     except Exception:
         return None
 
@@ -77,7 +58,9 @@ def get_version(abbrev=4):
     elif release_version:
         return release_version
     else:
-        raise ValueError('Cannot find a version number!')
+        raise ValueError('Cannot find a version number - make sure that '
+                         'git is installed or a RELEASE-VERSION file is '
+                         'present!')
 
 
 if __name__ == "__main__":
