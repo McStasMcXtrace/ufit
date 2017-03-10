@@ -158,7 +158,7 @@ class Loader(object):
         return colnames, xguess, yguess, dyguess, mguess, nmon
 
     def load_numors(self, nstring, binsize, xcol, ycol, dycol=None,
-                    ncol=None, nscale=1, floatmerge=False):
+                    ncol=None, nscale=1, floatmerge=True):
         """Load a number of data files and merge them according to numor
         list operations:
 

@@ -13,6 +13,7 @@ from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp, \
     llb, cascade, taipan
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset, ScanData, ImageData, DatasetList
+from ufit.plotting import mapping
 
 data_formats_scan = {
     'ill': ill,
@@ -34,7 +35,7 @@ data_formats = dict(kv for kv in (data_formats_scan.items() +
 
 __all__ = ['Dataset', 'DatasetList', 'ScanData', 'ImageData', 'sets',
            'set_datatemplate', 'set_dataformat', 'read_data', 'as_data',
-           'read_numors']
+           'read_numors', 'do_mapping']
 
 
 # simplified interface for usage in noninteractive scripts
@@ -104,13 +105,14 @@ def as_data(x, y, dy, name=''):
 
 
 def read_numors(nstring, binsize, xcol='auto', ycol='auto',
-                dycol=None, ncol=None, nscale=1):
+                dycol=None, ncol=None, nscale=1, floatmerge=True):
     """Read a number of data files.  Returns a list of :class:`Dataset`\s.
 
     :param nstring: A string that gives file numbers, with the operators given
         below.
     :param binsize: Bin size when files need to be merged according to
         *nstring*.
+    :param floatmerge: If to use float merging instead of binning. Default true.
 
     Other parameters as in :func:`read_data`.
 
@@ -130,4 +132,31 @@ def read_numors(nstring, binsize, xcol='auto', ycol='auto',
     * ``'10,11,12+13,14'`` loads four sets.
     """
     return global_loader.load_numors(nstring, binsize, xcol, ycol,
-                                     dycol, ncol, nscale)
+                                     dycol, ncol, nscale, floatmerge)
+
+
+def do_mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
+            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
+            clear=True, colors=None, axes=None, title=None):
+    """Create a 2D map from several datasets.
+
+    An example::
+
+        mapping("h", "E", datas)
+
+    :param minmax: tuple of minimum and maximum value for z-scale
+    :param mode: 0 = image, 1 = contour filled, 2 = contour lines
+    :param log: bool if the z-scale is logarithmic
+    :param dots: whether to show dots on position of datapoints
+    :param xscale, yscale: to define scale between x an y axis
+    :param interpolate: number of points to interpolate in between points
+    :param usemask: bool if to consider masked out points
+    :param figure: where to plot, default is pl.gcf()
+    :param clear: if to do figure.clf() before plotting
+    :param colors: when using mode > 1, optional list of colors for plotting
+    :param axes: axes where to plot, default is figure.gca()
+    :param title: title of the plot
+    """
+    return mapping(x, y, runs, minmax, mode, log, dots,
+            xscale, yscale, interpolate, usemask, figure,
+            clear, colors, axes, title)
