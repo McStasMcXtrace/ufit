@@ -187,6 +187,8 @@ class Model(object):
         """Fit the model to the data.  *data* must be a :class:`Dataset` object.
 
         Any keywords will be passed to the raw fitting routine of the backend.
+        lmfit
+        printReport = True will printout results and correlations
         """
         if self._orig_params is None:
             self._orig_params = [p.copy() for p in self.params]

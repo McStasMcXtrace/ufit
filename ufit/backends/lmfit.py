@@ -38,12 +38,16 @@ def do_fit(data, fcn, params, add_kw):
         update_params(dependent, meta, pd)
         return (fcn(pd, x) - y) / dy
 
+    printReport = add_kw.pop('printReport', False)
+
     try:
         out = minimize(lmfitfcn, lmfparams, args=(data,), **add_kw)
     except Exception, e:
+        print str(e)
         return False, str(e), 0
 
-    report_fit(out.params)
+    if printReport:
+        report_fit(out.params)
 
     pd = dict((pn, out.params[pn].value) for pn in varynames)
     update_params(dependent, meta, pd)
