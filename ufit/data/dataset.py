@@ -183,17 +183,22 @@ class ScanData(DataBase):
         if not others and binsize == 0:
             return self
         allsets = (self,) + others
-        alldata = concatenate([dset._data for dset in allsets])
-        if settings.get('floatmerge'):
-            new_array = floatmerge(alldata, binsize)
-        else:
-            new_array = rebin(alldata, binsize)
-        sources = sum((dset.sources for dset in allsets), [])
+        # copy meta from first
         new_meta = self.meta.copy()
+        # copy all datapoints
+        alldata = concatenate([dset._data for dset in allsets])
+        # copy all columns
         for col in self.meta:
             if not col.startswith('col_'):
                 continue
-            new_meta[col] = concatenate([dset.meta.get(col, []) for dset in allsets])
+            new_meta[col] = concatenate([dset.meta.get(col, [])
+                                         for dset in allsets])
+        # merge
+        if settings.get('floatmerge'):
+            new_array, new_meta = floatmerge(alldata, binsize, new_meta)
+        else:
+            new_array, new_meta = rebin(alldata, binsize, new_meta)
+        sources = sum((dset.sources for dset in allsets), [])
         # XXX hkl data is a mess
         if 'is_hkldata' in self.meta:
             concat = concatenate([dset.meta['hkle'] for dset in allsets])

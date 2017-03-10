@@ -104,8 +104,8 @@ class DataOps(QWidget):
         except ValueError:
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
-        new_array = rebin(self.data._data, binsize)
-        self.data.__init__(self.data.meta, new_array,
+        new_array, new_meta = rebin(self.data._data, binsize, self.data.meta)
+        self.data.__init__(new_meta, new_array,
                            self.data.xcol, self.data.ycol, self.data.ncol,
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
@@ -119,8 +119,9 @@ class DataOps(QWidget):
         except ValueError:
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
-        new_array = floatmerge(self.data._data, binsize)
-        self.data.__init__(self.data.meta, new_array,
+        new_array, new_meta = floatmerge(self.data._data, binsize,
+                                         self.data.meta)
+        self.data.__init__(new_meta, new_array,
                            self.data.xcol, self.data.ycol, self.data.ncol,
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
