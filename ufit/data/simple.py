@@ -8,6 +8,7 @@
 
 """Load routine for simple whitespace-separated column data files."""
 
+import io
 from os import path
 
 from numpy import loadtxt
@@ -24,16 +25,16 @@ def guess_cols(colnames, coldata, meta):
 def check_data_simple(fp, sep=None):
     line = fp.readline()
     # find the first non-comment line
-    while line.startswith(('#', '%')):
+    while line.startswith((b'#', b'%')):
         line = fp.readline()
     line2 = fp.readline()
     fp.seek(0, 0)
     # must be values in non-comment line, or the line after
     try:
-        map(float, line.split(sep))
+        [float(x) for x in line.split(sep)]
     except ValueError:
         try:
-            map(float, line2.split(sep))
+            [float(x) for x in line2.split(sep)]
         except ValueError:
             return False
     return True
@@ -44,6 +45,7 @@ def check_data(fp):
 
 
 def read_data_simple(filename, fp, sep=None):
+    fp = io.TextIOWrapper(fp, 'ascii', 'ignore')
     line1 = ''
     line2 = fp.readline()
     skiprows = 0
@@ -60,7 +62,7 @@ def read_data_simple(filename, fp, sep=None):
         comments = line1[0]
         line1 = line1[1:]
     try:
-        map(float, line2.split())
+        [float(x) for x in line2.split()]
     except ValueError:
         # must be column names
         colnames = line2.split()

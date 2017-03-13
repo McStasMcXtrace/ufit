@@ -8,6 +8,7 @@
 
 """Load routine for OLD NICOS data."""
 
+import io
 import time
 
 from ufit import UFitError
@@ -22,7 +23,7 @@ def check_data(fp):
     dtline = fp.readline()
     fp.seek(0, 0)
     # not sure if it is enough, but it is working
-    return dtline.startswith('filename')
+    return dtline.startswith(b'filename')
 
 
 mapping = {
@@ -52,6 +53,7 @@ blacklist = set([
 
 
 def read_data(filename, fp):
+    fp = io.TextIOWrapper(fp, 'ascii', 'ignore')
     meta = {}
     first_pos = fp.tell()
     dtline = fp.readline()

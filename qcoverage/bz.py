@@ -1,6 +1,8 @@
 ﻿import numpy as np
 from sympy import symbols, init_printing, simplify
 
+from ufit.pycompat import iteritems
+
 #simple BZ symbolic calculations
 #standalone script
 a, c, pi = symbols('a c pi')
@@ -37,11 +39,9 @@ print b1, b2, b3
 print
 init_printing()
 
-for n, sp in sympoints.iteritems():
+for n, sp in iteritems(sympoints):
     h = simplify(mult(sp, b1, b2, b3)[0] * a/2/pi)
     k = simplify(mult(sp, b1, b2, b3)[1] * a/2/pi)
     l = simplify(mult(sp, b1, b2, b3)[2] * c/2/pi)
 
-    print "%s\t%s\t%s\t%s" % (n, h, k, l)
-
-
+    print("%s\t%s\t%s\t%s" % (n, h, k, l))

@@ -34,7 +34,7 @@ def bin_mapping(x, y, runs, usemask=True, log=False, xscale=1, yscale=1,
             zss = list(flatten(run.y for run in runs))
     if minmax is not None:
         if log:
-            minmax = map(np.log10, minmax)
+            minmax = list(map(np.log10, minmax))
         zss = clip(zss, minmax[0], minmax[1])
     interpolate = interpolate * 1j
     xi, yi = mgrid[min(xss):max(xss):interpolate,

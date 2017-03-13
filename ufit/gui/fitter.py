@@ -16,6 +16,7 @@ from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
 from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
 from ufit.gui.session import session
+from ufit.pycompat import iteritems, number_types
 
 
 def is_float(x):
@@ -93,8 +94,7 @@ class Fitter(QWidget):
         self.original_params = {}
         combo_items = [''] + [par.name for par in self.model.params] + \
             ['data.' + m for m in sorted(self.data.meta)
-             # XXXXXXXXXXXXXXXXXx
-             if isinstance(self.data.meta[m], (int, int, float))]
+             if isinstance(self.data.meta[m], number_types)]
         for p in self.model.params:
             e0 = QLabel(p.name, self)
             e1 = SmallLineEdit('%.5g' % p.value, self)
@@ -130,7 +130,7 @@ class Fitter(QWidget):
         self.update_enables()
 
     def update_enables(self, *ignored):
-        for p, ctls in self.param_controls.iteritems():
+        for p, ctls in iteritems(self.param_controls):
             # if there is an expr...
             if ctls[4].currentText():
                 # disable value and minmax, check "fixed" and disable "fixed"
@@ -179,7 +179,7 @@ class Fitter(QWidget):
                 self.statusLabel.setText('Saved parameter values restored.')
 
     def update_from_controls(self):
-        for p, ctls in self.param_controls.iteritems():
+        for p, ctls in iteritems(self.param_controls):
             _, val, _, fx, expr, pmin, pmax, delta = ctls
             p.value = float(val.text()) if val.text() else 0
             if fx.checkState() == Qt.Checked:

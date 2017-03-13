@@ -14,6 +14,7 @@ from ufit.data import ill, nicos, nicos_old, simple, simple_csv, trisp, \
 from ufit.data.loader import Loader
 from ufit.data.dataset import Dataset, ScanData, ImageData, DatasetList
 from ufit.plotting import mapping
+from ufit.pycompat import listitems
 
 data_formats_scan = {
     'ill': ill,
@@ -30,8 +31,8 @@ data_formats_image = {
     'cascade': cascade,
 }
 
-data_formats = dict(kv for kv in (data_formats_scan.items() +
-                                  data_formats_image.items()))
+data_formats = dict(listitems(data_formats_scan) +
+                    listitems(data_formats_image))
 
 __all__ = ['Dataset', 'DatasetList', 'ScanData', 'ImageData', 'sets',
            'set_datatemplate', 'set_dataformat', 'read_data', 'as_data',

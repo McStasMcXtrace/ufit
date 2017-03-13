@@ -11,7 +11,6 @@
 import re
 import inspect
 import operator
-import cPickle as pickle
 from functools import reduce
 
 from numpy import concatenate
@@ -20,6 +19,7 @@ from ufit import param, backends, UFitError, Param, Dataset
 from ufit.result import Result, MultiResult
 from ufit.utils import get_chisqr, cached_property
 from ufit.plotting import DataPlotter
+from ufit.pycompat import iteritems, cPickle as pickle, number_types
 
 __all__ = ['Model', 'CombinedModel', 'Function', 'Custom', 'eval_model']
 
@@ -125,56 +125,55 @@ class Model(object):
         return self.paramdict[key]
 
     def __add__(self, other):
-        # XXXXXXXXXXXXXXXXXXXXXXXXXXXxx
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '+')
 
     def __radd__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             return CombinedModel(Constant(other), self, '+')
         return NotImplemented
 
     def __sub__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '-')
 
     def __rsub__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             return CombinedModel(Constant(other), self, '-')
         return NotImplemented
 
     def __mul__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '*')
 
     def __rmul__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             return CombinedModel(Constant(other), self, '*')
         return NotImplemented
 
     def __div__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '/')
 
     def __rdiv__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             return CombinedModel(Constant(other), self, '/')
         return NotImplemented
 
     def __pow__(self, other):
-        if isinstance(other, (int, int, float)):
+        if isinstance(other, number_types):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
@@ -244,7 +243,7 @@ class Model(object):
 
            m.add_params(delta=0)
         """
-        for pname, initval in params.iteritems():
+        for pname, initval in iteritems(params):
             self.params.append(Param.from_init(pname, initval))
 
     def get_components(self):
@@ -321,7 +320,7 @@ class CombinedModel(Model):
         '+':  operator.add,
         '-':  operator.sub,
         '*':  operator.mul,
-        '/':  operator.div,
+        '/':  operator.truediv,
         '**': operator.pow,
     }
 

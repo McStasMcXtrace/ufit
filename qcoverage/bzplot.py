@@ -9,6 +9,8 @@
 import numpy as np
 from enum import Enum
 
+from ufit.pycompat import iteritems
+
 _marker_size = 10
 _bz_width = 0.5
 _label_size = 18
@@ -111,7 +113,7 @@ class BZCreator(object):
     def getPts(self):
 
         retpts = []
-        for name, sp in self.sps.iteritems():
+        for name, sp in iteritems(self.sps):
             # if (self.pt == PlaneType.h0lplane and sp[self.cz] == 0):  # only points in this plane
             if (np.dot(PlaneType.GetVector(self.pt), sp) == 0):
                 if (self.pt == PlaneType.h0lplane or self.pt == PlaneType.hhlplane):
@@ -145,7 +147,7 @@ class BZCreator(object):
         retpts = []
         for gpt in self.gpts:
             pts = []
-            for name, sp in self.sps.iteritems():
+            for name, sp in iteritems(self.sps):
                 if (np.dot(PlaneType.GetVector(self.pt), sp) == 0):  # only points in this plane
                     if (self.pt == PlaneType.h0lplane or self.pt == PlaneType.hhlplane):
                         vec = [sp[0], sp[2]]

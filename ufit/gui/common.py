@@ -10,7 +10,6 @@
 
 import sys
 from os import path
-from cStringIO import StringIO
 
 from PyQt4 import uic
 from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt, QRectF, QByteArray
@@ -37,17 +36,25 @@ pyplot.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
 from ufit.gui import logger
 from ufit.gui.session import session
 from ufit.plotting import DataPlotter
+from ufit.pycompat import BytesIO, text_type, PY2
 
 uipath = path.dirname(__file__)
+
 
 def loadUi(widget, uiname, subdir='ui'):
     uic.loadUi(path.join(uipath, subdir, uiname), widget)
 
+
 def path_to_str(qstring):
-    return unicode(qstring).encode(sys.getfilesystemencoding())
+    if PY2:
+        return qstring.encode(sys.getfilesystemencoding())
+    return qstring
+
 
 def str_to_path(string):
-    return string.decode(sys.getfilesystemencoding())
+    if not isinstance(string, text_type):
+        return string.decode(sys.getfilesystemencoding())
+    return string
 
 
 class MPLCanvas(FigureCanvas):
@@ -65,6 +72,7 @@ class MPLCanvas(FigureCanvas):
         self.axes.set_ylabel('y')
         self.axes.set_title('(data title)\n(info)', size='medium')
         FigureCanvas.__init__(self, fig)
+
         # create a figure manager so that we can use pylab commands on the
         # main viewport
         def make_active(event):
@@ -115,7 +123,7 @@ class MPLCanvas(FigureCanvas):
         QWidget.resizeEvent(self, event)
 
     def print_(self):
-        sio = StringIO()
+        sio = BytesIO()
         self.print_figure(sio, format='svg')
         svg = QSvgRenderer(QByteArray(sio.getvalue()))
         sz = svg.defaultSize()
@@ -129,13 +137,16 @@ class MPLCanvas(FigureCanvas):
         dlg.width.setValue(self.print_width or 500)
         ppw = QPrintPreviewWidget(printer, dlg)
         dlg.layout().insertWidget(1, ppw)
+
         def render(printer):
             height = printer.height() * (dlg.width.value()/1000.)
             width = aspect * height
             painter = QPainter(printer)
             svg.render(painter, QRectF(0, 0, width, height))
+
         def sliderchanged(newval):
             ppw.updatePreview()
+
         self.connect(ppw, SIGNAL('paintRequested(QPrinter *)'), render)
         self.connect(dlg.width, SIGNAL('valueChanged(int)'), sliderchanged)
         if dlg.exec_() != QDialog.Accepted:
@@ -248,7 +259,8 @@ class MPLToolbar(NavigationToolbar2QT):
             logger.exception('Qt console window cannot be opened without '
                              'IPython; import error was:')
             QMessageBox.information(self, 'ufit',
-                'Please install IPython with qtconsole to activate this function.')
+                                    'Please install IPython with qtconsole to '
+                                    'activate this function.')
             return
         w = ConsoleWindow(self)
         w.ipython.executeCommand('from ufit.lab import *')
@@ -267,7 +279,7 @@ class MPLToolbar(NavigationToolbar2QT):
         filters = []
         for name, exts in sorted_filetypes:
             if 'eps' in exts or 'emf' in exts or 'jpg' in exts or \
-                'pgf' in exts or 'raw' in exts:
+               'pgf' in exts or 'raw' in exts:
                 continue
             exts_list = " ".join(['*.%s' % ext for ext in exts])
             filter = '%s (%s)' % (name, exts_list)
@@ -277,7 +289,7 @@ class MPLToolbar(NavigationToolbar2QT):
                                             start, filters)
         if fname:
             try:
-                self.canvas.print_figure(unicode(fname))
+                self.canvas.print_figure(text_type(fname))
             except Exception as e:
                 logger.exception('Error saving file')
                 QMessageBox.critical(self, 'Error saving file', str(e))

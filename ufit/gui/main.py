@@ -29,6 +29,7 @@ from ufit.gui.annotations import AnnotationWindow
 from ufit.gui.scanitem import ScanDataPanel, ScanDataItem
 from ufit.gui.imageitem import ImageDataItem
 from ufit.gui.session import session, temp_session, SessionItem, ItemGroup
+from ufit.pycompat import listitems
 
 max_recent_files = 6
 
@@ -166,7 +167,7 @@ class UFitMain(QMainWindow):
 
     def on_session_itemsUpdated(self):
         # remove all panels whose item has vanished
-        for item, panel in self.itempanels.items():
+        for item, panel in listitems(self.itempanels):
             if item not in session.all_items:
                 self.stacker.removeWidget(panel)
                 del self.itempanels[item]

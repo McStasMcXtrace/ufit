@@ -8,6 +8,8 @@
 
 """Load routine for TRISP spin-echo data."""
 
+import io
+
 from numpy import array, loadtxt, zeros
 
 from ufit import UFitError
@@ -16,7 +18,7 @@ from ufit import UFitError
 def check_data(fp):
     dtline = fp.readline()
     fp.seek(0, 0)
-    return dtline.startswith('pnt  ')
+    return dtline.startswith(b'pnt  ')
 
 
 def guess_cols(colnames, coldata, meta):
@@ -41,9 +43,11 @@ def good_ycol(c):
 
 
 def read_data(filename, fp):
+    fp = io.TextIOWrapper(fp, 'ascii', 'ignore')
     line = ''
     meta = {}
-    infofp = open(filename[:-4] + '.log', 'rb')
+    infofp = io.open(filename[:-4] + '.log', 'r',
+                     encoding='ascii', errors='ignore')
     # first line in scan info
     line = infofp.readline()
     meta['subtitle'] = ' '.join(line.lower().split())
@@ -66,9 +70,9 @@ def read_data(filename, fp):
     # file with polarization analysis?
     if not names:
         raise UFitError('No data columns found in file %r' % filename)
-    usecols = range(len(names))
+    usecols = list(range(len(names)))
     if names[0] == 'pnt':
-        usecols = range(1, len(names))
+        usecols = list(range(1, len(names)))
         names = names[1:]
     arr = loadtxt(fp, ndmin=2, usecols=usecols)
     for i, n in enumerate(names):

@@ -15,13 +15,13 @@ from __future__ import print_function
 
 import sys
 import md5
-import Queue
 import threading
-import cPickle as pickle
 from os import path
 from time import time
 
 import paramiko
+
+from ufit.pycompat import queue, cPickle as pickle
 
 keyname = path.expanduser('~/.ufitcluster/key')
 clusterlist = []
@@ -94,8 +94,8 @@ def client_runner(client, task_queue, result_queue):
 
 clients = []
 runners = []
-task_queue = Queue.Queue()
-result_queue = Queue.Queue()
+task_queue = queue.Queue()
+result_queue = queue.Queue()
 cluster_setup = False
 
 

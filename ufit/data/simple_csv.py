@@ -16,4 +16,4 @@ def read_data(filename, fp):
 
 
 def check_data(fp):
-    return check_data_simple(fp, ',')
+    return check_data_simple(fp, b',')

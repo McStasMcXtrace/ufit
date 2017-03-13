@@ -26,6 +26,7 @@ from ufit.gui.session import session, SessionItem
 from ufit.gui.mappingitem import MappingItem
 from ufit.gui.common import loadUi
 from ufit.gui.dialogs import ParamSetDialog
+from ufit.pycompat import from_encoding
 
 
 def default_model(data):
@@ -105,7 +106,7 @@ show()
 ''')
 
     def export_ascii(self, filename):
-        with open(filename, 'wb') as fp:
+        with open(filename, 'w') as fp:
             self.data.export_ascii(fp)
 
     def export_fits(self, filename):
@@ -228,7 +229,8 @@ class MultiDataOps(QWidget):
             ylabels.add(i.data.yaxis)
             titles.add(i.data.title)
         canvas.plotter.plot_finish(', '.join(xlabels), ', '.join(ylabels),
-                                   ', '.join(titles).decode('ascii', 'ignore'))
+                                   from_encoding(', '.join(titles),
+                                                 'ascii', 'ignore'))
         canvas.draw()
 
     @qtsig('')

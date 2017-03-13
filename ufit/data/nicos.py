@@ -8,7 +8,9 @@
 
 """Load routine for NICOS2 data."""
 
+import io
 import time
+
 from numpy import array, loadtxt
 
 from ufit import UFitError
@@ -17,7 +19,7 @@ from ufit import UFitError
 def check_data(fp):
     dtline = fp.readline()
     fp.seek(0, 0)
-    return dtline.startswith('### NICOS data file')
+    return dtline.startswith(b'### NICOS data file')
 
 
 def _hkle_index(colnames):
@@ -59,6 +61,7 @@ def guess_cols(colnames, coldata, meta):
 
 
 def read_data(filename, fp):
+    fp = io.TextIOWrapper(fp, 'ascii', 'ignore')
     meta = {}
     dtline = fp.readline()
     if not dtline.startswith('### NICOS data file'):
@@ -70,7 +73,6 @@ def read_data(filename, fp):
     meta['created'] = ctime
     remark = ''
     for line in iter(fp.readline, ''):
-        line = line.decode('ascii', 'ignore').encode('ascii')
         if line.startswith('### Scan data'):
             break
         if line.startswith('# '):
@@ -126,7 +128,7 @@ def _nicos_common_load(fp, colnames, colunits, meta, comments):
                   if colnames[i] != ';')
     colnames = [name for name in colnames if name != ';']
     colunits = [unit for unit in colunits if unit != ';']
-    usecols = cvdict.keys()
+    usecols = list(cvdict)
     coldata = loadtxt(fp, converters=cvdict, usecols=usecols, ndmin=2,
                       comments=comments)
     if not coldata.size:

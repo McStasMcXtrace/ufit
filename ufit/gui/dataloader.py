@@ -122,7 +122,7 @@ into one set, as well as files 23 and 24.
 
     @qtsig('')
     def on_settemplateBtn_clicked(self):
-        previous = path_to_str(self.templateEdit.text())
+        previous = self.templateEdit.text()
         if previous:
             startdir = path.dirname(previous)
         else:

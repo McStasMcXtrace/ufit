@@ -8,6 +8,7 @@
 
 """Load routine for ILL TAS data."""
 
+import io
 from warnings import catch_warnings
 
 from numpy import array, genfromtxt, atleast_2d
@@ -18,7 +19,7 @@ from ufit import UFitError
 def check_data(fp):
     dtline = fp.readline()
     fp.seek(0, 0)
-    return dtline.startswith('RRRRRRRRRRRR')
+    return dtline.startswith(b'RRRRRRRRRRRR')
 
 
 def guess_cols(colnames, coldata, meta):
@@ -40,6 +41,7 @@ def guess_cols(colnames, coldata, meta):
 
 
 def read_data(filename, fp):
+    fp = io.TextIOWrapper(fp, 'ascii', 'ignore')
     line = ''
     xcol = None
     meta = {}
@@ -81,8 +83,9 @@ def read_data(filename, fp):
         usecols.append(i)
     # Berlin implementation adds "Finished ..." in the last line,
     # pretend that it is a comment
-    with catch_warnings(True) as warnings:
-        arr = atleast_2d(genfromtxt(fp, usecols=usecols, comments='F',
+    with catch_warnings(record=True) as warnings:
+        arr = atleast_2d(genfromtxt(iter(lambda: fp.readline().encode(), b''),
+                                    usecols=usecols, comments='F',
                                     invalid_raise=False))
     for warning in warnings:
         print('!!! %s' % warning.message)

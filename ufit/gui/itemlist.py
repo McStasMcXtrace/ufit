@@ -16,6 +16,7 @@ from PyQt4.QtGui import QTreeView, QStyledItemDelegate, QTextDocument, QStyle, \
 
 from ufit.gui.session import session, ItemGroup
 from ufit.gui.scanitem import ScanDataItem
+from ufit.pycompat import from_encoding
 
 
 class ItemListWidget(QListWidget):
@@ -147,7 +148,7 @@ class ItemListDelegate(QStyledItemDelegate):
         if option.state & QStyle.State_Selected:
             document.setHtml("<font color=%s>%s</font>" %
                              (palette.highlightedText().color().name(),
-                              text.decode('utf-8', 'ignore')))
+                              from_encoding(text, 'utf-8', 'ignore')))
             color = palette.highlight().color()
         else:
             document.setHtml(text)

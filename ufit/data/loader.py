@@ -12,6 +12,7 @@ from numpy import ones, sqrt
 
 from ufit import UFitError
 from ufit.data.dataset import ScanData, ImageData, DataList, DatasetList
+from ufit.pycompat import iteritems, string_types, number_types
 
 
 class Loader(object):
@@ -23,12 +24,13 @@ class Loader(object):
     def _get_reader(self, filename, fobj):
         from ufit.data import data_formats, data_formats_image
         if self.format == 'auto':
-            for n, m in data_formats.iteritems():
-                # check 'simple' last
-                if n != 'simple' and m.check_data(fobj):
+            for n, m in iteritems(data_formats):
+                # check 'simple' formats last
+                if not n.startswith('simple') and m.check_data(fobj):
                     return m, n in data_formats_image
-            if data_formats['simple'].check_data(fobj):
-                return data_formats['simple'], False
+            for n, m in iteritems(data_formats):
+                if n.startswith('simple') and m.check_data(fobj):
+                    return m, n in data_formats_image
             raise UFitError('File %r has no recognized file format' % filename)
         return data_formats[self.format], self.format in data_formats_image
 
@@ -71,7 +73,7 @@ class Loader(object):
         datarr = ones((len(coldata), 4))
 
         def colindex(col):
-            if isinstance(col, str):
+            if isinstance(col, string_types):
                 try:
                     return colnames.index(col)
                 except ValueError:
@@ -107,7 +109,7 @@ class Loader(object):
         def colname(col):
             if col is None:
                 return None
-            elif isinstance(col, str):
+            elif isinstance(col, string_types):
                 return col
             return colnames[col - 1]   # 1-based indices
         if use_hkl:
@@ -140,7 +142,7 @@ class Loader(object):
             else:
                 nmon = 1
             xguess, yguess, dyguess = None, None, None
-            colnames = meta.keys()
+            colnames = list(meta)
         else:
             colnames, coldata, meta = rdr.read_data(filename, fobj)
             xguess, yguess, dyguess, mguess = rdr.guess_cols(colnames, coldata, meta)
@@ -167,7 +169,7 @@ class Loader(object):
         * ``+`` - merge single files
         * ``>`` - merge sequential files
         """
-        if not isinstance(binsize, (int, float)):
+        if not isinstance(binsize, number_types):
             raise UFitError('binsize argument must be a number')
 
         def toint(a):

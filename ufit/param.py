@@ -13,6 +13,7 @@ import copy
 import numpy as np
 
 from ufit import UFitError
+from ufit.pycompat import iteritems, listitems, number_types, string_types
 
 __all__ = ['fixed', 'expr', 'overall', 'datapar', 'datainit', 'limited',
            'delta', 'Param', 'expr_namespace']
@@ -126,8 +127,7 @@ class Param(object):
         if isinstance(pdef, cls):
             return pdef
         self = cls(name)
-        # XXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
-        while not isinstance(pdef, (int, int, float, str)):
+        while not isinstance(pdef, (number_types, string_types)):
             if isinstance(pdef, overall):
                 self.overall = True
                 pdef = pdef.v
@@ -145,7 +145,7 @@ class Param(object):
             else:
                 raise UFitError('Parameter definition %s not understood' %
                                 pdef)
-        if isinstance(pdef, str):
+        if isinstance(pdef, string_types):
             self.expr = pdef
         else:
             self.value = pdef
@@ -224,9 +224,9 @@ def prepare_params(params, meta):
         maxit -= 1
         if maxit == 0:
             s = '\n'.join('   %s: %s' % (k, v[1]) for (k, v)
-                          in dependent.iteritems())
+                          in iteritems(dependent))
             raise UFitError('Detected unresolved parameter dependencies:\n' + s)
-        for p, (expr, _) in dependent.items():  # dictionary will change
+        for p, (expr, _) in listitems(dependent):  # dictionary will change
             try:
                 pd[p] = param_eval(expr, pd)
             except NameError as e:

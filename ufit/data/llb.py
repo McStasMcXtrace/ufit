@@ -68,7 +68,7 @@ def read_data(filename, fp):
     meta['created'] = mktime((y, m, d, hh, mm, 0, 0, 0, 0))
     titre = fp.read(80).strip()
     fp.read(2)  # skip null bytes
-    meta['title'] = titre
+    meta['title'] = titre.decode('ascii', 'ignore')
     headerfields = struct.unpack('<115f', fp.read(460))
     for i, name in enumerate(FIELDS):
         if name is None:
@@ -86,10 +86,10 @@ def read_data(filename, fp):
     parr = []
     pointfmt = POINTFMT
     pointfields = POINTFIELDS
-    for i, point in enumerate(iter(lambda: fp.read(POINTFMT.size), '')):
+    for i, point in enumerate(iter(lambda: fp.read(POINTFMT.size), b'')):
         if i == 0:
             unp = pointfmt.unpack(point)
-            if unp[14] != 1:
+            if unp[15] != 1:
                 pointfmt = POINTFMT_alt
                 pointfields = POINTFIELDS_alt
         coords = pointfmt.unpack(point)[:len(pointfields) + 1]

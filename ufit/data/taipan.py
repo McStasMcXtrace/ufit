@@ -8,6 +8,8 @@
 
 """Load routine for TAIPAN data files."""
 
+import io
+
 from numpy import loadtxt, array
 
 
@@ -19,10 +21,11 @@ def check_data(fp):
     line = fp.readline()
     fp.seek(0, 0)
     # on the first line is always name of the raw file
-    return line.startswith('# raw_file =')
+    return line.startswith(b'# raw_file =')
 
 
 def read_data(filename, fp):
+    fp = io.TextIOWrapper(fp, 'ascii', 'ignore')
     line1 = ''
     line2 = fp.readline()
     skiprows = 0

@@ -8,6 +8,8 @@
 
 """Loader for cascade image data."""
 
+import io
+
 from numpy import frombuffer, sqrt
 
 
@@ -15,7 +17,7 @@ def check_data(fp):
     fp.read(128*128*4)  # cannot decide anything from the pixel data
     footerid = fp.read(18)
     fp.seek(0, 0)
-    return footerid == '\n### NICOS Cascade'
+    return footerid == b'\n### NICOS Cascade'
 
 
 def guess_norm(meta):
@@ -37,6 +39,7 @@ def read_data(filename, fp):
 
     # now read metadata
     remark = ''
+    fp = io.TextIOWrapper(fp)
     for line in fp:
         if line.startswith('#'):
             continue

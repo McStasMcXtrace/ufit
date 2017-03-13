@@ -15,6 +15,7 @@ from matplotlib import pyplot as pl
 
 from ufit.utils import cached_property
 from ufit.plotting import DataPlotter
+from ufit.pycompat import iteritems
 
 __all__ = ['Result']
 
@@ -160,9 +161,9 @@ class MultiResult(list):
 
     @cached_property
     def datavalues(self):
-        d = dict((k, [v]) for (k, v) in self[0].data.meta.iteritems())
+        d = dict((k, [v]) for (k, v) in iteritems(self[0].data.meta))
         for res in self[1:]:
-            for k, v in res.data.meta.iteritems():
+            for k, v in iteritems(res.data.meta):
                 d[k].append(v)
         return d
 

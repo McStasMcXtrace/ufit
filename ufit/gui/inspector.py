@@ -13,6 +13,7 @@ from PyQt4.QtGui import QMainWindow, QTableWidgetItem, QMessageBox
 
 from ufit.gui.common import loadUi, SettingGroup
 from ufit.gui.session import session
+from ufit.pycompat import srepr
 
 
 class InspectorWindow(QMainWindow):
@@ -47,7 +48,7 @@ class InspectorWindow(QMainWindow):
                 value_item = QTableWidgetItem(str(data.meta[key]))
                 value_item.setFlags(value_item.flags() & ~Qt.ItemIsEditable)
             else:
-                value_item = QTableWidgetItem(repr(data.meta[key]))
+                value_item = QTableWidgetItem(srepr(data.meta[key]))
             self.tbl.setItem(i, 1, value_item)
         self._updating = False
 

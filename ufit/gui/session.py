@@ -9,12 +9,12 @@
 """Session and session item abstraction."""
 
 from os import path
-import cPickle as pickle
 
 from PyQt4.QtCore import QObject, SIGNAL
 
 from ufit import UFitError
 from ufit.utils import attrdict
+from ufit.pycompat import cPickle as pickle
 
 
 # current save file version

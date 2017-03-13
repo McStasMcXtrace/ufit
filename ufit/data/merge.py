@@ -51,7 +51,7 @@ def rebin(data, binsize, meta=[]):
     # left out
     new_used = ones(nbins, bool)
 
-    for i in xrange(nbins):
+    for i in range(nbins):
         stop = newarray[i, 0]
         # get indices of all data points with x values lying below stop
         indices = x <= (stop + halfbinsize)
@@ -114,11 +114,11 @@ def floatmerge(data, binsize, meta = []):
                           axis=1)
 
     lastvals = []
-    tomerge =  []
-    newlist =  []
+    tomerge = []
+    newlist = []
 
     for vals in data:
-        if lastvals:
+        if lastvals != []:  # no "if lastvals", could be an array
             if vals[0] > lastvals[0] + binsize:
                 # merge points in list:
                 newlist.append(mergeList(tomerge))

@@ -16,6 +16,7 @@ from ufit.rescalc import resmat, calc_MC, calc_MC_cluster, calc_MC_mcstas, \
     load_cfg, load_par, PARNAMES, CFGNAMES, plot_resatpoint
 from ufit.models.base import Model
 from ufit.param import prepare_params, update_params
+from ufit.pycompat import string_types
 
 __all__ = ['ConvolvedScatteringLaw']
 
@@ -52,7 +53,7 @@ class ConvolvedScatteringLaw(Model):
                  mcstas=None, matrix=None, mathkl=None, **init):
         self._cluster = False
         self._mcstas = mcstas
-        if isinstance(sqw, str):
+        if isinstance(sqw, string_types):
             modname, funcname = sqw.split(':')
             mod = __import__(modname)
             code = open(mod.__file__.rstrip('c')).read()
@@ -98,14 +99,14 @@ class ConvolvedScatteringLaw(Model):
 
         if par_all:
             instparnames = [pn for pn in instparnames if not pn.startswith('par_')]
-            self._instpars = [pn for pn in self._instpars if not isinstance(pn, str)]
+            self._instpars = [pn for pn in self._instpars if not isinstance(pn, string_types)]
             instparnames.extend('par_' + pn for pn in PARNAMES)
             self._instpars.extend(PARNAMES)
             for pn in PARNAMES:
                 init['par_' + pn] = str(par_orig[pn])
         if cfg_all:
             instparnames = [pn for pn in instparnames if not pn.startswith('cfg_')]
-            self._instpars = [ip for ip in self._instpars if isinstance(ip, str)]
+            self._instpars = [ip for ip in self._instpars if isinstance(ip, string_types)]
             instparnames.extend('cfg_' + x for x in CFGNAMES)
             self._instpars.extend(range(len(CFGNAMES)))
             for i in range(len(CFGNAMES)):
@@ -133,7 +134,7 @@ class ConvolvedScatteringLaw(Model):
         if self._ninstpar:
             sqwpar  = parvalues[2:-self._ninstpar]
             for pn, pv in zip(self._instpars, parvalues[-self._ninstpar:]):
-                if isinstance(pn, str):
+                if isinstance(pn, string_types):
                     self._resmat.par[pn] = pv
                 else:
                     self._resmat.cfg[pn] = pv
