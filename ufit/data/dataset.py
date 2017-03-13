@@ -10,6 +10,7 @@
 
 import copy
 import operator
+from functools import reduce
 
 from numpy import array, concatenate, ones, broadcast_arrays, savetxt, sqrt
 

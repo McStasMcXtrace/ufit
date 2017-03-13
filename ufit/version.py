@@ -9,8 +9,6 @@
 # Original author: Douglas Creager <dcreager@dcreager.net>
 # This file is placed into the public domain.
 
-from __future__ import print_function
-
 import os.path
 from subprocess import Popen, PIPE
 

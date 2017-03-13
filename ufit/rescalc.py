@@ -875,9 +875,9 @@ Resolution Info:
                                                     self.cfg[8]/100,
                                                     self.cfg[9]/100)
         cmd += ' QH=%s QK=%s QL=%s EN=%s' % tuple(QE)
-        print '[MCSTAS] running:', cmd
+        print('[MCSTAS] running: %s' % cmd)
         os.system(cmd)
-        print '[MCSTAS] finished'
+        print('[MCSTAS] finished')
         try:
             arr = loadtxt('/tmp/x/res.dat', ndmin=2)
         except IOError:
@@ -893,7 +893,7 @@ Resolution Info:
         Q = array((kiz, kix, kiy)) - array((kfz, kfx, kfy))
         w = 2.072*(kix**2 + kiy**2 + kiz**2 - kfx**2 - kfy**2 - kfz**2)
         p = pi*pf/1e7
-        print '%d neutrons for MC calculation' % len(w)
+        print('%d neutrons for MC calculation' % len(w))
         Q = array([array(dot(self.unitc.cart2rluMat, q))[0] for q in Q.T]).T
         return Q[0], Q[1], Q[2], w, p
 
@@ -958,9 +958,9 @@ Resolution Info:
         # print self.b_mat
         return sigma
 
-    def setNPMatrix(self, m_matrix, (h, k, l)):
+    def setNPMatrix(self, m_matrix, hkl):
         """Set fixed NP matrix for a given M matrix at Q point h,k,l."""
-        # see below for matrix meanings
+        (h, k, l) = hkl
         TT = real(self.S*matrix([h, k, l]).transpose())
         cos_theta = TT[0, 0]/sqrt(dot(TT.transpose(), TT))
         sin_theta = TT[1, 0]/sqrt(dot(TT.transpose(), TT))
@@ -1052,7 +1052,7 @@ Resolution Info:
         for i in range(len(self.cfg)):
             msg += '%2i' % i + ('%1.3f   :  ' % self.cfg[i]).rjust(16) + \
                 '%s\n' % CFGDESC[i]
-        print msg
+        print(msg)
 
     def resellipse(self):
         """Returns the projections of the resolution ellipse of a triple axis."""
@@ -1250,9 +1250,9 @@ def calc_MC(x, fit_par, sqw, resmat, NMC, use_caching=True):
         else:
             resmat.calcResEllipsoid(*QE)
             if resmat.ERROR:
-                print 'Scattering triangle will not close for point: ' \
-                    'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
-                print 'Attention: Intensity is therefore equal to zero at this point!'
+                print('Scattering triangle will not close for point: '
+                      'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE))
+                print('Attention: Intensity is therefore equal to zero at this point!')
                 results.append(dummy_result(0))
                 continue
             sigma = resmat.calcSigma()
@@ -1301,9 +1301,9 @@ def calc_MC_cluster(x, fit_par, sqwcode, sqwfunc, resmat, NMC, use_caching=True)
         else:
             resmat.calcResEllipsoid(*QE)
             if resmat.ERROR:
-                print 'Scattering triangle will not close for point: ' \
-                    'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE)
-                print 'Attention: Intensity is therefore equal to zero at this point!'
+                print('Scattering triangle will not close for point: '
+                      'qh = %1.3f qk = %1.3f ql = %1.3f en = %1.3f' % tuple(QE))
+                print('Attention: Intensity is therefore equal to zero at this point!')
                 args.append((0, [], None, None, None, None))
                 continue
             sigma = resmat.calcSigma()

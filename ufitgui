@@ -78,7 +78,7 @@ if len(args) >= 1:
         try:
             mainwindow.filename = datafile
             mainwindow.load_session(datafile)
-        except Exception, err:
+        except Exception as err:
             QMessageBox.warning(mainwindow,
                                 'Error', 'Loading failed: %s' % err)
             mainwindow.filename = None

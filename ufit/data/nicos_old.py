@@ -82,7 +82,7 @@ def read_data(filename, fp):
         try:
             key, value = line.split(':', 1)
         except ValueError:
-            print 'ignored line:', repr(line)
+            print('ignored line: %r' % line)
             continue
         key = key.strip()
         value = value.strip()

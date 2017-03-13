@@ -55,7 +55,7 @@ def read_data(filename, fp):
             meta[key] = oval
     if remark and title:
         meta['title'] = title + ', ' + remark
-    print meta
+    # print(meta)
     # now line2 is the first data line
     # line1 is header line
     line1 = line1[1:]

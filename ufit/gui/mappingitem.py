@@ -153,7 +153,7 @@ class MappingPanel(QFrame):
                                        usemask=s.usemask, log=s.logz,
                                        yscale=s.yscale, interpolate=s.interp,
                                        minmax=(s.zmin, s.zmax))
-        except Exception, err:
+        except Exception as err:
             self.logger.exception('While creating mapping')
             if not quiet:
                 QMessageBox.warning(self, 'Mapping error',

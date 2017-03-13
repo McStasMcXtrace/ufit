@@ -103,16 +103,16 @@ class Result(object):
            chi^2/NDF       =      1.491
            =====================================================================
         """
-        print 'Fit results for %s' % self.data.name
+        print('Fit results for %s' % self.data.name)
         if not self.success:
-            print 'FIT FAILED: ' + self.message
+            print('FIT FAILED: ' + self.message)
         elif self.message:
-            print '>', self.message
-        print '-' * 80
+            print('> %s' % self.message)
+        print('-' * 80)
         for p in self.params:
-            print p
-        print '%-15s = %10.4g' % ('chi^2/NDF', self.chisqr)
-        print '=' * 80
+            print(p)
+        print('%-15s = %10.4g' % ('chi^2/NDF', self.chisqr))
+        print('=' * 80)
 
     def plot(self, axes=None, params=True, multi=False):
         """Plot the data and model together in the current figure.
@@ -194,12 +194,12 @@ class MultiResult(list):
 
     def printout(self):
         """Print global parameters of the fit."""
-        print 'OVERALL fit results'
-        print '-' * 80
+        print('OVERALL fit results')
+        print('-' * 80)
         for p in self[0].params:
             if p.overall:
-                print p
-        print '=' * 80
+                print(p)
+        print('=' * 80)
 
     def plot_param(self, xname, pname):
         pl.errorbar(self.datavalues[xname], self.paramvalues[pname],

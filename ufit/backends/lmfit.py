@@ -10,9 +10,9 @@
 
 from __future__ import absolute_import
 
-from ufit.param import prepare_params, update_params
-
 from lmfit import Parameters, minimize, report_fit
+
+from ufit.param import prepare_params, update_params
 
 __all__ = ['do_fit', 'backend_name']
 
@@ -42,8 +42,8 @@ def do_fit(data, fcn, params, add_kw):
 
     try:
         out = minimize(lmfitfcn, lmfparams, args=(data,), **add_kw)
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(str(e))
         return False, str(e), 0
 
     if printReport:

@@ -126,7 +126,8 @@ class Param(object):
         if isinstance(pdef, cls):
             return pdef
         self = cls(name)
-        while not isinstance(pdef, (int, long, float, str)):
+        # XXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+        while not isinstance(pdef, (int, int, float, str)):
             if isinstance(pdef, overall):
                 self.overall = True
                 pdef = pdef.v
@@ -228,9 +229,9 @@ def prepare_params(params, meta):
         for p, (expr, _) in dependent.items():  # dictionary will change
             try:
                 pd[p] = param_eval(expr, pd)
-            except NameError, e:
+            except NameError as e:
                 dependent[p][1] = str(e)
-            except AttributeError, e:
+            except AttributeError as e:
                 dependent[p][1] = 'depends on data.' + str(e)
             else:
                 del dependent[p]

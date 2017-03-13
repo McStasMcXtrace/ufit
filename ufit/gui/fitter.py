@@ -93,7 +93,8 @@ class Fitter(QWidget):
         self.original_params = {}
         combo_items = [''] + [par.name for par in self.model.params] + \
             ['data.' + m for m in sorted(self.data.meta)
-             if isinstance(self.data.meta[m], (int, long, float))]
+             # XXXXXXXXXXXXXXXXXx
+             if isinstance(self.data.meta[m], (int, int, float))]
         for p in self.model.params:
             e0 = QLabel(p.name, self)
             e1 = SmallLineEdit('%.5g' % p.value, self)
@@ -266,7 +267,7 @@ class Fitter(QWidget):
         QApplication.processEvents()
         try:
             res = self.model.fit(self.data, **self.fit_kws)
-        except Exception, e:
+        except Exception as e:
             self.logger.exception('Error during fit')
             self.statusLabel.setText('Error during fit: %s' % e)
             return

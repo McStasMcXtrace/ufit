@@ -8,7 +8,7 @@
 
 """Backend modules for different fitting packages/algorithms."""
 
-from ufit import debug, UFitError
+from ufit import UFitError
 
 __all__ = ['set_backend', 'backend']
 
@@ -54,4 +54,4 @@ def set_backend(which):
     backend = globals()[which]
     if backend is None:
         raise UFitError('Backend %r is not available' % which)
-    debug('ufit using %s backend' % backend.backend_name)
+    print('ufit using %s backend' % backend.backend_name)

@@ -85,7 +85,7 @@ def read_data(filename, fp):
         arr = atleast_2d(genfromtxt(fp, usecols=usecols, comments='F',
                                     invalid_raise=False))
     for warning in warnings:
-        print '!!!', warning.message
+        print('!!! %s' % warning.message)
     for i, n in enumerate(names):
         meta[n] = arr[:, i].mean()
     meta['environment'] = []

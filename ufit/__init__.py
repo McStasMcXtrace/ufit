@@ -11,12 +11,9 @@ from ufit.version import get_version
 __version__ = get_version()
 
 
-def debug(str):
-    if __debug__:
-        print str
-
 class UFitError(Exception):
     pass
+
 
 from ufit.result import *
 from ufit.param import *

@@ -122,7 +122,7 @@ class Loader(object):
     def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
         try:
             return self._inner_load(n, xcol, ycol, dycol, ncol, nscale)
-        except Exception, e:
+        except Exception as e:
             raise UFitError('Could not load data file %d: %s' % (n, e))
 
     def guess_cols(self, n):

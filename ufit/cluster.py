@@ -11,6 +11,8 @@ Utilities for clustering execution of a piece of code to multiple hosts using
 SSH transport.
 """
 
+from __future__ import print_function
+
 import sys
 import md5
 import Queue
@@ -34,33 +36,33 @@ def init_cluster():
             login, host = line.strip().split('@')
             clusterlist.append((login, host))
         fp.close()
-    except Exception, err:
-        print >>sys.stderr, 'Cannot read the list of cluster hosts:', err
-        print >>sys.stderr, 'Please create a file %s with one line for each ' \
-            'parallel process, for example:' % \
-            path.expanduser('~/.ufitcluster/hosts')
-        print >>sys.stderr
-        print >>sys.stderr, 'username@hostname1'
-        print >>sys.stderr, 'username@hostname1'
-        print >>sys.stderr, 'username@hostname1'
-        print >>sys.stderr, 'username@hostname1'
-        print >>sys.stderr, 'username@hostname2'
-        print >>sys.stderr, 'username@hostname2'
-        print >>sys.stderr
-        print >>sys.stderr, 'would run 4 parallel processes on hostname1 and ' \
-            '2 parallel processes on hostname2.'
-        print >>sys.stderr, 'For local operation only, use "localhost" as ' \
-            'hostname.'
-        print >>sys.stderr, 'The file %s must contain the SSH private key to ' \
-            'use for the connection, even for localhost.' % \
-            path.expanduser('~/.ufitcluster/key')
+    except Exception as err:
+        print('Cannot read the list of cluster hosts:', err, file=sys.stderr)
+        print('Please create a file %s with one line for each '
+              'parallel process, for example:' %
+              path.expanduser('~/.ufitcluster/hosts'), file=sys.stderr)
+        print(file=sys.stderr)
+        print('username@hostname1', file=sys.stderr)
+        print('username@hostname1', file=sys.stderr)
+        print('username@hostname1', file=sys.stderr)
+        print('username@hostname1', file=sys.stderr)
+        print('username@hostname2', file=sys.stderr)
+        print('username@hostname2', file=sys.stderr)
+        print(file=sys.stderr)
+        print('would run 4 parallel processes on hostname1 and '
+              '2 parallel processes on hostname2.', file=sys.stderr)
+        print('For local operation only, use "localhost" as '
+              'hostname.', file=sys.stderr)
+        print('The file %s must contain the SSH private key to '
+              'use for the connection, even for localhost.' %
+              path.expanduser('~/.ufitcluster/key'), file=sys.stderr)
 
 
 def client_runner(client, task_queue, result_queue):
     while True:
         code, funcname, jobnum, args = task_queue.get()
         if jobnum == -1:
-            print '[C] exiting runner for %s' % client._host
+            print('[C] exiting runner for %s' % client._host)
             return
         try:
             sid = md5.new(str(time()) + str(args)).hexdigest()
@@ -84,8 +86,8 @@ def client_runner(client, task_queue, result_queue):
             result = pickle.load(stdout)
             # print '[C] done with job %s: %r' % (sid, result)
             result_queue.put((jobnum, result))
-        except Exception, err:
-            print '[C] no result on %s, requeuing: %r' % (client._host, err)
+        except Exception as err:
+            print('[C] no result on %s, requeuing: %r' % (client._host, err))
             task_queue.put((code, funcname, jobnum, args))
             return
 
@@ -108,7 +110,7 @@ def setup_cluster():
         client.connect(host, username=user, key_filename=keyname,
                        look_for_keys=False)
         clients.append(client)
-        print '[C] opened cluster connection to %s' % client._host
+        print('[C] opened cluster connection to %s' % client._host)
         runner = threading.Thread(target=client_runner,
                                   args=(client, task_queue, result_queue))
         runners.append(runner)
@@ -142,6 +144,6 @@ init_cluster()
 
 if __name__ == '__main__':
     t1 = time()
-    print run_cluster('def foo(a): return a\n', 'foo', [('a',)])
+    print(run_cluster('def foo(a): return a\n', 'foo', [('a',)]))
     t2 = time()
-    print t2-t1
+    print(t2-t1)

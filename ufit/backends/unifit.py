@@ -8,8 +8,6 @@
 
 """Backend using "unifit" leastsq algorithm."""
 
-from __future__ import absolute_import
-
 from copy import copy
 from time import time
 from numpy import sqrt, infty, ones, zeros, absolute, maximum, minimum, \
@@ -41,12 +39,12 @@ def do_fit(data, fcn, params, add_kw):
         initpars.append(p.value)
         initdp.append(p.delta or p.value/10. or 0.01)
         if (p.pmin is not None or p.pmax is not None) and not warned:
-            print 'Sorry, unifit backend cannot handle parameter bounds.'
+            print('Sorry, unifit backend cannot handle parameter bounds.')
             warned = True
     try:
         res = __leastsq((x, y, dy), leastsqfcn, initpars, initdp,
                         **add_kw)
-    except Exception, e:
+    except Exception as e:
         raise
         return False, str(e), 0
 
@@ -91,7 +89,7 @@ def __dfdp(x, f, p, dp, func):
     return y
 
 
-def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
+def __leastsq(xyw, func, p, dp, niter=50, mode='print', eps=1e-3):
     """Levenberg-Marquardt nonlinear regression of func(x,p) to y(x).
 
              ---------------
@@ -116,7 +114,7 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
     Bard, Nonlinear Parameter Estimation, Academic Press, 1974.
     Draper and Smith, Applied Regression Analysis, John Wiley and Sons, 1981.
     """
-    #processing of input arguments
+    (x, y, wt) = xyw
     options = zeros((len(p),2))            #desired fractional precision in parameter estimates.
     options[:,1] = ones(len(p)) * infty    #maximum fractional step change in parameter vector.
                         #not yet implemented standards are set (zero for precision, infty for max change)
@@ -243,13 +241,13 @@ def __leastsq((x, y, wt), func, p, dp, niter=50, mode='print', eps=1e-3):
 
         epsLlast = epsL
         if ss < finfo(float).eps:
-            print 'Sum of squares within machine precision'
+            print('Sum of squares within machine precision')
             break # machine precession
 
         aprec=absolute(pprec*pbest)
         if ((absolute(chg)).all() < aprec.all()) and ((absolute(chgprev)).all() < aprec.all()):
             kvg = True
-            print 'Parameter changes converged to specified precision'
+            print('Parameter changes converged to specified precision')
             break
         else:
             chgprev = chg

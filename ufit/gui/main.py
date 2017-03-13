@@ -469,7 +469,7 @@ class UFitMain(QMainWindow):
         if expfilename:
             try:
                 dlg.do_export(expfilename)
-            except Exception, e:
+            except Exception as e:
                 logger.exception('While exporting parameters')
                 QMessageBox.warning(self, 'Error', 'Could not export '
                                     'parameters: %s' % e)
@@ -567,7 +567,7 @@ class UFitMain(QMainWindow):
             session.load(filename)
             with self.sgroup as settings:
                 settings.setValue('loadfiledirectory', path.dirname(filename))
-        except Exception, err:
+        except Exception as err:
             logger.exception('Loading session %r failed' % filename)
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
         else:
@@ -600,7 +600,7 @@ class UFitMain(QMainWindow):
             return self.save_session_as()
         try:
             session.save()
-        except Exception, err:
+        except Exception as err:
             logger.exception('Saving session failed')
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False
@@ -615,7 +615,7 @@ class UFitMain(QMainWindow):
         session.set_filename(path_to_str(filename))
         try:
             session.save()
-        except Exception, err:
+        except Exception as err:
             logger.exception('Saving session failed')
             QMessageBox.warning(self, 'Error', 'Saving failed: %s' % err)
             return False

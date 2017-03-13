@@ -12,6 +12,8 @@ import re
 import inspect
 import operator
 import cPickle as pickle
+from functools import reduce
+
 from numpy import concatenate
 
 from ufit import param, backends, UFitError, Param, Dataset
@@ -123,55 +125,56 @@ class Model(object):
         return self.paramdict[key]
 
     def __add__(self, other):
-        if isinstance(other, (int, long, float)):
+        # XXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+        if isinstance(other, (int, int, float)):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '+')
 
     def __radd__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             return CombinedModel(Constant(other), self, '+')
         return NotImplemented
 
     def __sub__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '-')
 
     def __rsub__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             return CombinedModel(Constant(other), self, '-')
         return NotImplemented
 
     def __mul__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '*')
 
     def __rmul__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             return CombinedModel(Constant(other), self, '*')
         return NotImplemented
 
     def __div__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
         return CombinedModel(self, other, '/')
 
     def __rdiv__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             return CombinedModel(Constant(other), self, '/')
         return NotImplemented
 
     def __pow__(self, other):
-        if isinstance(other, (int, long, float)):
+        if isinstance(other, (int, int, float)):
             other = Constant(other)
         elif not isinstance(other, Model):
             return NotImplemented
@@ -459,7 +462,7 @@ class Function(Model):
     def get_description(self):
         if self.python_code:
             return self.python_code
-        return 'Function(%s, %s)' % (self.name, self._real_fcn.func_name)
+        return 'Function(%s, %s)' % (self.name, self._real_fcn.__name__)
 
 
 class Custom(Model):
@@ -471,10 +474,10 @@ class Custom(Model):
         pvs = self._init_params(name, params, init)
         param_assign = ['%s = p[%r]' % pv for pv in zip(params, pvs)]
         namespace = param.expr_namespace.copy()
-        exec '''def _fcn(p, x):
+        exec('''def _fcn(p, x):
         %s
         return %s
-        ''' % ('\n        '.join(param_assign), expr) in namespace
+        ''' % ('\n        '.join(param_assign), expr), namespace)
         self.fcn = namespace['_fcn']
 
     def get_description(self):

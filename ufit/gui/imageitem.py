@@ -9,6 +9,7 @@
 """Session item for datasets and corresponding GUI."""
 
 import operator
+from functools import reduce
 
 from numpy import sqrt, array, arange
 

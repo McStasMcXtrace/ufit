@@ -163,7 +163,7 @@ class ModelBuilder(QWidget):
             return
         try:
             model = eval_model(modeldef)
-        except Exception, e:
+        except Exception as e:
             self.logger.exception('Could not evaluate model')
             QMessageBox.information(self, 'Error',
                                     'Could not evaluate model: %s' % e)

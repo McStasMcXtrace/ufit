@@ -9,6 +9,7 @@
 """Backend using plain scipy leastsq."""
 
 from __future__ import absolute_import
+
 from numpy import sqrt, inf
 from scipy.optimize import leastsq
 
@@ -35,12 +36,12 @@ def do_fit(data, fcn, params, add_kw):
     for p in varying:
         initpars.append(p.value)
         if (p.pmin is not None or p.pmax is not None) and not warned:
-            print 'Sorry, scipy backend cannot handle parameter bounds.'
+            print('Sorry, scipy backend cannot handle parameter bounds.')
             warned = True
 
     try:
         res = leastsq(leastsqfcn, initpars, args=(data,), full_output=1, **add_kw)
-    except Exception, e:
+    except Exception as e:
         return False, str(e), 0
 
     popt, pcov, infodict, errmsg, ier = res

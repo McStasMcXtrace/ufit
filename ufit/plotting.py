@@ -82,7 +82,7 @@ class DataPlotter(object):
     def plot_data(self, data, multi=False, ms=8, offset=0, **kw):
         """Plot dataset."""
         axes = self.axes
-        marker = self.marker_cycle.next() if self.symbols else ''
+        marker = next(self.marker_cycle) if self.symbols else ''
         ls = '-' if self.lines else ''
         if 'label' not in kw:
             kw['label'] = data.name

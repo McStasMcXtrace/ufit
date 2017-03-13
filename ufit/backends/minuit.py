@@ -47,7 +47,7 @@ def do_fit(data, fcn, params, add_kw):
     fcn_environment = {'meta': meta, 'x': x, 'y': y, 'dy': dy,
                        'fcn': fcn, 'dependent': dependent}
     fcn_environment['update_params'] = update_params   # it's a global
-    exec code in fcn_environment
+    exec(code, fcn_environment)
 
     m = Minuit(fcn_environment['minuitfcn'])
     m.up = 1.0
@@ -62,7 +62,7 @@ def do_fit(data, fcn, params, add_kw):
     try:
         m.migrad()
         m.hesse()
-    except Exception, e:
+    except Exception as e:
         return False, str(e), 0
     # m.minos()  -> would calculate more exact and asymmetric errors
 
