@@ -14,8 +14,8 @@ import numpy as np
 
 from ufit import UFitError
 
-__all__ = ['fixed', 'expr', 'overall', 'datapar', 'limited', 'delta',
-           'Param', 'expr_namespace']
+__all__ = ['fixed', 'expr', 'overall', 'datapar', 'datainit', 'limited',
+           'delta', 'Param', 'expr_namespace']
 
 
 class fixed(str):
@@ -57,6 +57,14 @@ class datapar(object):
         self.v = v
 
 
+class datainit(object):
+    """Mark the parameter as initially coming from the data file, but free
+    for fitting.
+    """
+    def __init__(self, v):
+        self.v = v
+
+
 class limited(tuple):
     """Give parameter limits together with the initial value.
 
@@ -90,7 +98,7 @@ id_re = re.compile('[a-zA-Z_][a-zA-Z0-9_]*$')
 
 class Param(object):
     def __init__(self, name, value=0, expr=None, pmin=None, pmax=None,
-                 overall=False, delta=0, error=0, correl=None,
+                 overall=False, delta=0, error=0, correl=None, initexpr=None,
                  finalize=lambda x: x):
         if not id_re.match(name):
             raise UFitError('Parameter name %r is not a valid Python '
@@ -100,6 +108,7 @@ class Param(object):
         self.name = name
         self.value = value
         self.expr = expr
+        self.initexpr = initexpr
         self.pmin = pmin
         self.pmax = pmax
         # true if a global parameter for a global fit
@@ -123,6 +132,9 @@ class Param(object):
                 pdef = pdef.v
             elif isinstance(pdef, datapar):
                 self.expr = 'data.' + pdef.v
+                pdef = 0
+            elif isinstance(pdef, datainit):
+                self.initexpr = 'data.' + pdef.v
                 pdef = 0
             elif isinstance(pdef, delta):
                 self.delta = pdef.delta
@@ -153,7 +165,7 @@ class Param(object):
     def __reduce__(self):
         return (Param, (self.name, self.value, self.expr, self.pmin,
                         self.pmax, self.overall, self.delta, self.error,
-                        self.correl))
+                        self.correl, self.initexpr))
 
     def __str__(self):
         s = '%-15s = %10.5g +/- %10.5g' % (self.name, self.value, self.error)
@@ -189,6 +201,11 @@ def prepare_params(params, meta):
     varying = []
     varynames = []
     for p in params:
+        if p.initexpr:
+            try:
+                p.value = param_eval(p.initexpr, {'data': meta})
+            except Exception:
+                pass  # can happen for heterogeneous data collections
         if p.expr:
             dependent[p.name] = [p.expr, None]
         else:

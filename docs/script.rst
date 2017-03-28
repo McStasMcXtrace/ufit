@@ -90,6 +90,8 @@ Constructing models
 
 .. autofunction:: datapar
 
+.. autofunction:: datainit
+
 .. autofunction:: limited
 
 

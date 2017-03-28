@@ -517,11 +517,13 @@ class GlobalModel(Model):
         for i, dplist in enumerate(diff_params):
             for oldname, pparam in dplist:
                 pparam._orig_expr = pparam.expr
-                if not pparam.expr:
-                    continue
-                for oldname0, p0 in dplist:
-                    pparam.expr = pparam.expr.replace(oldname0, p0.name)
-                pparam.expr = data_re.sub('data.d%d' % i, pparam.expr)
+                if pparam.expr:
+                    for oldname0, p0 in dplist:
+                        pparam.expr = pparam.expr.replace(oldname0, p0.name)
+                    pparam.expr = data_re.sub('data.d%d' % i, pparam.expr)
+                if pparam.initexpr:
+                    pparam.initexpr = data_re.sub('data.d%d' % i,
+                                                  pparam.initexpr)
 
         # global fitting function: call model function once for each dataset
         # with the original data, with the parameter values taken from the
