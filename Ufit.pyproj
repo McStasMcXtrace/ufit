@@ -11,8 +11,8 @@
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
-    <InterpreterVersion>2.7</InterpreterVersion>
+    <InterpreterId>{7a183559-fc41-47d7-9bec-f5c6cfc98488}</InterpreterId>
+    <InterpreterVersion>3.5</InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -24,6 +24,9 @@
     <Content Include="docs\pics\main1.png" />
     <Content Include="docs\_templates\layout.html" />
     <Content Include="License.txt" />
+    <Content Include="qcoverage\QCoverage.pyproj" />
+    <Content Include="qcoverage\readme.txt" />
+    <Content Include="qcoverage\ui\qexplorer.ui" />
     <Content Include="resource\arrow-180.png" />
     <Content Include="resource\arrow-circle-double.png" />
     <Content Include="resource\arrow-join.png" />
@@ -63,14 +66,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="docs\conf.py" />
+    <Compile Include="qcoverage\bz.py" />
+    <Compile Include="qcoverage\bzplot.py" />
+    <Compile Include="covergui.py" />
+    <Compile Include="qcoverage\hhl-test.py" />
+    <Compile Include="qcoverage\hk0-and-h0l.py" />
+    <Compile Include="qcoverage\qreader.py" />
     <Compile Include="rthook_pyqt4.py" />
     <Compile Include="setup.py" />
     <Compile Include="ufitgui.py" />
-    <Compile Include="ufit\backends\lmfit.py" />
-    <Compile Include="ufit\backends\minuit.py" />
-    <Compile Include="ufit\backends\scipy.py" />
-    <Compile Include="ufit\backends\unifit.py" />
-    <Compile Include="ufit\backends\__init__.py" />
+    <Compile Include="resource\ufit\backends\lmfit.py" />
+    <Compile Include="resource\ufit\backends\minuit.py" />
+    <Compile Include="resource\ufit\backends\scipy.py" />
+    <Compile Include="resource\ufit\backends\unifit.py" />
+    <Compile Include="resource\ufit\backends\__init__.py" />
     <Compile Include="ufit\cluster.py" />
     <Compile Include="ufit\data\cascade.py" />
     <Compile Include="ufit\data\dataset.py" />
@@ -91,6 +100,7 @@
     <Compile Include="ufit\gui\browse.py" />
     <Compile Include="ufit\gui\common.py" />
     <Compile Include="ufit\gui\console.py" />
+    <Compile Include="ufit\gui\coverage.py" />
     <Compile Include="ufit\gui\dataloader.py" />
     <Compile Include="ufit\gui\dataops.py" />
     <Compile Include="ufit\gui\datasetitem.py" />
@@ -118,6 +128,7 @@
     <Compile Include="ufit\models\__init__.py" />
     <Compile Include="ufit\param.py" />
     <Compile Include="ufit\plotting.py" />
+    <Compile Include="ufit\pycompat.py" />
     <Compile Include="ufit\rescalc.py" />
     <Compile Include="ufit\result.py" />
     <Compile Include="ufit\utils.py" />
@@ -127,16 +138,21 @@
     <Folder Include="docs" />
     <Folder Include="docs\pics" />
     <Folder Include="docs\_templates" />
+    <Folder Include="qcoverage\" />
+    <Folder Include="qcoverage\ui\" />
     <Folder Include="resource" />
-    <Folder Include="ufit" />
-    <Folder Include="ufit\backends" />
+    <Folder Include="resource\ufit\" />
+    <Folder Include="resource\ufit\backends\" />
+    <Folder Include="ufit\" />
     <Folder Include="ufit\data" />
     <Folder Include="ufit\gui" />
     <Folder Include="ufit\gui\ui" />
     <Folder Include="ufit\models" />
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="{7a183559-fc41-47d7-9bec-f5c6cfc98488}\3.5" />
     <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\2.7" />
+    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\3.5" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
