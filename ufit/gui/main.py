@@ -29,6 +29,7 @@ from ufit.gui.annotations import AnnotationWindow
 from ufit.gui.scanitem import ScanDataPanel, ScanDataItem
 from ufit.gui.imageitem import ImageDataItem
 from ufit.gui.session import session, temp_session, SessionItem, ItemGroup
+from ufit.gui.coverage import ReciprocalViewer
 from ufit.pycompat import listitems
 
 max_recent_files = 6
@@ -595,6 +596,10 @@ class UFitMain(QMainWindow):
     @qtsig('')
     def on_actionSaveAs_triggered(self):
         self.save_session_as()
+
+    @qtsig('')
+    def on_actionQExplorer_triggered(self):
+        winQE = ReciprocalViewer(self)
 
     def save_session(self):
         if session.filename is None:

@@ -20,5 +20,5 @@ from ufit.gui.coverage import ReciprocalViewer
 # Run the gui if not imported
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    win = ReciprocalViewer()
+    win = ReciprocalViewer(None)
     sys.exit(app.exec_())

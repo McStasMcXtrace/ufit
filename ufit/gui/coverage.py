@@ -27,10 +27,10 @@ import ufit.bzplot as bp
 # show the points
 class ReciprocalViewer(QtGui.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, parent):
         """ Constructing a basic QApplication
         """
-        QtGui.QMainWindow.__init__(self)
+        QtGui.QMainWindow.__init__(self, parent)
         self.sgroup = SettingGroup('main')
         self.ui = uic.loadUi(path.join(path.dirname(__file__), 'ui', 'qexplorer.ui'), self)
         self.addWidgets()

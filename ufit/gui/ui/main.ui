@@ -142,6 +142,8 @@
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
+    <addaction name="actionQExplorer"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -488,6 +490,11 @@
   <action name="actionInsert">
    <property name="text">
     <string>Insert data from other session...</string>
+   </property>
+  </action>
+  <action name="actionQExplorer">
+   <property name="text">
+    <string>Open Q-Explorer</string>
    </property>
   </action>
  </widget>
