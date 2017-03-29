@@ -19,8 +19,9 @@ from PyQt4 import QtCore, QtGui, uic
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, path_to_str
 from ufit.utils import extract_template
 
-import qreader as qr
-import bzplot as bp
+import ufit.qreader as qr
+import ufit.bzplot as bp
+
 
 
 # show the points
@@ -30,8 +31,8 @@ class ReciprocalViewer(QtGui.QMainWindow):
         """ Constructing a basic QApplication
         """
         QtGui.QMainWindow.__init__(self)
-        self.ui = uic.loadUi(path.join(path.dirname(__file__), 'ui', 'qexplorer.ui'), self)
         self.sgroup = SettingGroup('main')
+        self.ui = uic.loadUi(path.join(path.dirname(__file__), 'ui', 'qexplorer.ui'), self)
         self.addWidgets()
         self.ui.show()
         self.dir = path.dirname(__file__)
