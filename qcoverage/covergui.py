@@ -16,7 +16,7 @@ sip.setapi('QVariant', 2)
 import numpy as np
 from PyQt4 import QtCore, QtGui, uic
 
-from ufit.gui.common import MPLCanvas, MPLToolbar, path_to_str
+from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, path_to_str
 from ufit.utils import extract_template
 
 import qreader as qr
@@ -31,6 +31,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
         """
         QtGui.QMainWindow.__init__(self)
         self.ui = uic.loadUi(path.join(path.dirname(__file__), 'ui', 'qexplorer.ui'), self)
+        self.sgroup = SettingGroup('main')
         self.addWidgets()
         self.ui.show()
         self.dir = path.dirname(__file__)
@@ -47,6 +48,21 @@ class ReciprocalViewer(QtGui.QMainWindow):
         layout.addWidget(self.canvas)
         self.frmPlot.setLayout(layout)
         self.Reader = None
+
+        # restore settings
+        with self.sgroup as settings:
+            data_template_path = settings.value('last_data_template', '')
+            print(settings.value('test', ''))
+            if data_template_path:
+                dtempl, numor = extract_template(data_template_path)
+                self.dir = dtempl
+                self.ui.txtNumors.setText(str(numor))
+                print("directory set to", self.dir)
+
+    def closeEvent(self, event):
+        with self.sgroup as settings:
+            settings.setValue('test', 'abc')
+
 
     def addWidgets(self):
         """ Connecting signals

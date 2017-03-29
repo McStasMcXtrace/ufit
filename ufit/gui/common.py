@@ -304,7 +304,7 @@ class SmallLineEdit(QLineEdit):
 class SettingGroup(object):
     def __init__(self, name):
         self.name = name
-        self.settings = QSettings()
+        self.settings = QSettings('ufit', 'gui')
 
     def __enter__(self):
         self.settings.beginGroup(self.name)
