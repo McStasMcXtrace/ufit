@@ -25,7 +25,7 @@ class QReader(object):
         try:
             self.datas = uf.read_numors(numors, 0)
         except:
-            print "Unexpected error:", sys.exc_info()[1]
+            print("Unexpected error:", sys.exc_info()[1])
             self.datas = []
 
         self.tolerance = tolerance
@@ -43,7 +43,7 @@ class QReader(object):
             if 'hkle' in d.meta:
                 hkle = d.meta['hkle']
             else:
-                print "File %s does not have hkle values for each point, skipping." % d.name
+                print("File %s does not have hkle values for each point, skipping." % d.name)
                 continue
 
             for h, k, l, E in hkle:

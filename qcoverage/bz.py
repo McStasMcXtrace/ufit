@@ -35,8 +35,8 @@ sympoints = {  "Gamma": [0,0,0],
 
 init_printing()
 def mult(x,a,b,c): return x[0] * a + x[1] * b + x[2] * c
-print b1, b2, b3
-print
+print(b1, b2, b3)
+print()
 init_printing()
 
 for n, sp in iteritems(sympoints):

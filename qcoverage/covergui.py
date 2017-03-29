@@ -9,6 +9,10 @@
 import sys
 from os import path
 
+import sip
+sip.setapi('QString', 2)
+sip.setapi('QVariant', 2)
+
 import numpy as np
 from PyQt4 import QtCore, QtGui, uic
 
@@ -85,7 +89,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
         self.canvas.draw()
         QtGui.QApplication.processEvents()
         self.pts = self.reader.get_points(self.v1, self.v2)
-        print "Datafiles read:", len(self.pts)
+        print("Datafiles read:", len(self.pts))
         self.canvas.axes.clear()
         self.canvas.draw()
         self.showPoints()
@@ -124,7 +128,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
         dtempl, numor = extract_template(fn)
         self.dir = dtempl
         self.ui.txtNumors.setText(str(numor))
-        print "directory changed to", self.dir
+        print("directory changed to", self.dir)
 
     def bigFont(self, state):
         """ Increase font size  """
