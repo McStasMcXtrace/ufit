@@ -15,6 +15,14 @@ class UFitError(Exception):
     pass
 
 
+import sip
+sip.setapi('QString', 2)
+sip.setapi('QVariant', 2)
+
+import matplotlib
+matplotlib.use('Qt4Agg')
+
+
 from ufit.result import *
 from ufit.param import *
 from ufit.data import *

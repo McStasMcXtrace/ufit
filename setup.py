@@ -47,7 +47,7 @@ setup(
     package_data = pkg_data,
     entry_points = {
         'gui_scripts': [
-            'ufitgui=ufitgui',
+            'ufitgui=ufit.gui:main',
         ],
     },
 )
