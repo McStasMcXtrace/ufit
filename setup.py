@@ -45,5 +45,9 @@ setup(
     url = 'https://bitbucket.org/birkenfeld/ufit/',
     packages = find_packages(),
     package_data = pkg_data,
-    scripts = ['ufitgui'],
+    entry_points = {
+        'gui_scripts': [
+            'ufitgui=ufitgui',
+        ],
+    },
 )
