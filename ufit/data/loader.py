@@ -8,6 +8,8 @@
 
 """Data loader object."""
 
+import io
+
 from numpy import ones, sqrt
 
 from ufit import UFitError
@@ -39,7 +41,7 @@ class Loader(object):
             filename = self.template % n
         except TypeError:
             filename = self.template
-        fobj = open(filename, 'rb')
+        fobj = io.open(filename, 'rb')
         rdr, isimg = self._get_reader(filename, fobj)
         if isimg:
             return self._inner_load_image(rdr, filename, fobj, n, ncol, nscale)
@@ -132,7 +134,7 @@ class Loader(object):
             filename = self.template % n
         except TypeError:
             filename = self.template
-        fobj = open(filename, 'rb')
+        fobj = io.open(filename, 'rb')
         rdr, isimg = self._get_reader(filename, fobj)
         if isimg:
             arr, darr, meta = rdr.read_data(filename, fobj)
