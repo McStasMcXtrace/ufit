@@ -29,7 +29,7 @@ def find_ui_files():
 
 ns = {'__file__': path.abspath(path.join(
     path.dirname(__file__), 'ufit', 'version.py'))}
-execfile("ufit/version.py", ns)
+exec(open("ufit/version.py").read(), ns)
 version = ns['get_version']()
 
 pkg_data = find_ui_files()
