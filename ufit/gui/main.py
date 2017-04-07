@@ -564,6 +564,8 @@ class UFitMain(QMainWindow):
             # Recent files action
             action = self.sender()
             if isinstance(action, QAction):
+                if not self.check_save():
+                    return
                 filename = action.data()
         try:
             session.load(filename)
