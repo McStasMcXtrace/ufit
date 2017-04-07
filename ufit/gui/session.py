@@ -249,6 +249,20 @@ class _Session(QObject):
         self.set_dirty()
         self.emit(SIGNAL('itemsUpdated'))
 
+    def copy_items(self, items, newgroup):
+        from ufit.gui.scanitem import ScanDataItem
+        for item in items:
+            new_data = item.data.copy()
+            new_model = item.model.copy()
+            new_item = ScanDataItem(new_data, new_model)
+            self.all_items.add(new_item)
+            newgroup.items.append(new_item)
+            newgroup.update_htmldesc()
+            new_item.set_group(newgroup, len(newgroup.items))
+        self.set_dirty()
+        self.emit(SIGNAL('itemsUpdated'))
+        self.emit(SIGNAL('itemAdded'), items[-1])
+
     def reorder_groups(self, new_structure):
         del self.groups[:]
         for group, items in new_structure:

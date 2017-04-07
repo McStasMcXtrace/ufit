@@ -54,6 +54,10 @@ class UFitMain(QMainWindow):
         self.menuMoveToGroup.setIcon(QIcon(':/drawer-open.png'))
         self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
                      self.on_menuMoveToGroup_aboutToShow)
+        self.menuCopyToGroup = QMenu('Copy selected to group', self)
+        self.menuCopyToGroup.setIcon(QIcon(':/drawer-double-open.png'))
+        self.connect(self.menuCopyToGroup, SIGNAL('aboutToShow()'),
+                     self.on_menuCopyToGroup_aboutToShow)
         self.menuRemoveGroup = QMenu('Remove group', self)
         self.menuRemoveGroup.setIcon(QIcon(':/drawer--minus.png'))
         self.connect(self.menuRemoveGroup, SIGNAL('aboutToShow()'),
@@ -99,6 +103,7 @@ class UFitMain(QMainWindow):
         self.itemTree.addAction(self.actionMergeData)
         self.itemTree.addAction(self.actionRemoveData)
         self.itemTree.addAction(self.menuMoveToGroup.menuAction())
+        self.itemTree.addAction(self.menuCopyToGroup.menuAction())
         self.connect(self.itemTree, SIGNAL('newSelection'),
                      self.on_itemTree_newSelection)
 
@@ -119,6 +124,7 @@ class UFitMain(QMainWindow):
         menu.addAction(self.actionMergeData)
         menu.addAction(self.actionRemoveData)
         menu.addMenu(self.menuMoveToGroup)
+        menu.addMenu(self.menuCopyToGroup)
         menu.addAction(self.actionReorder)
         menu.addSeparator()
         menu.addAction(self.actionNewGroup)
@@ -259,6 +265,20 @@ class UFitMain(QMainWindow):
                 self.re_expand_tree()
             self.connect(action, SIGNAL('triggered()'), move_to)
             self.menuMoveToGroup.addAction(action)
+
+    def on_menuCopyToGroup_aboutToShow(self):
+        self.menuCopyToGroup.clear()
+        for group in session.groups:
+            action = QAction(group.name, self)
+
+            def copy_to(group=group):
+                items = self.selected_items()
+                if not items:
+                    return
+                session.copy_items(items, group)
+                self.re_expand_tree()
+            self.connect(action, SIGNAL('triggered()'), copy_to)
+            self.menuCopyToGroup.addAction(action)
 
     def on_menuRemoveGroup_aboutToShow(self):
         self.menuRemoveGroup.clear()
