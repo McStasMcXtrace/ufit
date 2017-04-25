@@ -65,7 +65,8 @@ class GaussInt(Model):
         self.params[2].finalize = abs
 
         self.fcn = lambda p, x: \
-            abs(p[pint]) / (abs(p[pf]) * sqrt(2*pi)) * exp(-(x - p[pp])**2/p[pf]**2 * 4*log(2))
+            abs(p[pint]) / (abs(p[pf]) * sqrt(pi/(8 * log(2)))) * \
+            exp(-(x - p[pp])**2/p[pf]**2 * 4*log(2))
 
     pick_points = ['peak', 'width']
 
