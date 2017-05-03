@@ -19,7 +19,7 @@ from ufit import param, backends, UFitError, Param, Dataset
 from ufit.result import Result, MultiResult
 from ufit.utils import get_chisqr, cached_property
 from ufit.plotting import DataPlotter
-from ufit.pycompat import iteritems, cPickle as pickle, number_types
+from ufit.pycompat import exec_, iteritems, cPickle as pickle, number_types
 
 __all__ = ['Model', 'CombinedModel', 'Function', 'Custom', 'eval_model']
 
@@ -473,7 +473,7 @@ class Custom(Model):
         pvs = self._init_params(name, params, init)
         param_assign = ['%s = p[%r]' % pv for pv in zip(params, pvs)]
         namespace = param.expr_namespace.copy()
-        exec('''def _fcn(p, x):
+        exec_('''def _fcn(p, x):
         %s
         return %s
         ''' % ('\n        '.join(param_assign), expr), namespace)

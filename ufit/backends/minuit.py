@@ -12,6 +12,7 @@ from __future__ import absolute_import
 
 from ufit.param import prepare_params, update_params
 from ufit.utils import get_chisqr
+from ufit.pycompat import exec_
 
 try:
     from minuit import Minuit
@@ -47,7 +48,7 @@ def do_fit(data, fcn, params, add_kw):
     fcn_environment = {'meta': meta, 'x': x, 'y': y, 'dy': dy,
                        'fcn': fcn, 'dependent': dependent}
     fcn_environment['update_params'] = update_params   # it's a global
-    exec(code, fcn_environment)
+    exec_(code, fcn_environment)
 
     m = Minuit(fcn_environment['minuitfcn'])
     m.up = 1.0
