@@ -1,6 +1,7 @@
 import os
 from os import path
-from distutils.core import setup
+
+from setuptools import setup
 
 
 def find_packages():
