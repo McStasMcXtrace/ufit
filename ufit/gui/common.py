@@ -70,7 +70,7 @@ class MPLCanvas(FigureCanvas):
         # make tight_layout do the right thing
         self.axes.set_xlabel('x')
         self.axes.set_ylabel('y')
-        self.axes.set_title('(data title)\n(info)', size='medium')
+        self.axes.set_title('(data title)\n(info)')
         FigureCanvas.__init__(self, fig)
 
         # create a figure manager so that we can use pylab commands on the

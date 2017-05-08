@@ -105,21 +105,20 @@ class DataPlotter(object):
                 axes.axvline(data.fitmin, ls='-', color='gray')
             if data.fitmax is not None:
                 axes.axvline(data.fitmax, ls='-', color='grey')
-            axes.set_title('%s\n%s' % (data.title, data.subtitle),
-                           size='medium')
+            axes.set_title('%s\n%s' % (data.title, data.subtitle))
             self.plot_finish(data.xaxis, data.yaxis)
         return color
 
     def plot_finish(self, xlabel=None, ylabel=None, title=None):
         axes = self.axes
         if xlabel is not None:
-            axes.set_xlabel(xlabel)
+            axes.set_xlabel(xlabel, {'size': pl.rcParams['axes.labelsize']})
         if ylabel is not None:
-            axes.set_ylabel(ylabel)
+            axes.set_ylabel(ylabel, {'size': pl.rcParams['axes.labelsize']})
         if title is not None:
-            axes.set_title(title, size='medium')
+            axes.set_title(title)
         if self.legend:
-            axes.legend(prop={'size': 'small'})
+            axes.legend()
         if self.grid:
             axes.grid(True)
         if self._limits:
