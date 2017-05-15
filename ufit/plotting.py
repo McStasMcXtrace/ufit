@@ -13,7 +13,8 @@ from itertools import cycle
 from numpy import array, isscalar, linspace
 
 import matplotlib
-matplotlib.rc('font', family='Helvetica')
+matplotlib.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
+                     'Lucida Grande, Bitstream Vera Sans'})
 matplotlib.rc('savefig', format='pdf')
 
 from matplotlib import pyplot as pl
