@@ -8,12 +8,15 @@
 
 """Data operations panel."""
 
-from numpy import sqrt, ones
+from numpy import sqrt, ones, zeros, arange, linspace
+from scipy.interpolate import interp1d
+from scipy.fftpack import fft
 
 from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
 from PyQt4.QtGui import QWidget, QDialog, QMessageBox
 
 from ufit.data.merge import rebin, floatmerge
+from ufit.data.dataset import ScanData
 from ufit.gui.common import loadUi, SettingGroup
 from ufit.gui.session import session
 
@@ -41,6 +44,7 @@ class DataOps(QWidget):
         self.monscaleEdit.setText(str(self.data.nscale))
         self.titleEdit.setText(self.data.title)
         self.nameEdit.setText(self.data.name)
+        self.fftNpointsEdit.setText(str(len(self.data.x) * 4))
 
     def on_canvas_pick(self, event):
         if not hasattr(event, 'artist'):
@@ -285,3 +289,32 @@ class DataOps(QWidget):
         else:
             self.emit(SIGNAL('replotRequest'), None)
             session.set_dirty()
+
+    @qtsig('')
+    def on_fftBtn_clicked(self):
+        try:
+            npoints = int(self.fftNpointsEdit.text())
+        except ValueError:
+            QMessageBox.warning(self, 'Error',
+                                'Please enter a valid number of points.')
+            return
+        xmin = self.data.x.min()
+        xmax = self.data.x.max()
+        xinterp = linspace(xmin, xmax, npoints)
+        yinterp = interp1d(self.data.x, self.data.y, kind='linear')
+        yfft = fft(yinterp(xinterp))
+        p2 = abs(yfft) / npoints
+        p1 = p2[:npoints//2 + 2]
+        p1[1:-1] *= 2
+        dx = (xmax - xmin) / (npoints - 1)
+
+        new_data = ScanData.from_arrays(
+            name='FFT(' + self.data.name + ')',
+            x=(1./dx) * arange(npoints//2 + 2) / npoints,
+            y=p1,
+            dy=0.01*ones(p1.shape),
+            xcol='1/' + self.data.xaxis,
+            ycol='|P1|')
+        new_model = self.model.copy()
+        from ufit.gui.scanitem import ScanDataItem
+        session.add_item(ScanDataItem(new_data, new_model), self.item.group)
