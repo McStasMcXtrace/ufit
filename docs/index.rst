@@ -11,7 +11,7 @@ Fitting is done by one of several backends:
 
 * `lmfit`_\'s Levenberg-Marquardt least-squares that allows parameter
   constraints
-* Minuit's "migrad" algorithm (via `pyminuit`_ 1 or 2)
+* Minuit's "migrad" algorithm (via `iminuit`_)
 * Basic Levenberg-Marquardt least-squares from `scipy.optimize`_
 
 Results can be easily plotted and further processed.  Plotting is handled by
@@ -22,7 +22,7 @@ The GUI uses `PyQt 4
 
 
 .. _lmfit: http://cars9.uchicago.edu/software/python/lmfit/
-.. _pyminuit: http://code.google.com/p/pyminuit/
+.. _iminuit: https://github.com/iminuit/iminuit/
 .. _scipy.optimize: http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html
 
 Contents:

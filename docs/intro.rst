@@ -120,8 +120,7 @@ backends:
   fitting applications.
 
   The Python bindings necessary to use this backend can be retrieved from
-  `Google code <pyminuit>`_.  Note that the PyMinuit2 package currently seems to
-  be buggy.  This backend supports parameter limits.
+  `Github <iminuit>`_.  This backend supports parameter limits.
 
 * `scipy` -- uses the `scipy.optimize.leastsq <leastsq>`_ function without any
   further wrapping.  This backend doesn't support parameter limits.
@@ -130,5 +129,5 @@ A backend is selected automatically on import, and a different one can be select
 using :func:`~ufit.set_backend`.
 
 .. _lmfit: http://cars9.uchicago.edu/software/python/lmfit/
-.. _pyminuit: http://code.google.com/p/pyminuit/
+.. _iminuit: https://github.com/iminuit/iminuit/
 .. _leastsq: http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html
