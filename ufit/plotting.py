@@ -206,6 +206,9 @@ class DataPlotter(object):
         kwds['figure'] = self.canvas.figure
         kwds['clear'] = False
         self.image = plot_mapping(*args, **kwds)
+        if self._limits:
+            self.axes.set_xlim(*self._limits[0])
+            self.axes.set_ylim(*self._limits[1])
 
     def plot_image(self, imgdata, multi=False):
         axes = self.axes
