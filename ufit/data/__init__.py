@@ -137,8 +137,8 @@ def read_numors(nstring, binsize, xcol='auto', ycol='auto',
 
 
 def do_mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
-            xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
-            clear=True, colors=None, axes=None, title=None):
+               xscale=1, yscale=1, interpolate=100, usemask=True, figure=None,
+               clear=True, colors=None, axes=None, title=None):
     """Create a 2D map from several datasets.
 
     An example::
@@ -147,17 +147,17 @@ def do_mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
 
     :param minmax: tuple of minimum and maximum value for z-scale
     :param mode: 0 = image, 1 = contour filled, 2 = contour lines
-    :param log: bool if the z-scale is logarithmic
+    :param log: True if the z-scale should be logarithmic
     :param dots: whether to show dots on position of datapoints
-    :param xscale, yscale: to define scale between x an y axis
+    :param xscale, yscale: to define scale between x and y axis
     :param interpolate: number of points to interpolate in between points
-    :param usemask: bool if to consider masked out points
-    :param figure: where to plot, default is pl.gcf()
-    :param clear: if to do figure.clf() before plotting
+    :param usemask: True if masked out points should be removed
+    :param figure: where to plot, default is current figure (``pl.gcf()``)
+    :param clear: whether to do ``figure.clf()`` before plotting
     :param colors: when using mode > 1, optional list of colors for plotting
     :param axes: axes where to plot, default is figure.gca()
     :param title: title of the plot
     """
     return mapping(x, y, runs, minmax, mode, log, dots,
-            xscale, yscale, interpolate, usemask, figure,
-            clear, colors, axes, title)
+                   xscale, yscale, interpolate, usemask, figure,
+                   clear, colors, axes, title)

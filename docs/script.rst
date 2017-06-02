@@ -63,6 +63,12 @@ Loading data
    .. automethod:: merge
 
 
+Plotting mappings
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: do_mapping
+
+
 Constructing models
 ~~~~~~~~~~~~~~~~~~~
 
