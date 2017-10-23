@@ -221,7 +221,7 @@ class DataPlotter(object):
 
 
 def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,
-                 colors=None, title=None, dots=True):
+                 colors=None, title=None, dots=True, minmax=None):
     """
 
     modes: 0 = image
@@ -238,6 +238,8 @@ def plot_mapping(x, y, mapdata, figure=None, axes=None, clear=True, mode=0,
     if mode == 0:
         im = axes.imshow(zi.T, origin='lower', aspect='auto',
                          interpolation='nearest',
+                         vmin=minmax[0] if minmax is not None else None,
+                         vmax=minmax[1] if minmax is not None else None,
                          extent=(xi[0][0], xi[-1][-1], yi[0][0], yi[-1][-1]))
     else:
         fcn = axes.contourf if mode == 1 else axes.contour
@@ -266,4 +268,4 @@ def mapping(x, y, runs, minmax=None, mode=0, log=False, dots=True,
         interpolate=interpolate, minmax=minmax)
     return plot_mapping(
         x, y, mapdata, figure=figure, axes=axes, clear=clear, mode=mode,
-        dots=dots, colors=colors, title=title)
+        minmax=minmax, dots=dots, colors=colors, title=title)
