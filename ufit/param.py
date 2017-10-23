@@ -11,6 +11,7 @@
 import re
 import copy
 import numpy as np
+import scipy
 
 from ufit import UFitError
 from ufit.pycompat import iteritems, listitems, number_types, string_types
@@ -88,6 +89,7 @@ expr_namespace = {
     'data': None,  # replaced by the dataset's metadata dict, but in here
                    # so that no parameter can be called "data"
     'numpy': np,
+    'scipy': scipy,
 }
 for fcn in ['pi', 'sqrt', 'sin', 'cos', 'tan', 'arcsin', 'arccos',
             'arctan', 'exp', 'log', 'radians', 'degrees', 'ceil',
