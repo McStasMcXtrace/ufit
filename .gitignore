@@ -1,5 +1,6 @@
 *.pyc
 build/
+ufit.egg-info/
 docs/_build/
 test.ufit
 ufitgui.py

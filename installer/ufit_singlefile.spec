@@ -17,7 +17,7 @@ options = [('v', None, 'OPTION')]
 a = Analysis(['../ufitgui'],
              pathex=['..'],
              datas=[(path.join(rootdir, 'ufit', 'RELEASE-VERSION'), 'ufit')],
-             hiddenimports=[],
+             hiddenimports=['scipy.interpolate'],
              hookspath=None,
              runtime_hooks=['rthook_pyqt4.py'])
 
