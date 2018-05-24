@@ -528,7 +528,7 @@ class UFitMain(QMainWindow):
 
     @qtsig('')
     def on_actionSavePlot_triggered(self):
-        self.canvas.save_figure()
+        self.toolbar.save_figure()
 
     @qtsig('')
     def on_actionUnzoom_triggered(self):
