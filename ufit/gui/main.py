@@ -70,6 +70,8 @@ class UFitMain(QMainWindow):
         layout2 = QVBoxLayout()
         layout2.setContentsMargins(0, 0, 0, 0)
         self.canvas = MPLCanvas(self, maincanvas=True)
+        self.connect(self.canvas, SIGNAL('replotRequest'),
+                     lambda: self.current_panel.plot(True))
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         self.canvas.mpl_connect('button_release_event', self.on_canvas_click)

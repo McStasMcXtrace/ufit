@@ -17,6 +17,7 @@ from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
     QMessageBox, QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, QDialog
 from PyQt4.QtSvg import QSvgRenderer
 
+import matplotlib.backends.qt_editor.figureoptions
 from matplotlib.backends.backend_qt4agg import \
     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
 from matplotlib._pylab_helpers import Gcf
@@ -37,6 +38,10 @@ from ufit.gui import logger
 from ufit.gui.session import session
 from ufit.plotting import DataPlotter
 from ufit.pycompat import BytesIO, text_type, PY2
+from ufit.gui.ploteditor import figure_edit
+
+# override figure editor with our extended version
+matplotlib.backends.qt_editor.figureoptions.figure_edit = figure_edit
 
 uipath = path.dirname(__file__)
 
@@ -156,6 +161,9 @@ class MPLCanvas(FigureCanvas):
         if pdlg.exec_() != QDialog.Accepted:
             return
         render(printer)
+
+    def ufit_replot(self):
+        self.emit(SIGNAL('replotRequest'))
 
 
 class MPLToolbar(NavigationToolbar2QT):
