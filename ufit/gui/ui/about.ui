@@ -64,7 +64,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ufit, a neutron data fitting suite&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Version VERSION&lt;/p&gt;&lt;p&gt;Written by Georg Brandl, 2013-2017&lt;br/&gt;Contributions by Petr Cermak&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ufit, a neutron data fitting suite&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Version VERSION&lt;/p&gt;&lt;p&gt;Written by Georg Brandl, 2013-2018&lt;br/&gt;Contributions by Petr Cermak&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
