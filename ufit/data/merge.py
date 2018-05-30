@@ -13,7 +13,7 @@ from numpy import arange, ones, zeros, sqrt, array, append, reshape
 from ufit import UFitError
 
 
-def rebin(data, binsize, meta=[]):
+def rebin(data, binsize, meta={}):
     """Simple rebinning of (x, y, dy, n) data and col_ meta."""
 
     if binsize == 0:

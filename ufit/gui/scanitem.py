@@ -244,8 +244,8 @@ class MultiDataOps(QWidget):
             QMessageBox.warning(self, 'Error', 'Enter a valid precision.')
             return
         for data in self.datas:
-            new_array = rebin(data._data, binsize)
-            data.__init__(data.meta, new_array,
+            new_array, new_meta = rebin(array(data._data), binsize, data.meta)
+            data.__init__(new_meta, new_array,
                           data.xcol, data.ycol, data.ncol,
                           data.nscale, name=data.name,
                           sources=data.sources)
