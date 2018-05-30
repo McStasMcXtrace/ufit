@@ -8,7 +8,7 @@
 
 """Data operations panel."""
 
-from numpy import sqrt, ones, zeros, arange, linspace
+from numpy import sqrt, ones, arange, linspace
 from scipy.interpolate import interp1d
 from scipy.fftpack import fft
 

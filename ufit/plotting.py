@@ -87,6 +87,8 @@ class DataPlotter(object):
         ls = '-' if self.lines else ''
         if 'label' not in kw:
             kw['label'] = data.name
+            if len(kw['label']) > 40:
+                kw['label'] = kw['label'][:40] + '...'
         if data.mask.all():
             eb = axes.errorbar(data.x_plot, data.y + offset, data.dy, ls=ls,
                                marker=marker, ms=ms, picker=5, **kw)
