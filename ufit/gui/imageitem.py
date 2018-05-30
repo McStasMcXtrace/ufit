@@ -50,12 +50,15 @@ class ImageDataItem(SessionItem):
         title = self.data.title
         # XXX self.dataops.titleEdit.setText(title)
         self.title = title
-        self.htmldesc = '<img src=":/image-sunset.png">&nbsp;&nbsp;' \
+        htmldesc = '<img src=":/image-sunset.png">&nbsp;&nbsp;' \
             '<big><b>%s</b></big>' % self.index + \
             (title and ' - %s' % title or '') + \
             (self.data.environment and
              '<br>%s' % ', '.join(self.data.environment) or '') + \
-            ('<br><small>%s</small>' % '<br>'.join(self.data.sources))
+            ('<br><small>%s</small>' % '<br>'.join(self.data.sources[:5]))
+        if len(self.data.sources) > 5:
+            htmldesc += '<br><small>...</small>'
+        self.htmldesc = htmldesc
         session.emit(SIGNAL('itemsUpdated'))
 
     def export_python(self, filename):
