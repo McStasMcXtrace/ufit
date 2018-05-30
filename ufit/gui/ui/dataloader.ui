@@ -100,7 +100,7 @@
         <string>Rebin</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -113,7 +113,7 @@
         <bool>true</bool>
        </property>
        <property name="checked">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -175,14 +175,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2">
-      <widget class="QLabel" name="label_12">
-       <property name="text">
-        <string>(0 means no merging)</string>
+        <string>0.001</string>
        </property>
       </widget>
      </item>
@@ -438,6 +431,13 @@
       <widget class="QLabel" name="groupBoxDesc">
        <property name="text">
         <string> (enter name to create new group)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3" colspan="2">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>(to refresh column list, use &quot;Choose&quot; above)</string>
        </property>
       </widget>
      </item>
