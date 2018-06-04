@@ -92,6 +92,31 @@
          </layout>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QCheckBox" name="useYAxis">
+            <property name="text">
+             <string>fixed Y axis:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="yAxisEdit">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="yAxisBtn">
+            <property name="text">
+             <string>Apply</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="loadBtn">
@@ -153,7 +178,7 @@
      <x>0</x>
      <y>0</y>
      <width>836</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

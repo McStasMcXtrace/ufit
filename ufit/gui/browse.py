@@ -55,6 +55,7 @@ class BrowseWindow(QMainWindow):
         self.rootdir = ''
         self.loader = Loader()
         self._data = {}
+        self.yaxis = None
         self.canvas = MPLCanvas(self)
         self.canvas.plotter.lines = True
         self.toolbar = MPLToolbar(self.canvas, self)
@@ -98,6 +99,10 @@ class BrowseWindow(QMainWindow):
     def on_monScaleBtn_clicked(self):
         self.set_directory(self.rootdir)
 
+    @qtsig('')
+    def on_yAxisBtn_clicked(self):
+        self.set_directory(self.rootdir)
+
     def set_directory(self, root):
         self.setWindowTitle('ufit browser - %s' % root)
         self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
@@ -114,7 +119,9 @@ class BrowseWindow(QMainWindow):
             try:
                 t, n = extract_template(fn)
                 self.loader.template = t
-                res = self.loader.load(n, 'auto', 'auto', 'auto', 'auto', -1)
+                fixed_yaxis = self.yAxisEdit.text()
+                yaxis = fixed_yaxis if (fixed_yaxis and self.useYAxis.isChecked()) else 'auto'
+                res = self.loader.load(n, 'auto', yaxis, 'auto', 'auto', -1)
             except Exception as e:
                 self.logger.warning('While loading %r: %s' % (fn, e))
             else:
