@@ -2,10 +2,12 @@
 
 SHELL=/bin/bash
 
-RCC = pyrcc4
+RCC4 = pyrcc4
+RCC5 = pyrcc5
 
-resource:
-	-$(RCC) -py3 -o ufit/guiresource.py resource/gui.qrc
+resource: resource/gui.qrc
+	$(RCC4) -py3 -o ufit/guires_qt4.py $<
+	$(RCC5)      -o ufit/guires_qt5.py $<
 
 clean:
 	rm -rf build

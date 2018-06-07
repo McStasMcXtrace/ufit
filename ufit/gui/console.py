@@ -8,8 +8,7 @@
 
 """Embedded IPython qt console."""
 
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QMainWindow
+from ufit.qt import SIGNAL, QMainWindow
 
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.qt.inprocess import QtInProcessKernelManager

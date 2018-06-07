@@ -10,9 +10,8 @@
 
 from os import path
 
-from PyQt4.QtCore import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
-    QByteArray
-from PyQt4.QtGui import QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
+from ufit.qt import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
+    QByteArray, QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
     QFileDialog, QDialog, QAction, QActionGroup, QInputDialog, QSplitter, \
     QLabel, QCursor
 

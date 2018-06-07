@@ -15,8 +15,7 @@ from os import path
 
 t0 = time.time()
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QSplashScreen, QPixmap, QMessageBox
+from ufit.qt import Qt, QApplication, QSplashScreen, QPixmap, QMessageBox
 
 from ufit.gui.loggers import getLogger
 logger = getLogger('ufit')

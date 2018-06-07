@@ -9,12 +9,9 @@
 import sys
 from os import path
 
-import sip
-sip.setapi('QString', 2)
-sip.setapi('QVariant', 2)
-
 import numpy as np
-from PyQt4 import QtCore, QtGui, uic
+from ufit.qt import uic, QApplication, QMainWindow, QFileDialog, QVBoxLayout, \
+    SIGNAL
 
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, path_to_str
 from ufit.utils import extract_template
@@ -23,14 +20,13 @@ import ufit.qreader as qr
 import ufit.bzplot as bp
 
 
-
 # show the points
-class ReciprocalViewer(QtGui.QMainWindow):
+class ReciprocalViewer(QMainWindow):
 
     def __init__(self, parent):
         """ Constructing a basic QApplication
         """
-        QtGui.QMainWindow.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         self.sgroup = SettingGroup('main')
         self.ui = uic.loadUi(path.join(path.dirname(__file__), 'ui', 'qexplorer.ui'), self)
         self.addWidgets()
@@ -44,7 +40,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
         self.addToolBar(self.toolbar)
         self.v1 = [1, 0, 0]
         self.v2 = [0, 0, 1]
-        layout = QtGui.QVBoxLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas)
         self.frmPlot.setLayout(layout)
@@ -64,17 +60,16 @@ class ReciprocalViewer(QtGui.QMainWindow):
         with self.sgroup as settings:
             settings.setValue('test', 'abc')
 
-
     def addWidgets(self):
         """ Connecting signals
         """
-        self.connect(self.ui.btnLoad, QtCore.SIGNAL("clicked()"), self.readData)
-        self.connect(self.ui.btnSelectDir, QtCore.SIGNAL("clicked()"), self.changeDir)
-        self.connect(self.ui.btnShow, QtCore.SIGNAL("clicked()"), self.readPoints)
-        self.connect(self.ui.btnAddBZ, QtCore.SIGNAL("clicked()"), self.addBZ)
-        self.connect(self.ui.fltEmax, QtCore.SIGNAL("valueChanged(double)"), self.showPoints)
-        self.connect(self.ui.fltEmin, QtCore.SIGNAL("valueChanged(double)"), self.showPoints)
-        self.connect(self.ui.chkBigFont, QtCore.SIGNAL("stateChanged(int)"), self.bigFont)
+        self.connect(self.ui.btnLoad, SIGNAL("clicked()"), self.readData)
+        self.connect(self.ui.btnSelectDir, SIGNAL("clicked()"), self.changeDir)
+        self.connect(self.ui.btnShow, SIGNAL("clicked()"), self.readPoints)
+        self.connect(self.ui.btnAddBZ, SIGNAL("clicked()"), self.addBZ)
+        self.connect(self.ui.fltEmax, SIGNAL("valueChanged(double)"), self.showPoints)
+        self.connect(self.ui.fltEmin, SIGNAL("valueChanged(double)"), self.showPoints)
+        self.connect(self.ui.chkBigFont, SIGNAL("stateChanged(int)"), self.bigFont)
 
     def readData(self):
         """ This function will read data from files indicated by folder and Numors """
@@ -83,7 +78,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
         self.canvas.axes.text(0.5, 0.5, 'Please wait, loading all data...',
                               horizontalalignment='center')
         self.canvas.draw()
-        QtGui.QApplication.processEvents()
+        QApplication.processEvents()
         self.reader = qr.QReader(self.dir, numors)
         self.canvas.axes.clear()
         self.canvas.draw()
@@ -104,7 +99,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
         self.canvas.axes.text(0.5, 0.5, 'Please wait, parsing read data...',
                               horizontalalignment='center')
         self.canvas.draw()
-        QtGui.QApplication.processEvents()
+        QApplication.processEvents()
         self.pts = self.reader.get_points(self.v1, self.v2)
         print("Datafiles read:", len(self.pts))
         self.canvas.axes.clear()
@@ -138,7 +133,7 @@ class ReciprocalViewer(QtGui.QMainWindow):
             startdir = self.dir
         else:
             startdir = '.'
-        fn = path_to_str(QtGui.QFileDialog.getOpenFileName(
+        fn = path_to_str(QFileDialog.getOpenFileName(
             self, 'Choose a file', startdir, 'All files (*)'))
         if not fn:
             return
@@ -190,6 +185,6 @@ class ReciprocalViewer(QtGui.QMainWindow):
 
 # Run the gui if not imported
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     win = ReciprocalViewer()
     sys.exit(app.exec_())

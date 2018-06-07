@@ -10,9 +10,8 @@
 
 import re
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QWidget, QListWidgetItem, QDialogButtonBox, \
-    QMessageBox, QInputDialog, QTextCursor, QDialog
+from ufit.qt import pyqtSignature as qtsig, SIGNAL, QWidget, QListWidgetItem, \
+    QDialogButtonBox, QMessageBox, QInputDialog, QTextCursor, QDialog
 
 from ufit.models import concrete_models, eval_model
 from ufit.models.corr import Background

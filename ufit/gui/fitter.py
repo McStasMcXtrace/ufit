@@ -8,8 +8,7 @@
 
 """Data fitter panel."""
 
-from PyQt4.QtCore import SIGNAL, Qt
-from PyQt4.QtGui import QApplication, QWidget, QMainWindow, QGridLayout, \
+from ufit.qt import SIGNAL, Qt, QApplication, QWidget, QMainWindow, QGridLayout, \
     QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
     QComboBox, QKeySequence, QIcon
 

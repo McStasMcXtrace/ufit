@@ -15,12 +15,13 @@ class UFitError(Exception):
     pass
 
 
-import sip
-sip.setapi('QString', 2)
-sip.setapi('QVariant', 2)
-
+import ufit.qt
 import matplotlib
-matplotlib.use('Qt4Agg')
+
+if ufit.qt.QTVER == 4:
+    matplotlib.use('Qt4Agg')
+else:
+    matplotlib.use('Qt5Agg')
 
 
 from ufit.result import *

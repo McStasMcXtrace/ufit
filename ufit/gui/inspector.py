@@ -8,8 +8,7 @@
 
 """Metadata view window."""
 
-from PyQt4.QtCore import SIGNAL, QByteArray, Qt
-from PyQt4.QtGui import QMainWindow, QTableWidgetItem, QMessageBox
+from ufit.qt import SIGNAL, QByteArray, Qt, QMainWindow, QTableWidgetItem, QMessageBox
 
 from ufit.gui.common import loadUi, SettingGroup
 from ufit.gui.session import session

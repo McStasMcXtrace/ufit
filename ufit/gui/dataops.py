@@ -12,8 +12,7 @@ from numpy import sqrt, ones, arange, linspace
 from scipy.interpolate import interp1d
 from scipy.fftpack import fft
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QWidget, QDialog, QMessageBox
+from ufit.qt import pyqtSignature as qtsig, SIGNAL, QWidget, QDialog, QMessageBox
 
 from ufit.data.merge import rebin, floatmerge
 from ufit.data.dataset import ScanData

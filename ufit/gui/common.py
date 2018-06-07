@@ -11,11 +11,10 @@
 import sys
 from os import path
 
-from PyQt4 import uic
-from PyQt4.QtCore import SIGNAL, QSize, QSettings, Qt, QRectF, QByteArray
-from PyQt4.QtGui import QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
-    QMessageBox, QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, QDialog
-from PyQt4.QtSvg import QSvgRenderer
+from ufit.qt import uic, SIGNAL, QSize, QSettings, Qt, QRectF, QByteArray, \
+    QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, QMessageBox, \
+    QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, QDialog, \
+    QSvgRenderer
 
 import matplotlib.backends.qt_editor.figureoptions
 from matplotlib.backends.backend_qt4agg import \

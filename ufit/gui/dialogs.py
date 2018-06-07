@@ -10,8 +10,7 @@
 
 from numpy import array, savetxt, nan
 
-from PyQt4.QtCore import pyqtSignature as qtsig
-from PyQt4.QtGui import QDialog, QListWidgetItem
+from ufit.qt import pyqtSignature as qtsig, QDialog, QListWidgetItem
 
 from ufit.gui.common import loadUi
 from ufit.data.dataset import Dataset

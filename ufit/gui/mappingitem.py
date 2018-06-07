@@ -11,8 +11,7 @@
 from numpy import array, mgrid
 from matplotlib.cbook import flatten
 
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QFrame, QMessageBox
+from ufit.qt import SIGNAL, QFrame, QMessageBox
 
 from ufit.data.dataset import Dataset
 from ufit.data.mapping import bin_mapping

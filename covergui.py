@@ -9,16 +9,11 @@
 import sys
 from os import path
 
-import sip
-sip.setapi('QString', 2)
-sip.setapi('QVariant', 2)
-
-from PyQt4 import QtGui
-
+from ufit.qt import QApplication
 from ufit.gui.coverage import ReciprocalViewer
 
 # Run the gui if not imported
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     win = ReciprocalViewer(None)
     sys.exit(app.exec_())

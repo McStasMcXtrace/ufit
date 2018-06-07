@@ -11,9 +11,8 @@
 import os
 from os import path
 
-from PyQt4.QtCore import pyqtSignature as qtsig, QByteArray
-from PyQt4.QtGui import QMainWindow, QApplication, QListWidgetItem, \
-    QVBoxLayout, QFileDialog
+from ufit.qt import pyqtSignature as qtsig, QByteArray, QMainWindow, \
+    QApplication, QListWidgetItem, QVBoxLayout, QFileDialog
 
 from ufit.data import Loader
 from ufit.utils import extract_template

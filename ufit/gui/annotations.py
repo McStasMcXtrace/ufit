@@ -8,8 +8,7 @@
 
 """Session annotation window."""
 
-from PyQt4.QtCore import SIGNAL, QByteArray
-from PyQt4.QtGui import QMainWindow
+from ufit.qt import SIGNAL, QByteArray, QMainWindow
 
 from ufit.gui.common import SettingGroup, loadUi
 from ufit.gui.session import session

@@ -10,9 +10,9 @@
 
 # parts borrowed from M. Janoschek' nfit2 GUI
 
-from PyQt4.QtCore import Qt, QSize, SIGNAL, QAbstractItemModel, QModelIndex
-from PyQt4.QtGui import QTreeView, QStyledItemDelegate, QTextDocument, QStyle, \
-    QAbstractItemView, QListWidget, QListWidgetItem
+from ufit.qt import Qt, QSize, SIGNAL, QAbstractItemModel, QModelIndex, \
+    QTreeView, QStyledItemDelegate, QTextDocument, QStyle, QAbstractItemView, \
+    QListWidget, QListWidgetItem
 
 from ufit.gui.session import session, ItemGroup
 from ufit.gui.scanitem import ScanDataItem

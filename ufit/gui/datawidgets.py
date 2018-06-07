@@ -8,8 +8,7 @@
 
 """Various data display widgets for the GUI."""
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QListWidget, QListWidgetItem
+from ufit.qt import Qt, QListWidget, QListWidgetItem
 
 
 class DataValueListWidget(QListWidget):

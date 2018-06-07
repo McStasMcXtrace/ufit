@@ -10,7 +10,7 @@
 
 from os import path
 
-from PyQt4.QtCore import QObject, SIGNAL
+from ufit.qt import QObject, SIGNAL
 
 from ufit import UFitError
 from ufit.utils import attrdict

@@ -12,8 +12,7 @@ from os import path
 
 from numpy import savetxt, array, linspace, sqrt, mean
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL
-from PyQt4.QtGui import QTabWidget, QWidget, QDialog, QMessageBox
+from ufit.qt import pyqtSignature as qtsig, SIGNAL, QTabWidget, QWidget, QDialog, QMessageBox
 
 from ufit.data.merge import rebin
 from ufit.param import prepare_params

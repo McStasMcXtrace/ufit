@@ -13,8 +13,7 @@ from functools import reduce
 
 from numpy import sqrt, array, arange
 
-from PyQt4.QtCore import SIGNAL, pyqtSignature as qtsig
-from PyQt4.QtGui import QTabWidget, QWidget
+from ufit.qt import SIGNAL, pyqtSignature as qtsig, QTabWidget, QWidget
 
 from matplotlib.patches import Rectangle
 

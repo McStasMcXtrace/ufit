@@ -10,9 +10,8 @@
 
 from os import path
 
-from PyQt4.QtCore import pyqtSignature as qtsig, SIGNAL, Qt
-from PyQt4.QtGui import QWidget, QFileDialog, QDialogButtonBox, QMessageBox, \
-    QMainWindow, QSplitter, QApplication
+from ufit.qt import pyqtSignature as qtsig, SIGNAL, Qt, QWidget, QFileDialog, \
+    QDialogButtonBox, QMessageBox, QMainWindow, QSplitter, QApplication
 
 from ufit.data import data_formats, Loader, ImageData
 from ufit.utils import extract_template
