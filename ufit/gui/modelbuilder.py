@@ -10,7 +10,7 @@
 
 import re
 
-from ufit.qt import pyqtSignature as qtsig, SIGNAL, QWidget, QListWidgetItem, \
+from ufit.qt import pyqtSignal, pyqtSlot, QWidget, QListWidgetItem, \
     QDialogButtonBox, QMessageBox, QInputDialog, QTextCursor, QDialog
 
 from ufit.models import concrete_models, eval_model
@@ -23,6 +23,9 @@ ident_re = re.compile('[a-zA-Z][a-zA-Z0-9_]*$')
 
 
 class ModelBuilder(QWidget):
+    closeRequest = pyqtSignal()
+    pickRequest = pyqtSignal(object)
+    newModel = pyqtSignal(object, object, object)
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
@@ -53,18 +56,18 @@ class ModelBuilder(QWidget):
         else:  # "apply"
             self.eval_model(final=True)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_gaussOnlyBtn_clicked(self):
         if self.gauss_picking:
             self._finish_picking()
             return
         self.gaussOnlyBtn.setText('Back to full modeling mode')
-        self.emit(SIGNAL('pickRequest'), self)
+        self.pickRequest.emit(self)
         self.gauss_picking = 1
         self.gauss_picked_points = []
         self.modeldefStacker.setCurrentIndex(1)
         self.pick_model = Background(bkgd=self.data.y.min())
-        self.emit(SIGNAL('newModel'), self.pick_model, True, False)
+        self.newModel.emit(self.pick_model, True, False)
 
     def on_canvas_pick(self, event):
         if not self.gauss_picking:
@@ -81,7 +84,7 @@ class ModelBuilder(QWidget):
             fwhm = abs(pos - event.xdata) * 2
             self.pick_model += GaussInt('p%02d' % (self.gauss_picking/2),
                                         pos=pos, int=fwhm*ampl*2.5, fwhm=fwhm)
-            self.emit(SIGNAL('newModel'), self.pick_model, True, False)
+            self.newModel.emit(self.pick_model, True, False)
         self.gauss_picking += 1
 
     def _finish_picking(self):
@@ -98,7 +101,7 @@ class ModelBuilder(QWidget):
     def on_premodelsList_itemDoubleClicked(self, item):
         self.on_addmodelBtn_clicked()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_addmodelBtn_clicked(self):
         modelitem = self.premodelsList.currentItem()
         if not modelitem:
@@ -110,7 +113,7 @@ class ModelBuilder(QWidget):
             return
         self.insert_model_code('%s(%r)' % (modelcls, str(modelname)))
 
-    @qtsig('')
+    @pyqtSlot()
     def on_addCustomBtn_clicked(self):
         dlg = QDialog(self)
         loadUi(dlg, 'custommodel.ui')
@@ -170,7 +173,7 @@ class ModelBuilder(QWidget):
         if final:
             self._finish_picking()
             self.last_model = model
-            self.emit(SIGNAL('newModel'), model)
-            self.emit(SIGNAL('closeRequest'))
+            self.newModel.emit(model, False, True)
+            self.closeRequest.emit()
         else:
             self.statusLbl.setText('Model definition is good.')

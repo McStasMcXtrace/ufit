@@ -27,7 +27,6 @@ from ufit.gui.dataloader import start as start_loader
 from ufit.gui.main import UFitMain
 from ufit.utils import extract_template
 
-import ufit.guiresource  # register icon resources
 
 __all__ = ['start_fitter', 'start_loader']
 

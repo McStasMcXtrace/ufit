@@ -11,7 +11,7 @@
 from numpy import array, mgrid
 from matplotlib.cbook import flatten
 
-from ufit.qt import SIGNAL, QFrame, QMessageBox
+from ufit.qt import QFrame, QMessageBox
 
 from ufit.data.dataset import Dataset
 from ufit.data.mapping import bin_mapping
@@ -66,7 +66,7 @@ class MappingItem(SessionItem):
                         '- %s<br>%s' % (
                             self.index, self.settings.title,
                             ', '.join(d.name for d in self.datas))
-        session.emit(SIGNAL('itemUpdated'), self)
+        session.itemUpdated.emit(self)
 
 
 class MappingPanel(QFrame):

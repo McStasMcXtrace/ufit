@@ -8,13 +8,15 @@
 
 """Session annotation window."""
 
-from ufit.qt import SIGNAL, QByteArray, QMainWindow
+from ufit.qt import pyqtSignal, QByteArray, QMainWindow
 
 from ufit.gui.common import SettingGroup, loadUi
 from ufit.gui.session import session
 
 
 class AnnotationWindow(QMainWindow):
+    closed = pyqtSignal()
+
     def __init__(self, parent):
         self._updating = False
         self._data = None
@@ -22,10 +24,8 @@ class AnnotationWindow(QMainWindow):
         loadUi(self, 'annotations.ui')
         self.sgroup = SettingGroup('annotations')
 
-        self.connect(session, SIGNAL('propsRequested'),
-                     self.on_session_propsRequested)
-        self.connect(session, SIGNAL('propsUpdated'),
-                     self.on_session_propsUpdated)
+        session.propsRequested.connect(self.on_session_propsRequested)
+        session.propsUpdated.connect(self.on_session_propsUpdated)
 
         with self.sgroup as settings:
             geometry = settings.value('geometry', QByteArray())
@@ -54,5 +54,5 @@ class AnnotationWindow(QMainWindow):
         with self.sgroup as settings:
             settings.setValue('geometry', self.saveGeometry())
             settings.setValue('windowstate', self.saveState())
-        self.emit(SIGNAL('closed'))
+        self.closed.emit()
         return QMainWindow.closeEvent(self, event)

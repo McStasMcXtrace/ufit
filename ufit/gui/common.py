@@ -11,10 +11,10 @@
 import sys
 from os import path
 
-from ufit.qt import uic, SIGNAL, QSize, QSettings, Qt, QRectF, QByteArray, \
-    QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, QMessageBox, \
-    QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, QDialog, \
-    QSvgRenderer
+from ufit.qt import uic, pyqtSignal, QSize, QSettings, Qt, QRectF, \
+    QByteArray, QLineEdit, QSizePolicy, QWidget, QIcon, QFileDialog, \
+    QMessageBox, QPrinter, QPrintDialog, QPrintPreviewWidget, QPainter, \
+    QDialog, QSvgRenderer
 
 import matplotlib.backends.qt_editor.figureoptions
 from matplotlib.backends.backend_qt4agg import \
@@ -63,6 +63,10 @@ def str_to_path(string):
 
 class MPLCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+
+    logzChanged = pyqtSignal()
+    replotRequest = pyqtSignal()
+
     def __init__(self, parent, width=10, height=6, dpi=72, maincanvas=False):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.set_facecolor('white')
@@ -92,10 +96,8 @@ class MPLCanvas(FigureCanvas):
         self.mpl_connect('key_press_event', self.key_press)
         # These will not do anything in standalone mode, but do not hurt.
         if maincanvas:
-            self.connect(session, SIGNAL('propsRequested'),
-                         self.on_session_propsRequested)
-            self.connect(session, SIGNAL('propsUpdated'),
-                         self.on_session_propsUpdated)
+            session.propsRequested.connect(self.on_session_propsRequested)
+            session.propsUpdated.connect(self.on_session_propsUpdated)
 
     def on_session_propsRequested(self):
         session.props.canvas_logz = self.logz
@@ -103,7 +105,7 @@ class MPLCanvas(FigureCanvas):
     def on_session_propsUpdated(self):
         if 'canvas_logz' in session.props:
             self.logz = session.props.canvas_logz
-            self.emit(SIGNAL('logzChanged'))
+            self.logzChanged.emit()
 
     def key_press(self, event):
         if key_press_handler:
@@ -151,8 +153,8 @@ class MPLCanvas(FigureCanvas):
         def sliderchanged(newval):
             ppw.updatePreview()
 
-        self.connect(ppw, SIGNAL('paintRequested(QPrinter *)'), render)
-        self.connect(dlg.width, SIGNAL('valueChanged(int)'), sliderchanged)
+        ppw.paintRequested.connect(render)
+        dlg.width.valueChanged.connect(sliderchanged)
         if dlg.exec_() != QDialog.Accepted:
             return
         self.print_width = dlg.width.value()
@@ -162,10 +164,12 @@ class MPLCanvas(FigureCanvas):
         render(printer)
 
     def ufit_replot(self):
-        self.emit(SIGNAL('replotRequest'))
+        self.replotRequest.emit()
 
 
 class MPLToolbar(NavigationToolbar2QT):
+
+    popoutRequested = pyqtSignal()
 
     icon_name_map = {
         'home.png':         'magnifier-zoom-fit.png',
@@ -202,8 +206,7 @@ class MPLToolbar(NavigationToolbar2QT):
         self._actions['logx_callback'].setCheckable(True)
         self._actions['logy_callback'].setCheckable(True)
         self._actions['logz_callback'].setCheckable(True)
-        self.connect(self.canvas, SIGNAL('logzChanged'),
-                     self.on_canvas_logzChanged)
+        self.canvas.logzChanged.connect(self.on_canvas_logzChanged)
 
     def _icon(self, name):
         if name in self.icon_name_map:
@@ -257,7 +260,7 @@ class MPLToolbar(NavigationToolbar2QT):
         self.canvas.print_()
 
     def popout_callback(self):
-        self.emit(SIGNAL('popoutRequested'))
+        self.popoutRequested.emit()
 
     def exec_callback(self):
         try:
@@ -292,8 +295,8 @@ class MPLToolbar(NavigationToolbar2QT):
             filter = '%s (%s)' % (name, exts_list)
             filters.append(filter)
         filters = ';;'.join(filters)
-        fname = QFileDialog.getSaveFileName(self, 'Choose a filename to save to',
-                                            start, filters)
+        fname, _ = QFileDialog.getSaveFileName(self, 'Choose a filename to save to',
+                                               start, filters)
         if fname:
             try:
                 self.canvas.print_figure(text_type(fname))

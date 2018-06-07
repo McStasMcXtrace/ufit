@@ -8,7 +8,8 @@
 
 """Metadata view window."""
 
-from ufit.qt import SIGNAL, QByteArray, Qt, QMainWindow, QTableWidgetItem, QMessageBox
+from ufit.qt import pyqtSignal, QByteArray, Qt, QMainWindow, QMessageBox, \
+    QTableWidgetItem
 
 from ufit.gui.common import loadUi, SettingGroup
 from ufit.gui.session import session
@@ -16,6 +17,9 @@ from ufit.pycompat import srepr
 
 
 class InspectorWindow(QMainWindow):
+    replotRequest = pyqtSignal(object)
+    closed = pyqtSignal()
+
     def __init__(self, parent):
         self._updating = False
         self._data = None
@@ -55,7 +59,7 @@ class InspectorWindow(QMainWindow):
         with self.sgroup as settings:
             settings.setValue('geometry', self.saveGeometry())
             settings.setValue('windowstate', self.saveState())
-        self.emit(SIGNAL('closed'))
+        self.closed.emit()
         return QMainWindow.closeEvent(self, event)
 
     def on_tbl_itemChanged(self, item):
@@ -70,5 +74,5 @@ class InspectorWindow(QMainWindow):
         else:
             key = str(self.tbl.item(item.row(), 0).text())
             self.data.meta[key] = new_value
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()

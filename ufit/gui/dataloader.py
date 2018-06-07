@@ -10,7 +10,7 @@
 
 from os import path
 
-from ufit.qt import pyqtSignature as qtsig, SIGNAL, Qt, QWidget, QFileDialog, \
+from ufit.qt import pyqtSignal, pyqtSlot, Qt, QWidget, QFileDialog, \
     QDialogButtonBox, QMessageBox, QMainWindow, QSplitter, QApplication
 
 from ufit.data import data_formats, Loader, ImageData
@@ -24,6 +24,8 @@ from ufit.gui.session import session
 
 
 class DataLoader(QWidget):
+    closeRequest = pyqtSignal()
+    newDatas = pyqtSignal(object, object)
 
     def __init__(self, parent, plotter, standalone=False):
         QWidget.__init__(self, parent)
@@ -36,14 +38,10 @@ class DataLoader(QWidget):
         self.sgroup = SettingGroup('main')
 
         # These will not do anything in standalone mode, but do not hurt.
-        self.connect(session, SIGNAL('propsRequested'),
-                     self.on_session_propsRequested)
-        self.connect(session, SIGNAL('propsUpdated'),
-                     self.on_session_propsUpdated)
-        self.connect(session, SIGNAL('itemsUpdated'),
-                     self.on_session_itemsUpdated)
-        self.connect(session, SIGNAL('groupAdded'),
-                     self.on_session_itemsUpdated)
+        session.propsRequested.connect(self.on_session_propsRequested)
+        session.propsUpdated.connect(self.on_session_propsUpdated)
+        session.itemsUpdated.connect(self.on_session_itemsUpdated)
+        session.groupAdded.connect(self.on_session_itemsUpdated)
 
         with self.sgroup as settings:
             data_template_path = settings.value('last_data_template', '')
@@ -67,7 +65,7 @@ class DataLoader(QWidget):
         if 'template' in session.props:
             self.templateEdit.setText(session.props.template)
 
-    def on_session_itemsUpdated(self):
+    def on_session_itemsUpdated(self, _ignored=None):
         # list of groups may have changed
         self.groupBox.clear()
         for group in session.groups:
@@ -76,7 +74,7 @@ class DataLoader(QWidget):
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
         if role == QDialogButtonBox.RejectRole:
-            self.emit(SIGNAL('closeRequest'))
+            self.closeRequest.emit()
         elif role == QDialogButtonBox.NoRole:  # "preview"
             self.open_data()
         else:  # "open"
@@ -85,7 +83,7 @@ class DataLoader(QWidget):
     def on_dataformatBox_currentIndexChanged(self, i):
         self.loader.format = str(self.dataformatBox.currentText())
 
-    @qtsig('')
+    @pyqtSlot()
     def on_numorHelpBtn_clicked(self):
         QMessageBox.information(self, 'Numor Help', '''\
 The numor string contains file numbers, with the following operators:
@@ -114,19 +112,19 @@ into one set, as well as files 23 and 24.
             pass
         bwin.activateWindow()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_browseBtn_clicked(self):
         templ = path_to_str(self.templateEdit.text())
         self.open_browser(path.dirname(templ))
 
-    @qtsig('')
+    @pyqtSlot()
     def on_settemplateBtn_clicked(self):
         previous = self.templateEdit.text()
         if previous:
             startdir = path.dirname(previous)
         else:
             startdir = '.'
-        fn = path_to_str(QFileDialog.getOpenFileName(
+        fn, _ = path_to_str(QFileDialog.getOpenFileName(
             self, 'Choose a file', startdir, 'All files (*)'))
         if not fn:
             return
@@ -203,8 +201,8 @@ into one set, as well as files 23 and 24.
             return
         self.last_data = datas
         if final:
-            self.emit(SIGNAL('newDatas'), datas, self.groupBox.currentText())
-            self.emit(SIGNAL('closeRequest'))
+            self.newDatas.emit(datas, self.groupBox.currentText())
+            self.closeRequest.emit()
         else:
             self.plot()
 
@@ -243,7 +241,7 @@ class DataLoaderMain(QMainWindow):
         self.dloader.groupBoxLbl.hide()
         self.dloader.groupBoxDesc.hide()
         self.dloader.initialize()
-        self.connect(self.dloader, SIGNAL('closeRequest'), self.close)
+        self.dloader.closeRequest.connect(self.close)
         layout.addWidget(self.dloader)
         self.setCentralWidget(layout)
         self.setWindowTitle('Data loading')

@@ -13,7 +13,7 @@ from functools import reduce
 
 from numpy import sqrt, array, arange
 
-from ufit.qt import SIGNAL, pyqtSignature as qtsig, QTabWidget, QWidget
+from ufit.qt import pyqtSlot, QTabWidget, QWidget
 
 from matplotlib.patches import Rectangle
 
@@ -58,7 +58,7 @@ class ImageDataItem(SessionItem):
         if len(self.data.sources) > 5:
             htmldesc += '<br><small>...</small>'
         self.htmldesc = htmldesc
-        session.emit(SIGNAL('itemsUpdated'))
+        session.itemsUpdated.emit()
 
     def export_python(self, filename):
         pass
@@ -84,9 +84,9 @@ class ImageDataPanel(QTabWidget):
 
         self.canvas = canvas
         # XXX self.dataops.initialize(item)
-        self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
-        self.connect(self.dataops, SIGNAL('replotRequest'), self.plot)
-        self.connect(self.dataops, SIGNAL('titleChanged'), self.item.update_htmldesc)
+        self.dataops.pickRequest.connect(self.set_picker)
+        self.dataops.replotRequest.connect(self.plot)
+        self.dataops.titleChanged.connect(self.item.update_htmldesc)
         self.addTab(self.dataops, 'Data operations')
 
     def set_picker(self, widget):
@@ -164,7 +164,7 @@ class ImageMultiPanel(QWidget):
         ImageDataPanel.image_limits = self.canvas.axes.get_xlim(), \
             self.canvas.axes.get_ylim()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_addboxBtn_clicked(self):
         x1, x2 = map(int, self.canvas.axes.get_xlim())
         y1, y2 = map(int, self.canvas.axes.get_ylim())
@@ -188,14 +188,14 @@ class ImageMultiPanel(QWidget):
             item = self.boxLayout.takeAt(index)
             item.widget().deleteLater()
             self.plot(False)
-        self.connect(box.x1Box, SIGNAL('valueChanged(int)'), boxchange)
-        self.connect(box.x2Box, SIGNAL('valueChanged(int)'), boxchange)
-        self.connect(box.y1Box, SIGNAL('valueChanged(int)'), boxchange)
-        self.connect(box.y2Box, SIGNAL('valueChanged(int)'), boxchange)
-        self.connect(box.delBtn, SIGNAL('clicked()'), boxremove)
+        box.x1Box.valueChanged.connect(boxchange)
+        box.x2Box.valueChanged.connect(boxchange)
+        box.y1Box.valueChanged.connect(boxchange)
+        box.y2Box.valueChanged.connect(boxchange)
+        box.delBtn.clicked.connect(boxremove)
         self.plot(False)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_integrateBtn_clicked(self):
         xname = self.xparamBox.currentText()
         if xname == 'image #':

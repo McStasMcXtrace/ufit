@@ -26,6 +26,22 @@ except (ImportError, RuntimeError):
     import ufit.guires_qt4
     QTVER = 4
 
+    # Compatibility fix: the QFileDialog methods in PyQt5 correspond
+    # to the ...AndFilter methods in PyQt4.
+
+    orig_QFileDialog = QFileDialog
+
+    # pylint: disable=function-redefined
+    class QFileDialog(orig_QFileDialog):
+
+        @staticmethod
+        def getOpenFileName(*args, **kwds):
+            return orig_QFileDialog.getOpenFileNameAndFilter(*args, **kwds)
+
+        @staticmethod
+        def getSaveFileName(*args, **kwds):
+            return orig_QFileDialog.getSaveFileNameAndFilter(*args, **kwds)
+
 else:
     # Do not abort on exceptions in signal handlers.
     sys.excepthook = lambda *args: sys.__excepthook__(*args)
@@ -33,6 +49,7 @@ else:
     from PyQt5.QtGui import *
     from PyQt5.QtWidgets import *
     from PyQt5.QtCore import *
+    from PyQt5.QtPrintSupport import *
     from PyQt5.QtSvg import *
     from PyQt5 import uic
 

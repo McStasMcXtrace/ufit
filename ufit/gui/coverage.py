@@ -10,8 +10,7 @@ import sys
 from os import path
 
 import numpy as np
-from ufit.qt import uic, QApplication, QMainWindow, QFileDialog, QVBoxLayout, \
-    SIGNAL
+from ufit.qt import uic, QApplication, QMainWindow, QFileDialog, QVBoxLayout
 
 from ufit.gui.common import MPLCanvas, MPLToolbar, SettingGroup, path_to_str
 from ufit.utils import extract_template
@@ -61,15 +60,14 @@ class ReciprocalViewer(QMainWindow):
             settings.setValue('test', 'abc')
 
     def addWidgets(self):
-        """ Connecting signals
-        """
-        self.connect(self.ui.btnLoad, SIGNAL("clicked()"), self.readData)
-        self.connect(self.ui.btnSelectDir, SIGNAL("clicked()"), self.changeDir)
-        self.connect(self.ui.btnShow, SIGNAL("clicked()"), self.readPoints)
-        self.connect(self.ui.btnAddBZ, SIGNAL("clicked()"), self.addBZ)
-        self.connect(self.ui.fltEmax, SIGNAL("valueChanged(double)"), self.showPoints)
-        self.connect(self.ui.fltEmin, SIGNAL("valueChanged(double)"), self.showPoints)
-        self.connect(self.ui.chkBigFont, SIGNAL("stateChanged(int)"), self.bigFont)
+        """ Connecting signals """
+        self.ui.btnLoad.clicked.connect(self.readData)
+        self.ui.btnSelectDir.clicked.connect(self.changeDir)
+        self.ui.btnShow.clicked.connect(self.readPoints)
+        self.ui.btnAddBZ.clicked.connect(self.addBZ)
+        self.ui.fltEmax.valueChanged.connect(self.showPoints)
+        self.ui.fltEmin.valueChanged.connect(self.showPoints)
+        self.ui.chkBigFont.stateChanged.connect(self.bigFont)
 
     def readData(self):
         """ This function will read data from files indicated by folder and Numors """
@@ -133,7 +131,7 @@ class ReciprocalViewer(QMainWindow):
             startdir = self.dir
         else:
             startdir = '.'
-        fn = path_to_str(QFileDialog.getOpenFileName(
+        fn, _ = path_to_str(QFileDialog.getOpenFileName(
             self, 'Choose a file', startdir, 'All files (*)'))
         if not fn:
             return

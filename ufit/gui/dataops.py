@@ -12,7 +12,7 @@ from numpy import sqrt, ones, arange, linspace
 from scipy.interpolate import interp1d
 from scipy.fftpack import fft
 
-from ufit.qt import pyqtSignature as qtsig, SIGNAL, QWidget, QDialog, QMessageBox
+from ufit.qt import pyqtSignal, pyqtSlot, QWidget, QDialog, QMessageBox
 
 from ufit.data.merge import rebin, floatmerge
 from ufit.data.dataset import ScanData
@@ -21,6 +21,9 @@ from ufit.gui.session import session
 
 
 class DataOps(QWidget):
+    replotRequest = pyqtSignal(object)
+    pickRequest = pyqtSignal(object)
+    titleChanged = pyqtSignal()
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
@@ -57,13 +60,13 @@ class DataOps(QWidget):
                                            mec='blue')
             event.canvas.draw()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_badResetBtn_clicked(self):
         self.data.reset_mask()
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_badPointsBtn_clicked(self):
         if self.picking == 'bad':
             self.badPointsBtn.setText('Start')
@@ -73,13 +76,13 @@ class DataOps(QWidget):
         elif not self.picking:
             self.badPointsBtn.setText('Click points on plot, then '
                                       'here to finish')
-            self.emit(SIGNAL('pickRequest'), self)
+            self.pickRequest.emit(self)
             self.picking = 'bad'
             self.picked_points = []
             self.pickedLbl.setText('0 picked')
             self.pickedLbl.show()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_limitsBtn_clicked(self):
         try:
             limitmin = float(self.limitminEdit.text())
@@ -90,17 +93,17 @@ class DataOps(QWidget):
         except ValueError:
             limitmax = None
         self.data.fitmin, self.data.fitmax = limitmin, limitmax
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
     def removeBadPoints(self, points):
         """'Remove' bad data points (just mask them out)."""
         for point in points:
             self.data.mask[self.data.x == point] = False
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_rebinBtn_clicked(self):
         try:
             binsize = float(self.precisionEdit.text())
@@ -112,10 +115,10 @@ class DataOps(QWidget):
                            self.data.xcol, self.data.ycol, self.data.ncol,
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_floatmergeBtn_clicked(self):
         try:
             binsize = float(self.precisionEdit.text())
@@ -128,17 +131,17 @@ class DataOps(QWidget):
                            self.data.xcol, self.data.ycol, self.data.ncol,
                            self.data.nscale, name=self.data.name,
                            sources=self.data.sources)
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_cloneBtn_clicked(self):
         new_data = self.data.copy()
         new_model = self.model.copy()
         from ufit.gui.scanitem import ScanDataItem
         session.add_item(ScanDataItem(new_data, new_model), self.item.group)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_arbBtn_clicked(self):
         dlg = QDialog(self)
         loadUi(dlg, 'change.ui')
@@ -168,10 +171,10 @@ class DataOps(QWidget):
         self.data.dy_raw[:] = new_dy
         self.data.y = self.data.y_raw / self.data.norm
         self.data.dy = self.data.dy_raw / self.data.norm
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_mulBtn_clicked(self):
         try:
             const = float(self.scaleConstEdit.text())
@@ -181,10 +184,10 @@ class DataOps(QWidget):
         self.data.y_raw *= const
         self.data.dy *= const
         self.data.dy_raw *= const
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_addBtn_clicked(self):
         try:
             const = float(self.addConstEdit.text())
@@ -192,53 +195,53 @@ class DataOps(QWidget):
             return
         self.data.y += const
         self.data.y_raw += const * self.data.norm
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_scaleXBtn_clicked(self):
         try:
             const = float(self.scaleXConstEdit.text())
         except ValueError:
             return
         self.data.x *= const
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_shiftBtn_clicked(self):
         try:
             const = float(self.shiftConstEdit.text())
         except ValueError:
             return
         self.data.x += const
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_monscaleBtn_clicked(self):
         try:
             const = int(self.monscaleEdit.text())
         except ValueError:
             return
         self.data.rescale(const)
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_titleBtn_clicked(self):
         self.data.meta.title = str(self.titleEdit.text())
-        self.emit(SIGNAL('titleChanged'))
+        self.titleChanged.emit()
         session.set_dirty()
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_nameBtn_clicked(self):
         self.data.name = str(self.nameEdit.text())
         session.set_dirty()
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_subtractBtn_clicked(self):
         from ufit.gui.scanitem import ScanDataItem
         dlg = QDialog(self)
@@ -286,10 +289,10 @@ class DataOps(QWidget):
             from ufit.gui.scanitem import ScanDataItem
             session.add_item(ScanDataItem(new_data, new_model), self.item.group)
         else:
-            self.emit(SIGNAL('replotRequest'), None)
+            self.replotRequest.emit(None)
             session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_fftBtn_clicked(self):
         try:
             npoints = int(self.fftNpointsEdit.text())

@@ -10,7 +10,7 @@
 
 # parts borrowed from M. Janoschek' nfit2 GUI
 
-from ufit.qt import Qt, QSize, SIGNAL, QAbstractItemModel, QModelIndex, \
+from ufit.qt import pyqtSignal, Qt, QSize, QAbstractItemModel, QModelIndex, \
     QTreeView, QStyledItemDelegate, QTextDocument, QStyle, QAbstractItemView, \
     QListWidget, QListWidgetItem
 
@@ -44,6 +44,7 @@ class ItemListWidget(QListWidget):
 
 
 class ItemTreeView(QTreeView):
+    newSelection = pyqtSignal()
 
     def __init__(self, parent):
         QTreeView.__init__(self, parent)
@@ -54,7 +55,7 @@ class ItemTreeView(QTreeView):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def selectionChanged(self, selected, deselected):
-        self.emit(SIGNAL('newSelection'))
+        self.newSelection.emit()
         QTreeView.selectionChanged(self, selected, deselected)
 
 
@@ -62,12 +63,16 @@ class ItemListModel(QAbstractItemModel):
 
     def __init__(self):
         QAbstractItemModel.__init__(self)
-        self.connect(session, SIGNAL('itemsUpdated'), self.reset)
-        self.connect(session, SIGNAL('itemUpdated'), self.on_session_itemUpdated)
-        self.connect(session, SIGNAL('itemAdded'), self.on_session_itemAdded)
-        self.connect(session, SIGNAL('groupAdded'), self.on_session_groupAdded)
-        self.connect(session, SIGNAL('groupUpdated'), self.on_session_groupUpdated)
+        session.itemsUpdated.connect(self.reset)
+        session.itemUpdated.connect(self.on_session_itemUpdated)
+        session.itemAdded.connect(self.on_session_itemAdded)
+        session.groupAdded.connect(self.on_session_groupAdded)
+        session.groupUpdated.connect(self.on_session_groupUpdated)
         self.groups = session.groups
+
+    def reset(self):
+        self.beginResetModel()
+        self.endResetModel()
 
     def index_for_item(self, item):
         groupidx = self.groups.index(item.group)

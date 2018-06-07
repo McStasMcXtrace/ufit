@@ -12,7 +12,8 @@ from os import path
 
 from numpy import savetxt, array, linspace, sqrt, mean
 
-from ufit.qt import pyqtSignature as qtsig, SIGNAL, QTabWidget, QWidget, QDialog, QMessageBox
+from ufit.qt import pyqtSignal, pyqtSlot, QTabWidget, QWidget, QDialog, \
+    QMessageBox
 
 from ufit.data.merge import rebin
 from ufit.param import prepare_params
@@ -47,6 +48,7 @@ def default_model(data):
 
 
 class ScanDataItem(SessionItem):
+    newModel = pyqtSignal(object)
 
     itemtype = 'scan'
 
@@ -57,7 +59,7 @@ class ScanDataItem(SessionItem):
 
     def change_model(self, model):
         self.model = model
-        self.emit(SIGNAL('newModel'), model)
+        self.newModel.emit(model)
         session.set_dirty()
 
     def after_load(self):
@@ -84,7 +86,7 @@ class ScanDataItem(SessionItem):
         if len(self.data.sources) > 5:
             htmldesc += '<br><small>...</small>'
         self.htmldesc = htmldesc
-        session.emit(SIGNAL('itemsUpdated'))
+        session.itemsUpdated.emit()
 
     def export_python(self, filename):
         with open(filename, 'wb') as fp:
@@ -134,19 +136,19 @@ class ScanDataPanel(QTabWidget):
         self._dont_update_modeldef = False
         self.picker_widget = None
 
-        self.connect(self.item, SIGNAL('newModel'), self.on_item_newModel)
+        self.item.newModel.connect(self.on_item_newModel)
 
         self.canvas = canvas
         self.dataops.initialize(item)
         self.mbuilder.initialize(item.data, item.model)
         self.fitter.initialize(item.model, item.data, fit=False)
-        self.connect(self.dataops, SIGNAL('pickRequest'), self.set_picker)
-        self.connect(self.dataops, SIGNAL('replotRequest'), self.plot)
-        self.connect(self.dataops, SIGNAL('titleChanged'), self.item.update_htmldesc)
-        self.connect(self.mbuilder, SIGNAL('newModel'), self.on_mbuilder_newModel)
-        self.connect(self.mbuilder, SIGNAL('pickRequest'), self.set_picker)
-        self.connect(self.fitter, SIGNAL('replotRequest'), self.plot)
-        self.connect(self.fitter, SIGNAL('pickRequest'), self.set_picker)
+        self.dataops.pickRequest.connect(self.set_picker)
+        self.dataops.replotRequest.connect(self.plot)
+        self.dataops.titleChanged.connect(self.item.update_htmldesc)
+        self.mbuilder.newModel.connect(self.on_mbuilder_newModel)
+        self.mbuilder.pickRequest.connect(self.set_picker)
+        self.fitter.replotRequest.connect(self.plot)
+        self.fitter.pickRequest.connect(self.set_picker)
         self.addTab(self.dataops, 'Data operations')
         self.addTab(self.mbuilder, 'Modeling')
         self.addTab(self.fitter, 'Fitting')
@@ -203,11 +205,12 @@ class ScanDataPanel(QTabWidget):
 
 
 class MultiDataOps(QWidget):
+    replotRequest = pyqtSignal(object)
 
     def __init__(self, parent, canvas):
         QWidget.__init__(self, parent)
         self.canvas = canvas
-        self.connect(self, SIGNAL('replotRequest'), self.plot)
+        self.replotRequest.connect(self.plot)
 
         loadUi(self, 'multiops.ui')
 
@@ -235,7 +238,7 @@ class MultiDataOps(QWidget):
                                                  'ascii', 'ignore'))
         canvas.draw()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_rebinBtn_clicked(self):
         try:
             binsize = float(self.precisionEdit.text())
@@ -248,10 +251,10 @@ class MultiDataOps(QWidget):
                           data.xcol, data.ycol, data.ncol,
                           data.nscale, name=data.name,
                           sources=data.sources)
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_mulBtn_clicked(self):
         try:
             const = float(self.scaleConstEdit.text())
@@ -262,10 +265,10 @@ class MultiDataOps(QWidget):
             data.y_raw *= const
             data.dy *= const
             data.dy_raw *= const
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_addBtn_clicked(self):
         try:
             const = float(self.addConstEdit.text())
@@ -274,10 +277,10 @@ class MultiDataOps(QWidget):
         for data in self.datas:
             data.y += const
             data.y_raw += const * data.norm
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_scaleXBtn_clicked(self):
         try:
             const = float(self.scaleXConstEdit.text())
@@ -285,10 +288,10 @@ class MultiDataOps(QWidget):
             return
         for data in self.datas:
             data.x *= const
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_shiftBtn_clicked(self):
         try:
             const = float(self.shiftConstEdit.text())
@@ -296,10 +299,10 @@ class MultiDataOps(QWidget):
             return
         for data in self.datas:
             data.x += const
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_monscaleBtn_clicked(self):
         try:
             const = int(self.monscaleEdit.text())
@@ -311,10 +314,10 @@ class MultiDataOps(QWidget):
             data.y = data.y_raw/data.norm
             data.dy = sqrt(data.y_raw)/data.norm
             data.yaxis = data.ycol + ' / %s %s' % (const, data.ncol)
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
         session.set_dirty()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_mergeBtn_clicked(self):
         try:
             precision = float(self.mergeEdit.text())
@@ -324,7 +327,7 @@ class MultiDataOps(QWidget):
         new_data = self.datas[0].merge(precision, *self.datas[1:])
         session.add_item(ScanDataItem(new_data), self.items[-1].group)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_floatMergeBtn_clicked(self):
         try:
             precision = float(self.mergeEdit.text())
@@ -334,7 +337,7 @@ class MultiDataOps(QWidget):
         new_data = self.datas[0].merge(precision, floatmerge=True, *self.datas[1:])
         session.add_item(ScanDataItem(new_data), self.items[-1].group)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_onemodelBtn_clicked(self):
         which = self.onemodelBox.currentIndex()
         if which < 0:
@@ -344,28 +347,28 @@ class MultiDataOps(QWidget):
             if i == which:
                 continue
             item.change_model(model.copy())
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_fitallBtn_clicked(self):
         for item in self.items:
             res = item.model.fit(item.data)
-            session.emit(SIGNAL('modelFitted'), item, res)
-        self.emit(SIGNAL('replotRequest'), None)
+            session.modelFitted.emit(item, res)
+        self.replotRequest.emit(None)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_paramsetBtn_clicked(self):
         dlg = ParamSetDialog(self, self.items)
         if dlg.exec_() != QDialog.Accepted:
             return
         session.add_item(ScanDataItem(dlg.new_data), self.items[-1].group)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_mappingBtn_clicked(self):
         item = MappingItem([item.data for item in self.items], None)
         session.add_item(item, self.items[-1].group)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_globalfitBtn_clicked(self):
         QMessageBox.warning(self, 'Sorry', 'Not implemented yet.')
 

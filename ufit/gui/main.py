@@ -10,10 +10,9 @@
 
 from os import path
 
-from ufit.qt import pyqtSignature as qtsig, Qt, SIGNAL, QModelIndex, \
-    QByteArray, QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, \
-    QFileDialog, QDialog, QAction, QActionGroup, QInputDialog, QSplitter, \
-    QLabel, QCursor
+from ufit.qt import pyqtSlot, Qt, QModelIndex, QByteArray, \
+    QMainWindow, QVBoxLayout, QMessageBox, QMenu, QIcon, QFileDialog, \
+    QDialog, QAction, QActionGroup, QInputDialog, QSplitter, QLabel, QCursor
 
 from ufit import backends, __version__
 from ufit.data.dataset import ScanData, ImageData
@@ -47,53 +46,48 @@ class UFitMain(QMainWindow):
         self.sgroup = SettingGroup('main')
         loadUi(self, 'main.ui')
 
-        self.connect(self.menuRecent, SIGNAL('aboutToShow()'),
-                     self.on_menuRecent_aboutToShow)
+        self.menuRecent.aboutToShow.connect(self.on_menuRecent_aboutToShow)
         self.menuMoveToGroup = QMenu('Move selected to group', self)
         self.menuMoveToGroup.setIcon(QIcon(':/drawer-open.png'))
-        self.connect(self.menuMoveToGroup, SIGNAL('aboutToShow()'),
-                     self.on_menuMoveToGroup_aboutToShow)
+        self.menuMoveToGroup.aboutToShow.connect(
+            self.on_menuMoveToGroup_aboutToShow)
         self.menuCopyToGroup = QMenu('Copy selected to group', self)
         self.menuCopyToGroup.setIcon(QIcon(':/drawer-double-open.png'))
-        self.connect(self.menuCopyToGroup, SIGNAL('aboutToShow()'),
-                     self.on_menuCopyToGroup_aboutToShow)
+        self.menuCopyToGroup.aboutToShow.connect(
+            self.on_menuCopyToGroup_aboutToShow)
         self.menuRemoveGroup = QMenu('Remove group', self)
         self.menuRemoveGroup.setIcon(QIcon(':/drawer--minus.png'))
-        self.connect(self.menuRemoveGroup, SIGNAL('aboutToShow()'),
-                     self.on_menuRemoveGroup_aboutToShow)
+        self.menuRemoveGroup.aboutToShow.connect(
+            self.on_menuRemoveGroup_aboutToShow)
         self.menuRenameGroup = QMenu('Rename group', self)
-        self.connect(self.menuRenameGroup, SIGNAL('aboutToShow()'),
-                     self.on_menuRenameGroup_aboutToShow)
+        self.menuRenameGroup.aboutToShow.connect(
+            self.on_menuRenameGroup_aboutToShow)
 
         # populate plot view
         layout2 = QVBoxLayout()
         layout2.setContentsMargins(0, 0, 0, 0)
         self.canvas = MPLCanvas(self, maincanvas=True)
-        self.connect(self.canvas, SIGNAL('replotRequest'),
-                     lambda: self.current_panel.plot(True))
+        self.canvas.replotRequest.connect(
+            lambda: self.current_panel.plot(True))
         self.canvas.mpl_connect('button_press_event', self.on_canvas_pick)
         self.canvas.mpl_connect('pick_event', self.on_canvas_pick)
         self.canvas.mpl_connect('button_release_event', self.on_canvas_click)
         self.toolbar = MPLToolbar(self.canvas, self)
         self.toolbar.setObjectName('mainplottoolbar')
-        self.connect(self.toolbar, SIGNAL('popoutRequested'),
-                     self.on_actionPopOut_triggered)
+        self.toolbar.popoutRequested.connect(self.on_actionPopOut_triggered)
         self.addToolBar(self.toolbar)
         layout2.addWidget(self.canvas)
         self.plotframe.setLayout(layout2)
 
         # session events
-        self.connect(session, SIGNAL('itemsUpdated'),
-                     self.on_session_itemsUpdated)
-        self.connect(session, SIGNAL('itemAdded'), self.on_session_itemAdded)
-        self.connect(session, SIGNAL('filenameChanged'),
-                     self.on_session_filenameChanged)
-        self.connect(session, SIGNAL('dirtyChanged'),
-                     self.on_session_dirtyChanged)
+        session.itemsUpdated.connect(self.on_session_itemsUpdated)
+        session.itemAdded.connect(self.on_session_itemAdded)
+        session.filenameChanged.connect(self.on_session_filenameChanged)
+        session.dirtyChanged.connect(self.on_session_dirtyChanged)
 
         # create data loader
         self.dloader = DataLoader(self, self.canvas.plotter)
-        self.connect(self.dloader, SIGNAL('newDatas'), self.on_dloader_newDatas)
+        self.dloader.newDatas.connect(self.on_dloader_newDatas)
         self.stacker.addWidget(self.dloader)
         self.current_panel = self.dloader
 
@@ -105,8 +99,7 @@ class UFitMain(QMainWindow):
         self.itemTree.addAction(self.actionRemoveData)
         self.itemTree.addAction(self.menuMoveToGroup.menuAction())
         self.itemTree.addAction(self.menuCopyToGroup.menuAction())
-        self.connect(self.itemTree, SIGNAL('newSelection'),
-                     self.on_itemTree_newSelection)
+        self.itemTree.newSelection.connect(self.on_itemTree_newSelection)
 
         # backend selector
         self.backend_group = QActionGroup(self)
@@ -117,8 +110,7 @@ class UFitMain(QMainWindow):
                 action.setChecked(True)
             self.backend_group.addAction(action)
             self.menuBackend.addAction(action)
-            self.connect(action, SIGNAL('triggered()'),
-                         self.on_backend_action_triggered)
+            action.triggered.connect(self.on_backend_action_triggered)
 
         # manage button
         menu = QMenu(self)
@@ -214,14 +206,14 @@ class UFitMain(QMainWindow):
         if recent_files:
             for i, fname in enumerate(recent_files):
                 action = QAction('%d - %s' % (i+1, fname), self)
-                self.connect(action, SIGNAL("triggered()"), self.load_session)
+                action.triggered.connect(self.load_session)
                 action.setData(fname)
                 self.menuRecent.addAction(action)
         self.actionClearRecent.setEnabled(len(recent_files) > 0)
         self.menuRecent.addSeparator()
         self.menuRecent.addAction(self.actionClearRecent)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionClearRecent_triggered(self):
         """Clear recent files list"""
         self.recent_files = []
@@ -240,12 +232,12 @@ class UFitMain(QMainWindow):
         if event.button == 3 and not self.toolbar.mode:  # right button
             self.canvasMenu.popup(QCursor.pos())
 
-    @qtsig('')
+    @pyqtSlot()
     def on_loadBtn_clicked(self):
         self.select_new_panel(self.dloader)
         self.itemTree.setCurrentIndex(QModelIndex())
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionNewGroup_triggered(self):
         name = QInputDialog.getText(self, 'ufit', 'Please enter a name '
                                     'for the new group:')[0]
@@ -264,7 +256,7 @@ class UFitMain(QMainWindow):
                     return
                 session.move_items(items, group)
                 self.re_expand_tree()
-            self.connect(action, SIGNAL('triggered()'), move_to)
+            action.triggered.connect(move_to)
             self.menuMoveToGroup.addAction(action)
 
     def on_menuCopyToGroup_aboutToShow(self):
@@ -278,7 +270,7 @@ class UFitMain(QMainWindow):
                     return
                 session.copy_items(items, group)
                 self.re_expand_tree()
-            self.connect(action, SIGNAL('triggered()'), copy_to)
+            action.triggered.connect(copy_to)
             self.menuCopyToGroup.addAction(action)
 
     def on_menuRemoveGroup_aboutToShow(self):
@@ -289,7 +281,7 @@ class UFitMain(QMainWindow):
             def remove(group=group):
                 session.remove_group(group)
                 self.re_expand_tree()
-            self.connect(action, SIGNAL('triggered()'), remove)
+            action.triggered.connect(remove)
             self.menuRemoveGroup.addAction(action)
 
     def on_menuRenameGroup_aboutToShow(self):
@@ -303,10 +295,10 @@ class UFitMain(QMainWindow):
                 if not name:
                     return
                 session.rename_group(group, name)
-            self.connect(action, SIGNAL('triggered()'), rename)
+            action.triggered.connect(rename)
             self.menuRenameGroup.addAction(action)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionRemoveData_triggered(self):
         items = self.selected_items()
         if not items:
@@ -318,7 +310,7 @@ class UFitMain(QMainWindow):
         session.remove_items(items)
         self.re_expand_tree()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionReorder_triggered(self):
         dlg = QDialog(self)
         loadUi(dlg, 'reorder.ui')
@@ -398,7 +390,7 @@ class UFitMain(QMainWindow):
             else:
                 self.itemTree.collapse(self.itemlistmodel.index_for_group(group))
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionInspector_triggered(self):
         if self.inspector_window:
             self.inspector_window.activateWindow()
@@ -407,14 +399,14 @@ class UFitMain(QMainWindow):
 
         def deref():
             self.inspector_window = None
-        self.connect(self.inspector_window, SIGNAL('replotRequest'),
-                     lambda: self.current_panel.plot(True))
-        self.connect(self.inspector_window, SIGNAL('closed'), deref)
+        self.inspector_window.replotRequest.connect(
+            lambda: self.current_panel.plot(True))
+        self.inspector_window.closed.connect(deref)
         if isinstance(self.current_panel, ScanDataPanel):
             self.inspector_window.setDataset(self.current_panel.item.data)
         self.inspector_window.show()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionAnnotations_triggered(self):
         if self.annotation_window:
             self.annotation_window.activateWindow()
@@ -423,10 +415,10 @@ class UFitMain(QMainWindow):
 
         def deref():
             self.annotation_window = None
-        self.connect(self.annotation_window, SIGNAL('closed'), deref)
+        self.annotation_window.closed.connect(deref)
         self.annotation_window.show()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionLoadData_triggered(self):
         self.on_loadBtn_clicked()
 
@@ -456,7 +448,7 @@ class UFitMain(QMainWindow):
 
     def _get_export_filename(self, filter='ASCII text (*.txt)'):
         initialdir = session.props.get('lastexportdir', session.dirname)
-        filename = QFileDialog.getSaveFileName(
+        filename, _ = QFileDialog.getSaveFileName(
             self, 'Select export file name', initialdir, filter)
         if filename == '':
             return ''
@@ -464,25 +456,25 @@ class UFitMain(QMainWindow):
         session.props.lastexportdir = path.dirname(expfilename)
         return expfilename
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionExportASCII_triggered(self):
         expfilename = self._get_export_filename()
         if expfilename:
             self.current_panel.export_ascii(expfilename)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionExportFIT_triggered(self):
         expfilename = self._get_export_filename()
         if expfilename:
             self.current_panel.export_fits(expfilename)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionExportPython_triggered(self):
         expfilename = self._get_export_filename('Python files (*.py)')
         if expfilename:
             self.current_panel.export_python(expfilename)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionExportParams_triggered(self):
         items = self.selected_items(ScanDataItem)
         dlg = ParamExportDialog(self, items)
@@ -497,11 +489,11 @@ class UFitMain(QMainWindow):
                 QMessageBox.warning(self, 'Error', 'Could not export '
                                     'parameters: %s' % e)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionPrint_triggered(self):
         self.canvas.print_()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionPopOut_triggered(self):
         new_win = QMainWindow()
         canvas = MPLCanvas(new_win)
@@ -521,17 +513,17 @@ class UFitMain(QMainWindow):
             iw.executeCommand('from ufit.lab import *')
             iw.executeCommand('sca(ax)')
             iw.setFocus()
-            self.connect(iw, SIGNAL('redraw'), canvas.draw_idle)
+            iw.redrawme.connect(canvas.draw_idle)
             splitter.addWidget(iw)
         new_win.setCentralWidget(splitter)
         self.current_panel.plot(limits=None, canvas=canvas)
         new_win.show()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionSavePlot_triggered(self):
         self.toolbar.save_figure()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionUnzoom_triggered(self):
         self.toolbar.home()
 
@@ -547,14 +539,14 @@ class UFitMain(QMainWindow):
             return True
         return False
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionNewSession_triggered(self):
         if not self.check_save():
             return
         session.clear()
         self.on_loadBtn_clicked()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionLoad_triggered(self):
         if not self.check_save():
             return
@@ -562,19 +554,19 @@ class UFitMain(QMainWindow):
         if not initialdir:
             with self.sgroup as settings:
                 initialdir = settings.value('loadfiledirectory', '')
-        filename = QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog.getOpenFileName(
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return
         self.load_session(path_to_str(filename))
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionInsert_triggered(self):
         initialdir = session.dirname
         if not initialdir:
             with self.sgroup as settings:
                 initialdir = settings.value('loadfiledirectory', '')
-        filename = QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog.getOpenFileName(
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return
@@ -612,17 +604,17 @@ class UFitMain(QMainWindow):
             for item in group.items:
                 session.add_item(item)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionSave_triggered(self):
         self.save_session()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionSaveAs_triggered(self):
         self.save_session_as()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionQExplorer_triggered(self):
-        winQE = ReciprocalViewer(self)
+        ReciprocalViewer(self)
 
     def save_session(self):
         if session.filename is None:
@@ -637,7 +629,7 @@ class UFitMain(QMainWindow):
 
     def save_session_as(self):
         initialdir = session.dirname
-        filename = QFileDialog.getSaveFileName(
+        filename, _ = QFileDialog.getSaveFileName(
             self, 'Select file name', initialdir, 'ufit files (*.ufit)')
         if filename == '':
             return False
@@ -650,7 +642,7 @@ class UFitMain(QMainWindow):
             return False
         return True
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionMergeData_triggered(self):
         items = self.selected_items(ScanDataItem)
         if len(items) < 2:
@@ -666,7 +658,7 @@ class UFitMain(QMainWindow):
             new_data = datalist[0].merge(precision, *datalist[1:])
             session.add_item(ScanDataItem(new_data), self.items[-1].group)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionQuit_triggered(self):
         self.close()
 
@@ -682,7 +674,7 @@ class UFitMain(QMainWindow):
             settings.setValue('vsplitstate', self.vsplitter.saveState())
             settings.setValue('recentfiles', self.recent_files)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_actionAbout_triggered(self):
         dlg = QDialog(self)
         dlg.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
@@ -690,6 +682,6 @@ class UFitMain(QMainWindow):
         dlg.lbl.setText(dlg.lbl.text().replace('VERSION', __version__))
         dlg.exec_()
 
-    @qtsig('')
+    @pyqtSlot()
     def on_backend_action_triggered(self):
         backends.set_backend(str(self.sender().text()))

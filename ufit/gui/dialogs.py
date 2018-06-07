@@ -10,7 +10,7 @@
 
 from numpy import array, savetxt, nan
 
-from ufit.qt import pyqtSignature as qtsig, QDialog, QListWidgetItem
+from ufit.qt import pyqtSlot, QDialog, QListWidgetItem
 
 from ufit.gui.common import loadUi
 from ufit.data.dataset import Dataset
@@ -26,14 +26,14 @@ class ParamExportDialog(QDialog):
     def on_availList_itemDoubleClicked(self, item):
         QListWidgetItem(item.text(), self.selectList, item.type())
 
-    @qtsig('')
+    @pyqtSlot()
     def on_addBtn_clicked(self):
         item = self.availList.currentItem()
         if not item:
             return
         QListWidgetItem(item.text(), self.selectList, item.type())
 
-    @qtsig('')
+    @pyqtSlot()
     def on_removeBtn_clicked(self):
         item = self.selectList.currentItem()
         if not item:

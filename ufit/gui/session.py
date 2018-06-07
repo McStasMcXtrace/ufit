@@ -10,7 +10,7 @@
 
 from os import path
 
-from ufit.qt import QObject, SIGNAL
+from ufit.qt import QObject, pyqtSignal
 
 from ufit import UFitError
 from ufit.utils import attrdict
@@ -77,6 +77,19 @@ class ItemGroup(object):
 
 class _Session(QObject):
 
+    propsRequested = pyqtSignal()
+    propsUpdated = pyqtSignal()
+    dirtyChanged = pyqtSignal(bool)
+    filenameChanged = pyqtSignal()
+    modelFitted = pyqtSignal(object, object)
+
+    groupAdded = pyqtSignal(object)
+    groupUpdated = pyqtSignal(object)
+
+    itemsUpdated = pyqtSignal()
+    itemUpdated = pyqtSignal(object)
+    itemAdded = pyqtSignal(object)
+
     def __init__(self):
         QObject.__init__(self)
         self.filename = None
@@ -94,18 +107,18 @@ class _Session(QObject):
         self.groups[:] = [ItemGroup('Default')]
         self.all_items.clear()
         self.props = attrdict()
-        self.emit(SIGNAL('itemsUpdated'))
-        self.emit(SIGNAL('propsUpdated'))
-        self.emit(SIGNAL('dirtyChanged'), False)
+        self.itemsUpdated.emit()
+        self.propsUpdated.emit()
+        self.dirtyChanged.emit(False)
 
     def new(self):
         self.filename = None
-        self.emit(SIGNAL('filenameChanged'))
+        self.filenameChanged.emit()
         self.clear()
 
     def set_filename(self, filename):
         self.filename = filename
-        self.emit(SIGNAL('filenameChanged'))
+        self.filenameChanged.emit()
 
     def _load_v0(self, info):
         info['version'] = 1
@@ -159,13 +172,13 @@ class _Session(QObject):
                 self.all_items.add(item)
             group.update_htmldesc()
         # let GUI elements update from propsdata
-        self.emit(SIGNAL('itemsUpdated'))
-        self.emit(SIGNAL('propsUpdated'))
-        self.emit(SIGNAL('filenameChanged'))
+        self.itemsUpdated.emit()
+        self.propsUpdated.emit()
+        self.filenameChanged.emit()
 
     def save(self):
         # let GUI elements update the stored propsdata
-        self.emit(SIGNAL('propsRequested'))
+        self.propsRequested.emit()
         if self.filename is None:
             raise UFitError('session has no filename yet')
         info = {
@@ -175,13 +188,13 @@ class _Session(QObject):
         }
         with open(self.filename, 'wb') as fp:
             pickle.dump(info, fp, protocol=pickle.HIGHEST_PROTOCOL)
-        self.emit(SIGNAL('dirtyChanged'), False)
+        self.dirtyChanged.emit(False)
 
     def add_group(self, name):
         group = ItemGroup(name)
         self.groups.append(group)
         self.set_dirty()
-        self.emit(SIGNAL('groupAdded'), group)
+        self.groupAdded.emit(group)
         return group
 
     def remove_group(self, group):
@@ -189,13 +202,13 @@ class _Session(QObject):
         for item in group.items:
             self.all_items.discard(item)
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
+        self.itemsUpdated.emit()
 
     def rename_group(self, group, name):
         group.name = name
         group.update_htmldesc()
         self.set_dirty()
-        self.emit(SIGNAL('groupUpdated'), group)
+        self.groupUpdated.emit(group)
 
     def add_item(self, item, group=None):
         if group is None:
@@ -205,7 +218,7 @@ class _Session(QObject):
         group.update_htmldesc()
         item.set_group(group, len(group.items))
         self.set_dirty()
-        self.emit(SIGNAL('itemAdded'), item)
+        self.itemAdded.emit(item)
 
     def add_items(self, items, group=None):
         if not items:
@@ -218,8 +231,8 @@ class _Session(QObject):
             item.set_group(group, len(group.items))
         group.update_htmldesc()
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
-        self.emit(SIGNAL('itemAdded'), items[-1])
+        self.itemsUpdated.emit()
+        self.itemAdded.emit(items[-1])
 
     def remove_items(self, items):
         renumber_groups = set()
@@ -234,7 +247,7 @@ class _Session(QObject):
                 item.set_group(group, i + 1)
             group.update_htmldesc()
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
+        self.itemsUpdated.emit()
 
     def move_items(self, items, newgroup):
         renumber_groups = set([newgroup])
@@ -247,7 +260,7 @@ class _Session(QObject):
                 item.set_group(group, i + 1)
             group.update_htmldesc()
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
+        self.itemsUpdated.emit()
 
     def copy_items(self, items, newgroup):
         from ufit.gui.scanitem import ScanDataItem
@@ -260,8 +273,8 @@ class _Session(QObject):
             newgroup.update_htmldesc()
             new_item.set_group(newgroup, len(newgroup.items))
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
-        self.emit(SIGNAL('itemAdded'), items[-1])
+        self.itemsUpdated.emit()
+        self.itemAdded.emit(items[-1])
 
     def reorder_groups(self, new_structure):
         del self.groups[:]
@@ -272,10 +285,11 @@ class _Session(QObject):
                 item.set_group(group, i + 1)
             group.update_htmldesc()
         self.set_dirty()
-        self.emit(SIGNAL('itemsUpdated'))
+        self.itemsUpdated.emit()
 
     def set_dirty(self):
-        self.emit(SIGNAL('dirtyChanged'), True)
+        self.dirtyChanged.emit(True)
+
 
 # one singleton instance
 session = _Session()

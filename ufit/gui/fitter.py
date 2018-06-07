@@ -8,9 +8,9 @@
 
 """Data fitter panel."""
 
-from ufit.qt import SIGNAL, Qt, QApplication, QWidget, QMainWindow, QGridLayout, \
-    QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, QSplitter, \
-    QComboBox, QKeySequence, QIcon
+from ufit.qt import pyqtSignal, Qt, QApplication, QWidget, QMainWindow, \
+    QGridLayout, QFrame, QLabel, QDialogButtonBox, QCheckBox, QMessageBox, \
+    QSplitter, QComboBox, QKeySequence, QIcon
 
 from ufit.gui import logger
 from ufit.gui.common import loadUi, MPLCanvas, MPLToolbar, SmallLineEdit
@@ -27,6 +27,9 @@ def is_float(x):
 
 
 class Fitter(QWidget):
+    closeRequest = pyqtSignal()
+    pickRequest = pyqtSignal(object)
+    replotRequest = pyqtSignal(object)
 
     def __init__(self, parent, standalone=False, fit_kws={}):
         QWidget.__init__(self, parent)
@@ -72,13 +75,13 @@ class Fitter(QWidget):
             oldp_dict = dict((p.name, p) for p in old_model.params)
             self.restore_from_params(oldp_dict)
 
-        self.connect(session, SIGNAL('modelFitted'), self.on_modelFitted)
+        session.modelFitted.connect(self.on_modelFitted)
 
         if self.standalone:
             if fit:
                 self.do_fit()
             else:
-                self.emit(SIGNAL('replotRequest'), None)
+                self.replotRequest.emit(None)
 
     def create_param_controls(self):
         self.param_controls = {}
@@ -116,13 +119,12 @@ class Fitter(QWidget):
                 layout.addWidget(ctl, i, j)
             i += 1
             self.original_params[p.name] = p.copy()
-            self.connect(e1, SIGNAL('returnPressed()'), self.do_plot)
-            self.connect(e4.lineEdit(), SIGNAL('returnPressed()'), self.do_plot)
-            self.connect(e5, SIGNAL('returnPressed()'), self.do_plot)
-            self.connect(e6, SIGNAL('returnPressed()'), self.do_plot)
-            self.connect(e3, SIGNAL('clicked(bool)'), self.update_enables)
-            self.connect(e4, SIGNAL('editTextChanged(const QString&)'),
-                         self.update_enables)
+            e1.returnPressed.connect(self.do_plot)
+            e4.lineEdit().returnPressed.connect(self.do_plot)
+            e5.returnPressed.connect(self.do_plot)
+            e6.returnPressed.connect(self.do_plot)
+            e3.clicked.connect(self.update_enables)
+            e4.editTextChanged.connect(self.update_enables)
         layout.setRowStretch(i+1, 1)
         self.param_frame.setLayout(layout)
         self.param_scroll.setWidget(self.param_frame)
@@ -162,7 +164,7 @@ class Fitter(QWidget):
     def on_buttonBox_clicked(self, button):
         role = self.buttonBox.buttonRole(button)
         if role == QDialogButtonBox.RejectRole:
-            self.emit(SIGNAL('closeRequest'))
+            self.closeRequest.emit()
         elif role == QDialogButtonBox.ApplyRole:
             self.do_fit()
         elif role == QDialogButtonBox.ActionRole:
@@ -235,7 +237,7 @@ class Fitter(QWidget):
     def do_pick(self, *args):
         if self.picking:
             return
-        self.emit(SIGNAL('pickRequest'), self)
+        self.pickRequest.emit(self)
         self._pick_points = self.model.get_pick_points()
         self._pick_values = []
         self.picking = 'Guess'
@@ -253,7 +255,7 @@ class Fitter(QWidget):
 
     def do_plot(self, *ignored):
         self.update_from_controls()
-        self.emit(SIGNAL('replotRequest'), None)
+        self.replotRequest.emit(None)
 
     def do_fit(self):
         if self.picking:
@@ -272,7 +274,7 @@ class Fitter(QWidget):
             return
         self.on_modelFitted(self.item, res)
 
-        self.emit(SIGNAL('replotRequest'), True)
+        self.replotRequest.emit(True)
         session.set_dirty()
 
     def on_modelFitted(self, item, res):
@@ -301,8 +303,8 @@ class FitterMain(QMainWindow):
         self.fitter = Fitter(self, standalone=True, fit_kws=fit_kws)
         self.canvas.mpl_connect('button_press_event',
                                 self.fitter.on_canvas_pick)
-        self.connect(self.fitter, SIGNAL('closeRequest'), self.close)
-        self.connect(self.fitter, SIGNAL('replotRequest'), self.replot)
+        self.fitter.closeRequest.connect(self.close)
+        self.fitter.replotRequest.connect(self.replot)
         self.fitter.initialize(model, data, fit)
         layout.addWidget(self.fitter)
         self.setCentralWidget(layout)

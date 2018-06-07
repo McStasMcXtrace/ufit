@@ -11,8 +11,8 @@
 import os
 from os import path
 
-from ufit.qt import pyqtSignature as qtsig, QByteArray, QMainWindow, \
-    QApplication, QListWidgetItem, QVBoxLayout, QFileDialog
+from ufit.qt import pyqtSlot, QByteArray, QMainWindow, QApplication, \
+    QListWidgetItem, QVBoxLayout, QFileDialog
 
 from ufit.data import Loader
 from ufit.utils import extract_template
@@ -75,7 +75,7 @@ class BrowseWindow(QMainWindow):
             self.splitter.restoreState(splitstate)
             self.monScaleEdit.setText(settings.value('fixedmonval'))
 
-    @qtsig('')
+    @pyqtSlot()
     def on_loadBtn_clicked(self):
         datas = [self._data[item.type()] for item in self.dataList.selectedItems()]
         if not datas:
@@ -84,21 +84,21 @@ class BrowseWindow(QMainWindow):
         # XXX which group
         session.add_items(items)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_dirBtn_clicked(self):
         newdir = QFileDialog.getExistingDirectory(self, 'New directory',
                                                   self.rootdir)
         self.set_directory(path_to_str(newdir))
 
-    @qtsig('')
+    @pyqtSlot()
     def on_refreshBtn_clicked(self):
         self.set_directory(self.rootdir)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_monScaleBtn_clicked(self):
         self.set_directory(self.rootdir)
 
-    @qtsig('')
+    @pyqtSlot()
     def on_yAxisBtn_clicked(self):
         self.set_directory(self.rootdir)
 

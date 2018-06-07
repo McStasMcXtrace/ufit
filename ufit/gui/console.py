@@ -8,7 +8,7 @@
 
 """Embedded IPython qt console."""
 
-from ufit.qt import SIGNAL, QMainWindow
+from ufit.qt import pyqtSignal, QMainWindow
 
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.qt.inprocess import QtInProcessKernelManager
@@ -16,6 +16,10 @@ from IPython.qt.inprocess import QtInProcessKernelManager
 
 class QIPythonWidget(RichIPythonWidget):
     """Convenience class for a live IPython console widget."""
+
+    closeme = pyqtSignal()
+    redrawme = pyqtSignal()
+
     def __init__(self, customBanner=None, *args, **kwargs):
         if customBanner is not None:
             self.banner = customBanner
@@ -29,11 +33,11 @@ class QIPythonWidget(RichIPythonWidget):
         def stop():
             kernel_client.stop_channels()
             kernel_manager.shutdown_kernel()
-            self.emit(SIGNAL('close'))
+            self.closeme.emit()
         self.exit_requested.connect(stop)
 
         def redraw():
-            self.emit(SIGNAL('redraw'))
+            self.redrawme.emit()
         self.executed.connect(redraw)
 
     def pushVariables(self, variableDict):
@@ -71,5 +75,5 @@ Objects in the namespace:
             self)
         self.setCentralWidget(self.ipython)
 
-        self.connect(self.ipython, SIGNAL('close'), self.close)
-        self.connect(self.ipython, SIGNAL('redraw'), parent.canvas.draw)
+        self.ipython.closeme.connect(self.close)
+        self.ipython.redrawme.connect(parent.canvas.draw)
