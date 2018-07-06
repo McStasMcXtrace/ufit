@@ -36,7 +36,7 @@ class Loader(object):
             raise UFitError('File %r has no recognized file format' % filename)
         return data_formats[self.format], self.format in data_formats_image
 
-    def _inner_load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
+    def _inner_load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1, filter=None):
         try:
             filename = self.template % n
         except TypeError:
@@ -46,7 +46,7 @@ class Loader(object):
         if isimg:
             return self._inner_load_image(rdr, filename, fobj, n, ncol, nscale)
         return self._inner_load_scan(rdr, filename, fobj, n, xcol, ycol, dycol,
-                                     ncol, nscale)
+                                     ncol, nscale, filter)
 
     def _inner_load_image(self, rdr, filename, fobj, n, ncol, nscale):
         arr, darr, meta = rdr.read_data(filename, fobj)
@@ -64,8 +64,14 @@ class Loader(object):
         return dset
 
     def _inner_load_scan(self, rdr, filename, fobj, n,
-                         xcol, ycol, dycol, ncol, nscale):
+                         xcol, ycol, dycol, ncol, nscale, filter):
         colnames, coldata, meta = rdr.read_data(filename, fobj)
+        if filter is not None:
+            for v,k in filter.items():
+                if v in colnames:
+                    coldata = coldata[coldata.T[colnames.index(v)]==k]
+                else:
+                    raise UFitError("Filtered column %s did not exists" % v)
         colguess = rdr.guess_cols(colnames, coldata, meta)
         if 'filenumber' not in meta:
             meta['filenumber'] = n
@@ -123,9 +129,9 @@ class Loader(object):
         self.sets[n] = dset
         return dset
 
-    def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1):
+    def load(self, n, xcol, ycol, dycol=None, ncol=None, nscale=1, filter=None):
         try:
-            return self._inner_load(n, xcol, ycol, dycol, ncol, nscale)
+            return self._inner_load(n, xcol, ycol, dycol, ncol, nscale, filter)
         except Exception as e:
             raise UFitError('Could not load data file %d: %s' % (n, e))
 
@@ -162,7 +168,7 @@ class Loader(object):
         return colnames, xguess, yguess, dyguess, mguess, nmon
 
     def load_numors(self, nstring, binsize, xcol, ycol, dycol=None,
-                    ncol=None, nscale=1, floatmerge=True):
+                    ncol=None, nscale=1, floatmerge=True, filter=None):
         """Load a number of data files and merge them according to numor
         list operations:
 
@@ -187,7 +193,7 @@ class Loader(object):
             if '-' in part1:
                 a, b = map(toint, part1.split('-'))
                 datasets.extend(
-                    self.load(n, xcol, ycol, dycol, ncol, nscale).merge(
+                    self.load(n, xcol, ycol, dycol, ncol, nscale, filter).merge(
                         binsize, floatmerge=floatmerge) for n in range(a, b+1))
             else:
                 parts2 = part1.split('+')
@@ -195,14 +201,14 @@ class Loader(object):
                 for part2 in parts2:
                     if '>' in part2:
                         a, b = map(toint, part2.split('>'))
-                        ds = [self.load(n, xcol, ycol, dycol, ncol, nscale)
+                        ds = [self.load(n, xcol, ycol, dycol, ncol, nscale, filter)
                               for n in range(a, b+1)]
                         inner.append(ds[0].merge(binsize, *ds[1:],
                                                  floatmerge=floatmerge))
                     else:
                         inner.append(
                             self.load(toint(part2), xcol, ycol, dycol,
-                                      ncol, nscale))
+                                      ncol, nscale, filter))
                 datasets.append(inner[0].merge(binsize, *inner[1:],
                                                floatmerge=floatmerge))
         return DatasetList(datasets)

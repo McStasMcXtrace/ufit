@@ -159,11 +159,16 @@ into one set, as well as files 23 and 24.
         self.moncolBox.addItem('auto')
         self.moncolBox.addItem('none')
         self.moncolBox.setCurrentIndex(0)
+        self.filtercolBox.clear()
+        self.filtercolBox.addItem('none')
+        self.filtercolBox.setCurrentIndex(0)
+
         for i, name in enumerate(cols):
             self.xcolBox.addItem(name)
             self.ycolBox.addItem(name)
             self.dycolBox.addItem(name)
             self.moncolBox.addItem(name)
+            self.filtercolBox.addItem(name)
         self.monscaleEdit.setText(str(nmon or 1))
         self.numorsEdit.setText(str(numor))
         self.open_data()
@@ -179,6 +184,7 @@ into one set, as well as files 23 and 24.
         ycol = str(self.ycolBox.currentText())
         dycol = str(self.dycolBox.currentText())
         mcol = str(self.moncolBox.currentText())
+        fcol = str(self.filtercolBox.currentText())
         if mcol == 'none':
             mcol = None
         if dycol == 'sqrt(Y)':
@@ -189,12 +195,20 @@ into one set, as well as files 23 and 24.
             QMessageBox.information(
                 self, 'Error', 'Monitor scale must be integer.')
             return
+        if fcol == 'none':
+            filter = None
+        else:
+            try:
+                val = float(self.filtervalEdit.text())
+            except ValueError:
+                val = bytes(self.filtervalEdit.text(), 'utf-8')
+            filter = {fcol: val}
         dtempl = path_to_str(self.templateEdit.text())
         self.loader.template = dtempl
         numors = str(self.numorsEdit.text())
         try:
             datas = self.loader.load_numors(
-                numors, prec, xcol, ycol, dycol, mcol, mscale, floatmerge)
+                numors, prec, xcol, ycol, dycol, mcol, mscale, floatmerge, filter)
         except Exception as e:
             self.logger.exception('Error while loading data file')
             QMessageBox.information(self, 'Error', str(e))

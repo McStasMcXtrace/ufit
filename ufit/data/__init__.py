@@ -85,7 +85,7 @@ def set_dataformat(format):
     global_loader.format = format
 
 
-def read_data(n, xcol='auto', ycol='auto', dycol=None, ncol=None, nscale=1):
+def read_data(n, xcol='auto', ycol='auto', dycol=None, ncol=None, nscale=1, filter=None):
     """Read a data file.  Returns a :class:`Dataset` object.
 
     :param xcol: X column name (or 1-based index)
@@ -96,8 +96,10 @@ def read_data(n, xcol='auto', ycol='auto', dycol=None, ncol=None, nscale=1):
         monitor column
     :param nscale: scale for the normalization column; the Y data is determined
         as ``y[i] = y_raw[i] / ncol[i] * nscale``
+    :param filter: dictionary of column names and filtered values; only datapoints
+        with given values will be part of the dataset; if None, then not applied.
     """
-    return global_loader.load(n, xcol, ycol, dycol, ncol, nscale)
+    return global_loader.load(n, xcol, ycol, dycol, ncol, nscale, filter)
 
 
 def as_data(x, y, dy, name=''):
