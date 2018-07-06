@@ -233,6 +233,45 @@ class ScanData(DataBase):
         dp.lines = lines
         dp.plot_data(self, **kw)
 
+    def subtract(self, other, precision, rewrite=False):
+        """Subtract other dataset from the current one.
+
+        Subtraction algorithm works as follows: for each point in the
+        background, the points in the original data with an X value within
+        the selected *precision* are looked up, and the Y value is subtracted.
+        An array of indices is kept so that from every original data point
+        background is subtracted at most once.
+
+        *other* is a dataset to subtract.
+
+        *precision* defines how far points are still considered for subtraction.
+
+        *rewrite* determines if a copy of current dataset is produced or current
+        dataset is changed. Other dataset is never touched. Default is false
+        to create a copy of current dataset and return it.
+        """
+        if rewrite:
+            new_data = self
+        else:
+            new_data = self.copy()
+        new_data.name = new_data.name + '-' + other.name
+        new_data.sources.extend(other.sources)
+
+        # indices of data points not corrected
+        ind_unused = ones(len(new_data.x), dtype=bool)
+        for xb, yb, dyb, nb in other._data:
+            ind = ind_unused & (new_data.x >= xb - precision) & (new_data.x <= xb + precision)
+            scale = new_data.norm_raw[ind]/nb
+            new_data.y_raw[ind] -= scale * yb
+            new_data.dy_raw[ind] = sqrt(new_data.dy_raw[ind]**2 + (scale * dyb)**2)
+            ind_unused &= ~ind
+        new_data.y = new_data.y_raw / new_data.norm
+        new_data.dy = new_data.dy_raw / new_data.norm
+        # mask out points from which no background has been subtracted
+        new_data.mask &= ~ind_unused
+
+        return new_data
+
     def export_ascii(self, fp):
         savetxt(fp, array([self.x, self.y, self.dy]).T)
 
