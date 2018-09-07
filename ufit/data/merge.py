@@ -96,7 +96,7 @@ def floatmerge(data, binsize, meta = []):
 
     if binsize == 0:
         # no merging, just concatenate
-        return data
+        return data, meta
 
     # sort data
     sortorder = data[:, 0].argsort()
