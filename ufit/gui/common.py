@@ -215,8 +215,10 @@ class MPLToolbar(NavigationToolbar2QT):
 
     def home(self):
         # always unzoom completely
-        self._views.clear()
-        self._positions.clear()
+        if hasattr(self, '_views'):
+            self._views.clear()
+        if hasattr(self, '_positions'):
+            self._positions.clear()
         self.canvas.figure.gca().autoscale()
         self.canvas.draw()
         return NavigationToolbar2QT.home(self)
