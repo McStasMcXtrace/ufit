@@ -131,8 +131,8 @@ class ReciprocalViewer(QMainWindow):
             startdir = self.dir
         else:
             startdir = '.'
-        fn, _ = path_to_str(QFileDialog.getOpenFileName(
-            self, 'Choose a file', startdir, 'All files (*)'))
+        fn = path_to_str(QFileDialog.getOpenFileName(
+            self, 'Choose a file', startdir, 'All files (*)')[0])
         if not fn:
             return
         dtempl, numor = extract_template(fn)
