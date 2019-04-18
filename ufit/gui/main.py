@@ -364,6 +364,8 @@ class UFitMain(QMainWindow):
                 self.inspector_window.setDataset(item.data)
         else:
             paneltype = type(items[0])
+            if not hasattr(paneltype, 'create_multi_panel'):
+                return
             if paneltype not in self.multipanels:
                 panel = self.multipanels[paneltype] = \
                     items[0].create_multi_panel(self, self.canvas)
