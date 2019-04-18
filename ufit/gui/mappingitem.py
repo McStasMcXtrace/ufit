@@ -122,12 +122,17 @@ class MappingPanel(QFrame):
         title = s.title = self.titleBox.text()
         if title != old_title:
             self.item.update_htmldesc()
-        xaxis = s.xaxis = str(self.xaxisBox.currentText())
-        yaxis = s.yaxis = str(self.yaxisBox.currentText())
+        xaxis = str(self.xaxisBox.currentText())
+        yaxis = str(self.yaxisBox.currentText())
+        if xaxis != s.xaxis or yaxis != s.yaxis:
+            # new axes selected => discard limits on replot
+            self.mapdata = None
         if xaxis == yaxis:
             QMessageBox.warning(self, 'Error', 'Please select distinct X '
                                 'and Y axes.')
             return
+        s.xaxis = xaxis
+        s.yaxis = yaxis
         s.interp = self.stepBox.value()
         s.zmin = maybe_float(self.zminEdit.text(), -1e300)
         s.zmax = maybe_float(self.zmaxEdit.text(), 1e300)
@@ -142,8 +147,9 @@ class MappingPanel(QFrame):
     def on_buttonBox_clicked(self, button):
         """Apply button clicked."""
         self._update_settings()
-        self.rebuild_map(quiet=False)
-        self.plot()
+        new_map = self.mapdata is None
+        if self.rebuild_map(quiet=False):
+            self.plot(limits=None if new_map else True)
 
     def rebuild_map(self, quiet=True):
         s = self.item.settings
@@ -152,13 +158,18 @@ class MappingPanel(QFrame):
                                        usemask=s.usemask, log=s.logz,
                                        yscale=s.yscale, interpolate=s.interp,
                                        minmax=(s.zmin, s.zmax))
+            return True
         except Exception as err:
             self.logger.exception('While creating mapping')
             if not quiet:
+                err_text = str(err)
+                # Qhull errors are *very* verbose. Discard everything except
+                # the first paragraph.
+                err_text = err_text.partition('\n\n')[0]
                 QMessageBox.warning(self, 'Mapping error',
                                     'Could not create mapping: %s (have you '
-                                    'selected the right columns?)' % err)
-            return
+                                    'selected the right columns?)' % err_text)
+            return False
 
     def plot(self, limits=True, canvas=None):
         s = self.item.settings
