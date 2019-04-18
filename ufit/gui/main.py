@@ -219,10 +219,11 @@ class UFitMain(QMainWindow):
         self.recent_files = []
 
     def select_new_panel(self, panel):
-        if hasattr(self.current_panel, 'save_limits'):
-            self.current_panel.save_limits()
-        self.current_panel = panel
-        self.stacker.setCurrentWidget(self.current_panel)
+        if panel is not self.current_panel:
+            if hasattr(self.current_panel, 'save_limits'):
+                self.current_panel.save_limits()
+            self.current_panel = panel
+        self.stacker.setCurrentWidget(self.current_panel)  # doesn't hurt
 
     def on_canvas_pick(self, event):
         if isinstance(self.current_panel, ScanDataPanel):
