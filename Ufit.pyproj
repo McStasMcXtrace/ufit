@@ -90,6 +90,7 @@
     <Compile Include="ufit\data\merge.py" />
     <Compile Include="ufit\data\nicos.py" />
     <Compile Include="ufit\data\nicos_old.py" />
+    <Compile Include="ufit\data\nist.py" />
     <Compile Include="ufit\data\simple.py" />
     <Compile Include="ufit\data\simple_csv.py" />
     <Compile Include="ufit\data\taipan.py" />

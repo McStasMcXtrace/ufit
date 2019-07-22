@@ -69,11 +69,18 @@ def extract_template(fn):
     bn = path.basename(fn)
     dn = path.dirname(fn)
     m = list(numor_re.finditer(bn))
+    last_dot = bn.rfind('.')
     if not m:
         dtempl = fn
         numor = 0
     else:
-        b, e = m[-1].span()
+        ix = -1
+        b, e = m[ix].span()
+        # ignore numbers if they are part of the extension *and* there is
+        # other numbers
+        if b > last_dot and len(m) > 1:
+            ix = -2
+            b, e = m[ix].span()
         dtempl = path.join(dn, bn[:b] + '%%0%dd' % (e-b) + bn[e:])
-        numor = int(m[-1].group())
+        numor = int(m[ix].group())
     return dtempl, numor
