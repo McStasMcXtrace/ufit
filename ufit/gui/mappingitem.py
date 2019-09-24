@@ -8,7 +8,7 @@
 
 """Panel for mappings."""
 
-from numpy import array, mgrid
+from numpy import array, mgrid, savetxt
 from matplotlib.cbook import flatten
 
 from ufit.qt import QFrame, QMessageBox
@@ -222,3 +222,15 @@ class MappingPanel(QFrame):
                                'theta: %(theta).5f  '
                                'fwhm_x: %(fwhm_x).5f  fwhm_y: %(fwhm_y).5f  '
                                'ampl: %(ampl).5f' % res.paramvalues)
+
+    def export_ascii(self, filename):
+        _, _, xi, yi, zi = self.mapdata
+        savetxt(filename, array([xi.ravel(), yi.ravel(), zi.T.ravel()]).T)
+
+    def export_fits(self, filename):
+        QMessageBox.information(self, 'Error', 'Cannot export fits from a '
+                                'mapping.')
+
+    def export_python(self, filename):
+        QMessageBox.information(self, 'Error', 'Cannot export Python from a '
+                                'mapping.')
