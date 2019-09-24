@@ -48,7 +48,7 @@ def default_model(data):
 
 
 class ScanDataItem(SessionItem):
-    newModel = pyqtSignal(object)
+    newModel = pyqtSignal(object, bool)
 
     itemtype = 'scan'
 
@@ -57,9 +57,9 @@ class ScanDataItem(SessionItem):
         self.model = model or default_model(data)
         SessionItem.__init__(self)
 
-    def change_model(self, model):
+    def change_model(self, model, keep_param_values=True):
         self.model = model
-        self.newModel.emit(model)
+        self.newModel.emit(model, keep_param_values)
         session.set_dirty()
 
     def after_load(self):
@@ -164,10 +164,11 @@ class ScanDataPanel(QTabWidget):
         if switch_fitter:
             self.setCurrentWidget(self.fitter)
 
-    def on_item_newModel(self, model):
+    def on_item_newModel(self, model, keep_param_values):
         if not self._dont_update_modeldef:
             self.mbuilder.modeldefEdit.setText(model.get_description())
-        self.fitter.initialize(model, self.item.data, fit=False, keep_old=True)
+        self.fitter.initialize(model, self.item.data, fit=False,
+                               keep_old=keep_param_values)
 
     def set_picker(self, widget):
         self.picker_widget = widget
@@ -343,10 +344,11 @@ class MultiDataOps(QWidget):
         if which < 0:
             return
         model = self.items[which].model
+        with_params = self.onemodelWithParamsBox.isChecked()
         for i, item in enumerate(self.items):
             if i == which:
                 continue
-            item.change_model(model.copy())
+            item.change_model(model.copy(), keep_param_values=not with_params)
         self.replotRequest.emit(None)
 
     @pyqtSlot()
