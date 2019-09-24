@@ -17,7 +17,7 @@ Fitting is done by one of several backends:
 Results can be easily plotted and further processed.  Plotting is handled by
 `matplotlib <http://matplotlib.org/>`_.
 
-The GUI uses `PyQt 4
+The GUI uses `PyQt 4 or 5
 <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`_.
 
 
