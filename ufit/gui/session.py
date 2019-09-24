@@ -14,7 +14,7 @@ from ufit.qt import QObject, pyqtSignal
 
 from ufit import UFitError
 from ufit.utils import attrdict
-from ufit.pycompat import cPickle as pickle
+from ufit.pycompat import six, cPickle as pickle
 
 
 # current save file version
@@ -156,7 +156,10 @@ class _Session(QObject):
         self.clear()
         # unpickle everything
         with open(filename, 'rb') as fp:
-            info = pickle.load(fp)
+            if six.PY3:
+                info = pickle.load(fp, encoding='latin1')
+            else:
+                info = pickle.load(fp)
         # load with the respective method
         savever = info.get('version', 0)
         try:
