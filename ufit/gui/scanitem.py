@@ -90,12 +90,12 @@ class ScanDataItem(SessionItem):
 
     def export_python(self, filename):
         with open(filename, 'wb') as fp:
-            fp.write('from ufit.lab import *\n')
-            fp.write('\n')
+            fp.write(b'from ufit.lab import *\n')
+            fp.write(b'\n')
             self.data.export_python(fp, 'data')
             fp.write('\n')
             self.model.export_python(fp, 'model')
-            fp.write('''\
+            fp.write(b'''\
 ## just plot current values
 data.plot()
 model.plot_components(data)
@@ -110,7 +110,7 @@ show()
 ''')
 
     def export_ascii(self, filename):
-        with open(filename, 'w') as fp:
+        with open(filename, 'wb') as fp:
             self.data.export_ascii(fp)
 
     def export_fits(self, filename):

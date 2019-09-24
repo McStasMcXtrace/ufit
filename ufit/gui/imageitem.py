@@ -65,7 +65,7 @@ class ImageDataItem(SessionItem):
                                 'image.')
 
     def export_ascii(self, filename):
-        with open(filename, 'w') as fp:
+        with open(filename, 'wb') as fp:
             self.data.export_ascii(fp)
 
     def export_fits(self, filename):
