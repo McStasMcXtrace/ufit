@@ -10,8 +10,8 @@
 
 from ufit.qt import pyqtSignal, QMainWindow
 
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.qt.inprocess import QtInProcessKernelManager
+from qtconsole.rich_ipython_widget import RichIPythonWidget
+from qtconsole.inprocess import QtInProcessKernelManager
 
 
 class QIPythonWidget(RichIPythonWidget):
