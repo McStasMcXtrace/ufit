@@ -13,7 +13,7 @@ from functools import reduce
 
 from numpy import sqrt, array, arange
 
-from ufit.qt import pyqtSlot, QTabWidget, QWidget
+from ufit.qt import pyqtSlot, QMessageBox, QTabWidget, QWidget
 
 from matplotlib.patches import Rectangle
 
@@ -61,14 +61,16 @@ class ImageDataItem(SessionItem):
         session.itemsUpdated.emit()
 
     def export_python(self, filename):
-        pass
+        QMessageBox.information(self, 'Error', 'Cannot export Python from an '
+                                'image.')
 
     def export_ascii(self, filename):
         with open(filename, 'w') as fp:
             self.data.export_ascii(fp)
 
     def export_fits(self, filename):
-        pass
+        QMessageBox.information(self, 'Error', 'Cannot export fits from an '
+                                'image.')
 
 
 class ImageDataPanel(QTabWidget):
