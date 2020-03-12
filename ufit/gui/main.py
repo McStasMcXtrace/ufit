@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -251,7 +251,7 @@ class UFitMain(QMainWindow):
         for group in session.groups:
             action = QAction(group.name, self)
 
-            def move_to(group=group):
+            def move_to(_arg=None, group=group):
                 items = self.selected_items()
                 if not items:
                     return
@@ -265,7 +265,7 @@ class UFitMain(QMainWindow):
         for group in session.groups:
             action = QAction(group.name, self)
 
-            def copy_to(group=group):
+            def copy_to(_arg=None, group=group):
                 items = self.selected_items()
                 if not items:
                     return
@@ -279,7 +279,7 @@ class UFitMain(QMainWindow):
         for group in session.groups:
             action = QAction(group.name, self)
 
-            def remove(group=group):
+            def remove(_arg=None, group=group):
                 session.remove_group(group)
                 self.re_expand_tree()
             action.triggered.connect(remove)
@@ -290,7 +290,7 @@ class UFitMain(QMainWindow):
         for group in session.groups:
             action = QAction(group.name, self)
 
-            def rename(group=group):
+            def rename(_arg=None, group=group):
                 name = QInputDialog.getText(self, 'ufit', 'Please enter a new name '
                                             'for the group:', text=group.name)[0]
                 if not name:
