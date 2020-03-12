@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -51,6 +51,7 @@ class BrowseWindow(QMainWindow):
         loadUi(self, 'browse.ui')
         self.logger = logger.getChild('browse')
 
+        self.dataloader = parent
         self.rootdir = ''
         self.loader = Loader()
         self._data = {}
@@ -81,8 +82,15 @@ class BrowseWindow(QMainWindow):
         if not datas:
             return
         items = [ScanDataItem(data) for data in datas]
-        # XXX which group
         session.add_items(items)
+
+    @pyqtSlot()
+    def on_addNumBtn_clicked(self):
+        numors = [self._data[item.type()].meta['filenumber']
+                  for item in self.dataList.selectedItems()]
+        if not numors:
+            return
+        self.dataloader.add_numors(sorted(numors))
 
     @pyqtSlot()
     def on_dirBtn_clicked(self):

@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -111,6 +111,31 @@ into one set, as well as files 23 and 24.
         except OSError:
             pass
         bwin.activateWindow()
+
+    def add_numors(self, numors):
+        ranges = []
+        prev = -1
+        start = None
+        last = None
+        for num in numors:
+            if last is not None:
+                if num != last + 1:
+                    ranges.append((start, last))
+                    start = num
+            else:
+                start = num
+            last = num
+
+        ranges.append((start, last))
+
+        s = ''.join(',%s' % ('%s' % s if s == e else '%s-%s' % (s, e))
+                    for (s, e) in ranges)
+        prev = self.numorsEdit.text()
+        if prev:
+            self.numorsEdit.setText(prev + s)
+        else:
+            self.numorsEdit.setText(s[1:])
+        self.open_data()  # preview
 
     @pyqtSlot()
     def on_browseBtn_clicked(self):

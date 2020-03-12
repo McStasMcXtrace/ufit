@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -67,9 +67,9 @@ class Loader(object):
                          xcol, ycol, dycol, ncol, nscale, filter):
         colnames, coldata, meta = rdr.read_data(filename, fobj)
         if filter is not None:
-            for v,k in filter.items():
+            for v, k in filter.items():
                 if v in colnames:
-                    coldata = coldata[coldata.T[colnames.index(v)]==k]
+                    coldata = coldata[coldata.T[colnames.index(v)] == k]
                 else:
                     raise UFitError("Filtered column %s did not exists" % v)
         colguess = rdr.guess_cols(colnames, coldata, meta)

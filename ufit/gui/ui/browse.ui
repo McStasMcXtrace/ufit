@@ -15,7 +15,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -121,11 +130,18 @@
           <item>
            <widget class="QPushButton" name="loadBtn">
             <property name="text">
-             <string>Load</string>
+             <string>Load directly</string>
             </property>
             <property name="icon">
              <iconset resource="../../../resource/gui.qrc">
               <normaloff>:/notebook--plus.png</normaloff>:/notebook--plus.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addNumBtn">
+            <property name="text">
+             <string>Add numor(s)</string>
             </property>
            </widget>
           </item>
@@ -178,7 +194,7 @@
      <x>0</x>
      <y>0</y>
      <width>836</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>
