@@ -20,7 +20,7 @@ a = Analysis(['../ufitgui'],
              hiddenimports=['scipy.interpolate', 'iminuit',
                             'ufit.gui.datawidgets', 'ipykernel.datapub'],
              hookspath=None,
-             runtime_hooks=['rthook_pyqt4.py'])
+             runtime_hooks=[])
 
 ui = Tree('../ufit/gui/ui', 'ufit/gui/ui')
 

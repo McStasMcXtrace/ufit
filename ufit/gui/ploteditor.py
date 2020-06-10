@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -21,6 +21,8 @@ import re
 
 import matplotlib
 from matplotlib import cm, colors as mcolors, markers, image as mimage
+
+# TODO: this is deprecated and needs to be replaced by a third-party module
 import matplotlib.backends.qt_editor.formlayout as formlayout
 from matplotlib.backends.qt_compat import QtGui
 

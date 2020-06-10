@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -17,7 +17,7 @@ from ufit.qt import uic, pyqtSignal, QSize, QSettings, Qt, QRectF, \
     QDialog, QSvgRenderer
 
 import matplotlib.backends.qt_editor.figureoptions
-from matplotlib.backends.backend_qt4agg import \
+from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT, FigureManagerQT
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.colors import LogNorm
@@ -27,8 +27,8 @@ try:
     from matplotlib.backend_bases import key_press_handler
 except ImportError:
     key_press_handler = None
-from matplotlib.backends import backend_qt4
-backend_qt4.figureoptions = None  # disable toolbar button that doesn't work
+from matplotlib.backends import backend_qt5
+backend_qt5.figureoptions = None  # disable toolbar button that doesn't work
 pyplot.rc('font', family='sans-serif')
 pyplot.rc('font', **{'sans-serif': 'Sans Serif, Arial, Helvetica, '
                      'Lucida Grande, Bitstream Vera Sans'})
@@ -208,7 +208,7 @@ class MPLToolbar(NavigationToolbar2QT):
         self._actions['logz_callback'].setCheckable(True)
         self.canvas.logzChanged.connect(self.on_canvas_logzChanged)
 
-    def _icon(self, name):
+    def _icon(self, name, color=None):
         if name in self.icon_name_map:
             return QIcon(':/' + self.icon_name_map[name])
         return QIcon()

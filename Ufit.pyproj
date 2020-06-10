@@ -72,7 +72,6 @@
     <Compile Include="qcoverage\hhl-test.py" />
     <Compile Include="qcoverage\hk0-and-h0l.py" />
     <Compile Include="qcoverage\qreader.py" />
-    <Compile Include="rthook_pyqt4.py" />
     <Compile Include="setup.py" />
     <Compile Include="ufitgui.py" />
     <Compile Include="resource\ufit\backends\lmfit.py" />

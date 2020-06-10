@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -18,10 +18,7 @@ class UFitError(Exception):
 import ufit.qt
 import matplotlib
 
-if ufit.qt.QTVER == 4:
-    matplotlib.use('Qt4Agg')
-else:
-    matplotlib.use('Qt5Agg')
+matplotlib.use('Qt5Agg')
 
 
 from ufit.result import *
