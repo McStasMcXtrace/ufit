@@ -7,7 +7,7 @@ project = u'ufit'
 copyright = u'2013, Georg Brandl'
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
-              'sphinx.ext.intersphinx', 'sphinx.ext.pngmath']
+              'sphinx.ext.intersphinx']
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
