@@ -2,7 +2,7 @@
 # *****************************************************************************
 # ufit, a universal scattering fitting suite
 #
-# Copyright (c) 2013-2019, Georg Brandl and contributors.  All rights reserved.
+# Copyright (c) 2013-2020, Georg Brandl and contributors.  All rights reserved.
 # Licensed under a 2-clause BSD license, see LICENSE.
 # *****************************************************************************
 
@@ -105,6 +105,7 @@ class _Session(QObject):
 
     def clear(self):
         self.groups[:] = [ItemGroup('Default')]
+        self.groups[0].expanded = True
         self.all_items.clear()
         self.props = attrdict()
         self.itemsUpdated.emit()

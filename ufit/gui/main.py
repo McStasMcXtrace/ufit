@@ -592,6 +592,7 @@ class UFitMain(QMainWindow):
             QMessageBox.warning(self, 'Error', 'Loading failed: %s' % err)
         else:
             self.re_expand_tree()
+            self.setWindowModified(False)
             # if there are annotations, show the window automatically
             if session.props.get('annotations'):
                 self.on_actionAnnotations_triggered()
