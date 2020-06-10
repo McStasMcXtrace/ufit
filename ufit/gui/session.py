@@ -75,7 +75,7 @@ class ItemGroup(object):
                         ' &ndash; %d items' % (self.name, nitems)
 
 
-class _Session(QObject):
+class UfitSession(QObject):
 
     propsRequested = pyqtSignal()
     propsUpdated = pyqtSignal()
@@ -296,7 +296,7 @@ class _Session(QObject):
 
 
 # one singleton instance
-session = _Session()
+session = UfitSession()
 
 # one temporary instance
-temp_session = _Session()
+temp_session = UfitSession()
