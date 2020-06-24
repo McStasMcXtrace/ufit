@@ -51,4 +51,15 @@ setup(
             'ufitgui=ufit.gui:main',
         ],
     },
+    install_requires = [
+        'matplotlib',
+        'numpy',
+        'scipy',
+        'PyQt5',
+        'lmfit',
+    ],
+    extras_require = {
+        'repl': 'qtconsole',
+        'minuit': 'iminuit',
+    },
 )
